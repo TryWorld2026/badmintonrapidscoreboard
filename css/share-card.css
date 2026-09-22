@@ -1,0 +1,232 @@
+/* ================================================================
+   share-card.css — 分享卡（html2canvas 导出）
+   ⚠️ 本文件是令牌层的例外：全部使用字面量，禁止 var(--*)。
+   原因：html2canvas 在离屏克隆节点上解析 CSS 自定义属性不稳定，
+   且不支持 oklch() / lab() / color-mix() / clip-path()。
+   ⚠️ 同时避免使用 gap / grid / backdrop-filter / filter，
+   以保证导出结果与预览一致。
+   配色跟随 VOLT TRUCK 深色演播室（三套深色渐变模板）。
+   ================================================================ */
+
+.share-card {
+    position: relative;
+    width: 360px;
+    padding: 28px 26px 24px;
+    overflow: hidden;
+    font-family: "Helvetica Neue", "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #FFFFFF;
+    background: #10161F;
+    box-sizing: border-box;
+}
+
+/* 装饰斜切色块（实色叠加，不用 radial-gradient）*/
+.share-card::before {
+    content: "";
+    position: absolute;
+    top: -70px;
+    right: -70px;
+    width: 200px;
+    height: 200px;
+    background: rgba(212, 255, 63, 0.14);
+    transform: rotate(45deg);
+}
+
+.share-card::after {
+    content: "";
+    position: absolute;
+    bottom: -90px;
+    left: -60px;
+    width: 220px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.05);
+    transform: rotate(45deg);
+}
+
+.share-card-tpl-1 { background: #10161F; background: linear-gradient(160deg, #10161F 0%, #1C2531 100%); }
+.share-card-tpl-2 { background: #0F1830; background: linear-gradient(160deg, #0F1830 0%, #233A6B 100%); }
+.share-card-tpl-3 { background: #24101C; background: linear-gradient(160deg, #24101C 0%, #5C1533 100%); }
+
+.share-card > * { position: relative; z-index: 1; }
+
+/* ---------- 顶部品牌行 ---------- */
+.sc-head {
+    overflow: hidden;
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(212, 255, 63, 0.35);
+}
+
+.sc-brand {
+    float: left;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #D4FF3F;
+}
+
+.sc-date {
+    float: right;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* ---------- 对阵区 ---------- */
+.sc-teams {
+    overflow: hidden;
+    text-align: center;
+}
+
+.sc-team {
+    display: inline-block;
+    vertical-align: top;
+    width: 108px;
+    text-align: center;
+}
+
+.sc-avatar {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 8px;
+    font-size: 28px;
+    line-height: 54px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.sc-name {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sc-score {
+    margin-top: 4px;
+    font-family: Impact, Haettenschweiler, "Arial Narrow", "PingFang SC", sans-serif;
+    font-size: 48px;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+    color: #FFFFFF;
+}
+
+.sc-team.win .sc-score { color: #FFD166; }
+.sc-team.lose .sc-score { color: rgba(255, 255, 255, 0.55); }
+
+.sc-vs {
+    display: inline-block;
+    vertical-align: top;
+    width: 44px;
+    padding-top: 42px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-align: center;
+    color: #D4FF3F;
+}
+
+/* ---------- 局数行 ---------- */
+.sc-games {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    overflow: hidden;
+}
+
+.sc-games-title {
+    float: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.sc-games-list { float: right; }
+
+.sc-game {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 9px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(212, 255, 63, 0.16);
+    border: 1px solid rgba(212, 255, 63, 0.3);
+    color: #E4FF7A;
+}
+
+/* ---------- 高光区 ---------- */
+.sc-highlights {
+    margin-top: 16px;
+}
+
+.sc-hl-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 8px;
+}
+
+.sc-hl {
+    margin-bottom: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.sc-hl b { font-weight: 800; color: #D4FF3F; }
+
+/* ---------- 底部 ---------- */
+.sc-foot {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    overflow: hidden;
+}
+
+.sc-foot-txt {
+    float: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.sc-foot-app {
+    float: right;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #D4FF3F;
+}
+
+/* ---------- 预览容器（页面内嵌，非导出目标）---------- */
+.share-preview {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    background: #070A0E;
+    border: 1px solid #222C3A;
+    overflow: auto;
+}
+
+.share-preview .share-card {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 255, 63, 0.16);
+    flex-shrink: 0;
+}

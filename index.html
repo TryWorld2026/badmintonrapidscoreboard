@@ -3931,6 +3931,20 @@
             font-size: 0.9rem;
         }
 
+        /* JS 动态注入的空态提示（原为重复行内 style）*/
+        .empty-hint {
+            text-align: center;
+            color: var(--c-text-3);
+            padding: 20px;
+        }
+
+        .empty-hint-grid {
+            grid-column: 1 / -1;
+            text-align: center;
+            opacity: 0.6;
+            padding: 20px;
+        }
+
         label {
             display: block;
             margin-bottom: 10px;
@@ -7100,7 +7114,7 @@
             const container = document.getElementById('grouping-history-list');
             
             if (history.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无分组历史</div>';
+                container.innerHTML = '<div class="empty-hint">暂无分组历史</div>';
                 return;
             }
             
@@ -7508,7 +7522,7 @@
             const container = document.getElementById('expense-history-list');
             
             if (history.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无分摊历史</div>';
+                container.innerHTML = '<div class="empty-hint">暂无分摊历史</div>';
                 return;
             }
             
@@ -8872,7 +8886,7 @@
                 </div>
             `).join('');
 
-            library.innerHTML = html || `<div style="grid-column: 1/-1; text-align: center; opacity: 0.6; padding: 20px;">还没有设置头像，点击"管理选手头像"开始设置！</div>`;
+            library.innerHTML = html || `<div class="empty-hint-grid">还没有设置头像，点击"管理选手头像"开始设置！</div>`;
         }
 
         /**
@@ -9148,7 +9162,7 @@
                     </div>
                 `).join('');
             } else {
-                recentContainer.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无比赛记录</div>';
+                recentContainer.innerHTML = '<div class="empty-hint">暂无比赛记录</div>';
             }
 
             const tags = generateRealTags(wins, matches, winRate, totalDuration, maxWinStreak);
@@ -9401,7 +9415,7 @@
                     `;
                 }).join('');
             } else {
-                leaderboardList.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无更多数据</div>';
+                leaderboardList.innerHTML = '<div class="empty-hint">暂无更多数据</div>';
             }
         }
 

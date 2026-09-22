@@ -58,6 +58,13 @@ window.App = window.App || {};
     function go(tab, sub) {
         if (!TABS.some(function (t) { return t.id === tab; })) tab = 'score';
         if (sub === undefined || sub === null || sub === '') sub = DEFAULT_SUB[tab] || '';
+        /* sub 合法性：不在该 Tab 的二级页清单里就回落到默认二级页。
+           否则 #tab=data&sub=typo 会留下一个谁都匹配不上的半状态：
+           route.sub 是脏值、分段控件无高亮、顶栏标题只剩 Tab 名、hash 里也带着垃圾。 */
+        if (sub) {
+            var validSubs = (SUB_PANELS[tab] || []).concat(tab === 'me' ? ME_SUBS : []);
+            if (!validSubs.some(function (x) { return x.id === sub; })) sub = DEFAULT_SUB[tab] || '';
+        }
         App.state.route.tab = tab;
         App.state.route.sub = sub;
 
@@ -126,12 +133,85 @@ window.App = window.App || {};
         if (tab === 'match' && App.grouping && App.grouping.onEnter) App.grouping.onEnter(sub);
         if (tab === 'me' && App.settings && App.settings.onEnter) App.settings.onEnter(sub);
 
+        writeHash(tab, sub);
+
         document.dispatchEvent(new CustomEvent('app:navigate', {
             detail: { tab: tab, sub: sub }
         }));
     }
 
+    /* ---------- URL hash 同步 ----------
+       原来 nav.go() 只改内存路由，从不碰 location.hash，后果是：
+       1) 在「数据 › 排行榜」刷新一下又被打回记分页，当前视图丢失；
+       2) 手动改地址栏 hash / 点站内 hash 链接毫无反应；
+       3) 安卓物理返回键直接退出应用，连打开中的弹层都关不掉。
+       这里把路由写进 hash，并接管 popstate / hashchange。 */
+    var firstNav = true;
+    var suppressHashWrite = false;
+
+    function hashOf(tab, sub) {
+        var h = '#tab=' + encodeURIComponent(tab);
+        if (sub) h += '&sub=' + encodeURIComponent(sub);
+        return h;
+    }
+
+    function readHash() {
+        var out = {};
+        var h = (location.hash || '').replace(/^#/, '');
+        h.split('&').forEach(function (kv) {
+            var i = kv.indexOf('=');
+            if (i < 1) return;
+            var k = kv.slice(0, i), v = kv.slice(i + 1);
+            try { out[decodeURIComponent(k)] = decodeURIComponent(v); } catch (err) { out[k] = v; }
+        });
+        return out;
+    }
+
+    function writeHash(tab, sub) {
+        if (suppressHashWrite) return;
+        var h = hashOf(tab, sub);
+        var same = (location.hash === h);
+        var st = { tab: tab, sub: sub };
+        try {
+            /* 首次导航只替换，不新增历史条目，否则一进应用就多一层「返回」 */
+            if (firstNav) history.replaceState(st, '', h);
+            else if (!same) history.pushState(st, '', h);
+        } catch (err) {
+            /* file:// 等禁用了 history API 的场景下降级为直接改 hash */
+            if (!same) location.hash = h;
+        }
+        firstNav = false;
+    }
+
+    /* 按 hash 路由（不反向写 hash，避免循环）*/
+    function applyHash() {
+        var t = readHash();
+        suppressHashWrite = true;
+        go(t.tab || 'score', t.sub);
+        suppressHashWrite = false;
+    }
+
+    /* 系统返回键 / 地址栏改 hash：有弹层先关弹层，且不消耗这次返回 */
+    function onPopState() {
+        if (App.state.overlays.length) {
+            closeTopOverlay();
+            var r = App.state.route;
+            try { history.pushState({ tab: r.tab, sub: r.sub }, '', hashOf(r.tab, r.sub)); } catch (err) { /* 忽略 */ }
+            return;
+        }
+        applyHash();
+    }
+
+    window.addEventListener('popstate', onPopState);
+    window.addEventListener('hashchange', function () {
+        /* 弹层打开期间忽略 hash 抖动，避免误关页面 */
+        if (App.state.overlays.length) return;
+        applyHash();
+    });
+
     function currentTab() { return App.state.route.tab; }
+
+    function readHashTarget() { return readHash(); }
     function currentSub() { return App.state.route.sub; }
 
     /* ---------- "我的" 子页 ---------- */

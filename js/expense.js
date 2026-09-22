@@ -175,7 +175,7 @@ window.App = window.App || {};
         if (!box) return;
         var list = App.state.getExpenseHistory();
         if (!list.length) {
-            box.innerHTML = '<div class="empty"><div class="empty-icon">💰</div>' +
+            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="yuan"></div>' +
                 '<div class="empty-title">暂无分摊历史</div>' +
                 '<div class="empty-hint">计算一次后会自动保存最近 20 条</div></div>';
             return;

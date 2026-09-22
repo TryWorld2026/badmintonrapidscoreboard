@@ -58,7 +58,7 @@ window.App = window.App || {};
         if (count) count.textContent = matchHistory.length + ' 场';
 
         if (!matchHistory.length) {
-            box.innerHTML = '<div class="empty"><div class="empty-icon">🏸</div>' +
+            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="shuttle"></div>' +
                 '<div class="empty-title">暂无比赛记录</div>' +
                 '<div class="empty-hint">开始一场比赛后会自动记录在这里</div></div>';
             updateStats([]);
@@ -72,7 +72,7 @@ window.App = window.App || {};
                 : (m.scoreA < m.scoreB ? '<span class="tag tag-lose">失败</span>'
                     : '<span class="tag tag-draw">平局</span>');
             var minutes = Math.floor((m.duration || 0) / 60);
-            var dur = minutes > 0 ? ('⏱️ ' + minutes + ' 分钟') : '';
+            var dur = minutes > 0 ? (minutes + ' 分钟') : '';
             var hl = (m.highlights && m.highlights.length)
                 ? m.highlights.map(function (t) { return '<span class="tag tag-gold">' + ui.escapeHtml(t) + '</span>'; }).join('')
                 : '';
@@ -119,7 +119,7 @@ window.App = window.App || {};
                         ui.escapeHtml(t.slice(0, 2)) + '</span><span class="hi-title">' +
                         ui.escapeHtml(t.slice(2).trim()) + '</span></div>';
                 }).join('')
-                : '<div class="empty"><div class="empty-icon">🏸</div>' +
+                : '<div class="empty"><div class="empty-icon ic-box" data-icon="shuttle"></div>' +
                 '<div class="empty-title">本场没有高光时刻</div></div>';
         }
         nav.openSheet('match-detail-sheet');
@@ -187,7 +187,7 @@ window.App = window.App || {};
 
         if (!matchHistory.length) {
             podium.innerHTML = '';
-            list.innerHTML = '<div class="empty"><div class="empty-icon">🏸</div>' +
+            list.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="shuttle"></div>' +
                 '<div class="empty-title">暂无数据</div>' +
                 '<div class="empty-hint">开始比赛后会自动生成排行榜</div></div>';
             return;
@@ -212,14 +212,14 @@ window.App = window.App || {};
         var top3 = arr.slice(0, 3);
         var rest = arr.slice(3, 10);
 
-        var medals = ['🥇', '🥈', '🥉'];
+        var medals = ['crown', 'medal', 'medal'];
         var order = [1, 0, 2];
         var html = '';
         order.forEach(function (idx) {
             var p = top3[idx];
             if (!p) return;
             html += '<div class="podium-step rank-' + (idx + 1) + '">' +
-                '<div class="medal">' + medals[idx] + '</div>' +
+                '<div class="medal ic-box">' + App.icons.icon(medals[idx]) + '</div>' +
                 '<div class="pname">' + ui.escapeHtml(p.name) + '</div>' +
                 '<div class="pval">' + lbValue(p) + '</div>' +
                 '</div>';
@@ -286,15 +286,15 @@ window.App = window.App || {};
 
     function generateRealTags(wins, matches, winRate, totalDuration, maxWinStreak) {
         var tags = [];
-        if (winRate >= 70 && matches >= 5) tags.push('🏆 常胜将军');
-        if (winRate >= 50 && winRate < 70 && matches >= 5) tags.push('📈 稳定选手');
-        if (matches >= 20) tags.push('🎯 球场老将');
-        if (matches >= 50) tags.push('💪 资深玩家');
-        if (totalDuration >= 36000) tags.push('⏱️ 运动达人');
-        if (maxWinStreak >= 5) tags.push('🔥 连胜王者');
-        if (maxWinStreak >= 3) tags.push('✨ 势不可挡');
-        if (winRate >= 80 && matches >= 10) tags.push('👑 羽坛高手');
-        if (matches >= 5 && matches < 10) tags.push('🌱 新秀选手');
+        if (winRate >= 70 && matches >= 5) tags.push('常胜将军');
+        if (winRate >= 50 && winRate < 70 && matches >= 5) tags.push('稳定选手');
+        if (matches >= 20) tags.push('球场老将');
+        if (matches >= 50) tags.push('资深玩家');
+        if (totalDuration >= 36000) tags.push('运动达人');
+        if (maxWinStreak >= 5) tags.push('连胜王者');
+        if (maxWinStreak >= 3) tags.push('势不可挡');
+        if (winRate >= 80 && matches >= 10) tags.push('羽坛高手');
+        if (matches >= 5 && matches < 10) tags.push('新秀选手');
         return tags;
     }
 
@@ -386,10 +386,10 @@ window.App = window.App || {};
         var grid = $('ability-stats-grid');
         if (grid) {
             var cards = [
-                [matches, '🎯 总场次'], [wins, '🏆 胜场'], [losses, '💔 负场'],
-                [winRate + '%', '📈 胜率'], [totalHours + 'h', '⏱️ 总时长'],
-                [avgDuration + 'm', '⏰ 场均时长'], [maxWinStreak, '🔥 最长连胜'],
-                [maxLoseStreak, '❄️ 最长连败'], [avgFor, '⚔️ 场均得分'], [avgAgainst, '🛡️ 场均失分']
+                [matches, '总场次'], [wins, '胜场'], [losses, '负场'],
+                [winRate + '%', '胜率'], [totalHours + 'h', '总时长'],
+                [avgDuration + 'm', '场均时长'], [maxWinStreak, '最长连胜'],
+                [maxLoseStreak, '最长连败'], [avgFor, '场均得分'], [avgAgainst, '场均失分']
             ];
             grid.innerHTML = cards.map(function (c) {
                 return '<div class="stat-card"><div class="v num">' + c[0] + '</div><div class="k">' + c[1] + '</div></div>';
@@ -422,7 +422,7 @@ window.App = window.App || {};
                         '<span class="r-score num">' + m.score + '</span>' +
                         '</div>';
                 }).join('')
-                : '<div class="empty"><div class="empty-icon">📝</div>' +
+                : '<div class="empty"><div class="empty-icon ic-box" data-icon="list"></div>' +
                 '<div class="empty-title">暂无比赛记录</div></div>';
         }
 
@@ -433,7 +433,7 @@ window.App = window.App || {};
                "(intermediate value).join is not a function" */
             var tagHtml = (tags && tags.length
                 ? tags.map(function (t) { return '<span class="ability-tag">' + t + '</span>'; })
-                : ['<span class="ability-tag">🏸 羽毛球爱好者</span>']).join('');
+                : ['<span class="ability-tag">羽毛球爱好者</span>']).join('');
             tagBox.innerHTML = tagHtml;
         }
     }

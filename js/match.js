@@ -82,7 +82,7 @@ window.App = window.App || {};
         if (!box) return;
         var h = App.state.match.scoreHistory;
         if (!h.length) {
-            box.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>' +
+            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="list"></div>' +
                 '<div class="empty-title">还没有得分</div>' +
                 '<div class="empty-hint">点击「开始比赛」后用底部按钮加分</div></div>';
             return;
@@ -220,7 +220,7 @@ window.App = window.App || {};
         var el = $(team === 'a' ? 'score-a' : 'score-b');
         fx.bumpScore(el);
         var panel = $(team === 'a' ? 'team-a-panel' : 'team-b-panel');
-        fx.scorePulse(panel, team === 'a' ? 'rgba(229, 72, 77, 0.30)' : 'rgba(0, 144, 255, 0.30)');
+        fx.scorePulse(panel, team === 'a' ? 'rgba(255, 46, 99, 0.30)' : 'rgba(0, 229, 255, 0.30)');
 
         if (amount > 0) { fx.pointSound(); fx.vibrate(50); }
         else { fx.clickSound(); fx.vibrate([30, 30, 30]); }
@@ -427,7 +427,7 @@ window.App = window.App || {};
                 return h.type === 'deuce' && h.currentGame === m.currentGame;
             }).length === 0) {
                 recordHighlight('deuce', '进入加分赛！');
-                ui.showHighlight('🎮', '加分赛！', '双方比分 20 平，进入加分赛！');
+                ui.showHighlight('sliders', '加分赛！', '双方比分 20 平，进入加分赛！');
             }
         }
 
@@ -438,7 +438,7 @@ window.App = window.App || {};
             if (!existing) {
                 var team = m.scoreA >= target - 1 ? m.teamNameA : m.teamNameB;
                 recordHighlight('matchpoint', team + ' 赛点！');
-                ui.showHighlight('⚡', '赛点！', team + ' 拿到赛点！');
+                ui.showHighlight('bolt', '赛点！', team + ' 拿到赛点！');
             }
         }
 
@@ -448,11 +448,11 @@ window.App = window.App || {};
                 wasLeadingTeamA = lead > 0;
             } else if (wasLeadingTeamA && lead < -5) {
                 recordHighlight('comeback', m.teamNameB + ' 大逆转！');
-                ui.showHighlight('🔥', '大逆转！', m.teamNameA + ' 落后 5 分以上后反超！');
+                ui.showHighlight('flame', '大逆转！', m.teamNameA + ' 落后 5 分以上后反超！');
                 wasLeadingTeamA = false;
             } else if (!wasLeadingTeamA && lead > 5) {
                 recordHighlight('comeback', m.teamNameA + ' 大逆转！');
-                ui.showHighlight('🔥', '大逆转！', m.teamNameA + ' 落后 5 分以上后反超！');
+                ui.showHighlight('flame', '大逆转！', m.teamNameA + ' 落后 5 分以上后反超！');
                 wasLeadingTeamA = true;
             }
         }
@@ -466,13 +466,13 @@ window.App = window.App || {};
     function getHighlightsSummary() {
         var summary = [];
         if (highlightMoments.filter(function (h) { return h.type === 'deuce'; }).length > 0) {
-            summary.push('🎮 加分赛');
+            summary.push('加分赛');
         }
         if (highlightMoments.filter(function (h) { return h.type === 'comeback'; }).length > 0) {
-            summary.push('🔥 大逆转');
+            summary.push('大逆转');
         }
         if (App.state.match.scoreA === 0 || App.state.match.scoreB === 0) {
-            summary.push('✨ 零封胜利');
+            summary.push('零封胜利');
         }
         return summary;
     }
@@ -536,7 +536,7 @@ window.App = window.App || {};
                         t.slice(0, 2) + '</span><span class="hi-title">' + t.slice(2).trim() + '</span></div>';
                 }).join('');
             } else {
-                hl.innerHTML = '<div class="empty"><div class="empty-icon">🏸</div>' +
+                hl.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="shuttle"></div>' +
                     '<div class="empty-title">本场没有高光时刻</div></div>';
             }
         }

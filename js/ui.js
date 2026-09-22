@@ -98,13 +98,14 @@ window.App = window.App || {};
        ================================================================ */
     var hlTimer = null;
 
+    /* icon 参数是 js/icons.js 的图标名（不再是 emoji）*/
     function showHighlight(icon, title, desc) {
         var el = nav.byId('highlight-badge');
         if (!el) return;
         var i = nav.byId('hl-icon');
         var t = nav.byId('hl-title');
         var d = nav.byId('hl-desc');
-        if (i) i.textContent = icon || '⭐';
+        if (i) i.innerHTML = App.icons.icon(icon || 'star');
         if (t) t.textContent = title || '';
         if (d) d.textContent = desc || '';
         el.classList.remove('show', 'hide');
@@ -230,17 +231,17 @@ window.App = window.App || {};
                 var now = data.results[0].now || {};
                 var loc = data.results[0].location || {};
                 var iconMap = {
-                    '0': '☀️', '1': '🌤️', '2': '⛅', '3': '☁️', '4': '🌥️',
-                    '5': '🌦️', '6': '🌧️', '7': '🌨️', '8': '🌧️', '9': '🌧️',
-                    '10': '⛈️', '11': '🌩️', '12': '🌦️', '13': '🌨️',
-                    '14': '❄️', '15': '🌨️', '16': '🌨️', '17': '🌨️', '18': '🌫️',
-                    '19': '🌫️', '20': '🌪️'
+                    '0': 'sun', '1': 'sun', '2': 'cloud', '3': 'cloud', '4': 'cloud',
+                    '5': 'cloud', '6': 'cloud', '7': 'cloud', '8': 'cloud', '9': 'cloud',
+                    '10': 'cloud', '11': 'cloud', '12': 'cloud', '13': 'cloud',
+                    '14': 'cloud', '15': 'cloud', '16': 'cloud', '17': 'cloud', '18': 'cloud',
+                    '19': 'cloud', '20': 'wind'
                 };
                 var wi = nav.byId('w-icon');
                 var wt = nav.byId('w-temp');
                 var wd = nav.byId('w-desc');
                 var wc = nav.byId('w-city');
-                if (wi) wi.textContent = iconMap[now.code] || '🌡️';
+                if (wi) wi.innerHTML = App.icons.icon(iconMap[now.code] || 'thermo');
                 if (wt) wt.textContent = (now.temperature || '--') + '°C';
                 if (wd) wd.textContent = (now.text || '') + ' · 风速 ' + (now.wind_speed || '--') + ' km/h';
                 if (wc) wc.textContent = (loc.name || '本地') + ' · ' + (loc.path || '');
@@ -256,12 +257,12 @@ window.App = window.App || {};
        新手引导（6 页）
        ================================================================ */
     var ONBOARD_PAGES = [
-        { icon: '🏸', title: '欢迎使用极速计分板', desc: '专为羽毛球散打设计的轻量计分工具，打开即用，数据全部保存在本机。' },
-        { icon: '⚡', title: '一键记分', desc: '底部两个大按钮分别给两队加分，支持 21 / 15 / 11 分制与三局两胜。' },
-        { icon: '↩️', title: '点错可撤回', desc: '比分板下方可以逐分撤回，也能一键重置本局或整场比赛。' },
-        { icon: '⚔️', title: '智能分组与分费', desc: '输入名单即可随机 / 均衡 / 轮换分组，费用支持均摊、按比例、按时长三种方式。' },
-        { icon: '📊', title: '数据与成就', desc: '自动记录历史战绩、胜率曲线、排行榜与能力分析，还有 12 枚成就等你解锁。' },
-        { icon: '🚀', title: '开始使用', desc: '可安装到桌面当 App 用，离线也能正常记分。祝打球愉快！' }
+        { icon: 'shuttle', title: '欢迎使用极速计分板', desc: '专为羽毛球散打设计的轻量计分工具，打开即用，数据全部保存在本机。' },
+        { icon: 'bolt', title: '一键记分', desc: '底部两个大按钮分别给两队加分，支持 21 / 15 / 11 分制与三局两胜。' },
+        { icon: 'undo', title: '点错可撤回', desc: '比分板下方可以逐分撤回，也能一键重置本局或整场比赛。' },
+        { icon: 'swords', title: '智能分组与分费', desc: '输入名单即可随机 / 均衡 / 轮换分组，费用支持均摊、按比例、按时长三种方式。' },
+        { icon: 'chart', title: '数据与成就', desc: '自动记录历史战绩、胜率曲线、排行榜与能力分析，还有 12 枚成就等你解锁。' },
+        { icon: 'rocket', title: '开始使用', desc: '可安装到桌面当 App 用，离线也能正常记分。祝打球愉快！' }
     ];
     var onboardIdx = 0;
 
@@ -273,7 +274,7 @@ window.App = window.App || {};
         var dots = nav.byId('ob-dots');
         var prev = nav.byId('ob-prev');
         var next = nav.byId('ob-next');
-        if (art) art.textContent = p.icon;
+        if (art) art.innerHTML = App.icons.icon(p.icon);
         if (title) title.textContent = p.title;
         if (desc) desc.textContent = p.desc;
         if (dots) {

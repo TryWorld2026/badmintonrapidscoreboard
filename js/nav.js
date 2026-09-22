@@ -9,11 +9,12 @@ window.App = window.App || {};
     'use strict';
 
     /* ---------- 路由表 ---------- */
+    /* icon 字段是 js/icons.js 里的线性 SVG 图标名，不再是 emoji */
     var TABS = [
-        { id: 'score', label: '记分', icon: '🏸' },
-        { id: 'match', label: '对战', icon: '⚔️' },
-        { id: 'data', label: '数据', icon: '📊' },
-        { id: 'me', label: '我的', icon: '👤' }
+        { id: 'score', label: '记分', icon: 'shuttle' },
+        { id: 'match', label: '对战', icon: 'swords' },
+        { id: 'data', label: '数据', icon: 'chart' },
+        { id: 'me', label: '我的', icon: 'users' }
     ];
 
     /* 每个 Tab 的二级页；sub 为空串表示主视图 */
@@ -41,10 +42,10 @@ window.App = window.App || {};
 
     /* "我的" 页下的二级子页（设置 / 头像 / 备份 / 关于）*/
     var ME_SUBS = [
-        { id: 'settings', label: '设置', icon: '⚙️', sub: '比赛规则与偏好' },
-        { id: 'avatars', label: '头像管理', icon: '🙂', sub: '为球员绑定专属头像' },
-        { id: 'backup', label: '数据备份', icon: '💾', sub: '导出 / 恢复 / 清空' },
-        { id: 'about', label: '关于', icon: 'ℹ️', sub: '版本与说明' }
+        { id: 'settings', label: '设置', icon: 'sliders', sub: '比赛规则与偏好' },
+        { id: 'avatars', label: '头像管理', icon: 'users', sub: '为球员绑定专属头像' },
+        { id: 'backup', label: '数据备份', icon: 'download', sub: '导出 / 恢复 / 清空' },
+        { id: 'about', label: '关于', icon: 'info', sub: '版本与说明' }
     ];
 
     function $(sel, root) { return (root || document).querySelector(sel); }
@@ -160,7 +161,7 @@ window.App = window.App || {};
             b.setAttribute('role', 'tab');
             b.setAttribute('aria-selected', 'false');
             b.innerHTML =
-                '<span class="tab-icon" aria-hidden="true">' + t.icon + '</span>' +
+                '<span class="tab-icon ic-box" aria-hidden="true">' + App.icons.icon(t.icon) + '</span>' +
                 '<span class="tab-label">' + t.label + '</span>';
             bar.appendChild(b);
         });
@@ -198,7 +199,7 @@ window.App = window.App || {};
             b.setAttribute('data-act', 'nav:me');
             b.setAttribute('data-me', m.id);
             b.innerHTML =
-                '<span class="ni-icon" aria-hidden="true">' + m.icon + '</span>' +
+                '<span class="ni-icon ic-box" aria-hidden="true">' + App.icons.icon(m.icon) + '</span>' +
                 '<span class="ni-main">' +
                 '<span class="ni-title">' + m.label + '</span>' +
                 '<span class="ni-sub">' + m.sub + '</span>' +

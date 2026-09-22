@@ -6,7 +6,7 @@ window.App = window.App || {};
     'use strict';
 
     var nav = App.nav;
-    var COLORS = ['#E5484D', '#0090FF', '#FFB020', '#0E9F6E', '#1B4DFF', '#FF7A45', '#8B5CF6'];
+    var COLORS = ['#D4FF3F', '#FF2E63', '#00E5FF', '#FFB627', '#2EE6A8', '#F0F4F8', '#A8B3C0'];
     var reduced = false;
 
     function prefersReduced() {
@@ -111,7 +111,7 @@ window.App = window.App || {};
         if (!teamEl || prefersReduced()) return;
         var p = document.createElement('span');
         p.className = 'score-pulse';
-        p.style.background = color || 'rgba(27, 77, 255, 0.35)';
+        p.style.background = color || 'rgba(212, 255, 63, 0.35)';
         teamEl.appendChild(p);
         window.setTimeout(function () {
             if (p.parentNode) p.parentNode.removeChild(p);

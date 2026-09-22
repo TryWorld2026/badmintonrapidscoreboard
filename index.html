@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#1B4DFF">
+<meta name="theme-color" content="#0A0E13">
 <meta name="description" content="羽毛球极速计分板 — 轻量本地计分、分组、费用分摊与数据统计工具">
 <title>羽毛球极速计分板</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="极速计分">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
@@ -27,9 +27,9 @@
         <h1 class="appbar-title" id="appbar-title" role="button" tabindex="0" aria-label="快捷操作（双击或按回车打开）" title="双击打开快捷操作">记分</h1>
         <div class="appbar-actions">
             <button type="button" class="icon-btn" data-act="nav:tab" data-tab="data"
-                    aria-label="查看数据">📊</button>
+                    aria-label="查看数据"><span class="ic-box" data-icon="chart"></span></button>
             <button type="button" class="icon-btn" data-act="match:share"
-                    aria-label="分享当前比赛">📤</button>
+                    aria-label="分享当前比赛"><span class="ic-box" data-icon="share"></span></button>
         </div>
     </header>
 
@@ -45,6 +45,7 @@
                 <div class="scoreboard-grid">
                     <div class="score-team team-a" id="team-a-panel">
                         <div class="score-team-head">
+                            <span class="score-team-tag micro">A</span>
                             <span class="score-team-avatar" id="team-a-avatar">🏸</span>
                         </div>
                         <input class="score-team-name" id="team-a-name" data-act="match:team-name"
@@ -57,6 +58,7 @@
                     </div>
                     <div class="score-team team-b" id="team-b-panel">
                         <div class="score-team-head">
+                            <span class="score-team-tag micro">B</span>
                             <span class="score-team-avatar" id="team-b-avatar">🏸</span>
                         </div>
                         <input class="score-team-name" id="team-b-name" data-act="match:team-name"
@@ -70,7 +72,7 @@
                 </div>
                 <div class="scoreboard-vs" aria-hidden="true">
                     VS
-                    <span class="vs-timer" id="current-game">第 1 局</span>
+                    <span class="vs-timer" id="current-game">GAME 1</span>
                 </div>
                 <div class="scoreboard-bar">
                     <div class="games-won">
@@ -84,7 +86,7 @@
                             <span id="timer-btn-label">开始</span>
                         </button>
                         <button type="button" class="btn btn-small btn-ghost" data-act="match:undo"
-                                aria-label="撤回上一分">↩︎</button>
+                                aria-label="撤回上一分"><span class="ic-box" data-icon="undo"></span></button>
                     </div>
                 </div>
             </div>
@@ -104,22 +106,22 @@
                 <div class="card-title">快速切换赛制</div>
                 <div class="pick-grid">
                     <button type="button" class="pick-card active" data-act="match:mode" data-mode="21">
-                        <span class="pick-icon">🎯</span>
+                        <span class="pick-icon ic-box" data-icon="target"></span>
                         <span class="pick-name">21 分</span>
                         <span class="pick-desc">标准单局</span>
                     </button>
                     <button type="button" class="pick-card" data-act="match:mode" data-mode="15">
-                        <span class="pick-icon">⚡</span>
+                        <span class="pick-icon ic-box" data-icon="bolt"></span>
                         <span class="pick-name">15 分</span>
                         <span class="pick-desc">快速局</span>
                     </button>
                     <button type="button" class="pick-card" data-act="match:mode" data-mode="11">
-                        <span class="pick-icon">🔥</span>
+                        <span class="pick-icon ic-box" data-icon="flame"></span>
                         <span class="pick-name">11 分</span>
                         <span class="pick-desc">短局</span>
                     </button>
                     <button type="button" class="pick-card" data-act="match:mode" data-mode="custom">
-                        <span class="pick-icon">✏️</span>
+                        <span class="pick-icon ic-box" data-icon="pencil"></span>
                         <span class="pick-name">自定义</span>
                         <span class="pick-desc">任意目标分</span>
                     </button>
@@ -144,17 +146,17 @@
                     <div class="card-title">分组方式</div>
                     <div class="group-mode-row">
                         <button type="button" class="pick-card active" data-act="grouping:mode" data-mode="random">
-                            <span class="pick-icon">🎲</span>
+                            <span class="pick-icon ic-box" data-icon="dice"></span>
                             <span class="pick-name">随机分组</span>
                             <span class="pick-desc">完全随机</span>
                         </button>
                         <button type="button" class="pick-card" data-act="grouping:mode" data-mode="balanced">
-                            <span class="pick-icon">⚖️</span>
+                            <span class="pick-icon ic-box" data-icon="scale"></span>
                             <span class="pick-name">实力平衡</span>
                             <span class="pick-desc">强弱搭配</span>
                         </button>
                         <button type="button" class="pick-card" data-act="grouping:mode" data-mode="rotation">
-                            <span class="pick-icon">🔄</span>
+                            <span class="pick-icon ic-box" data-icon="rotate"></span>
                             <span class="pick-name">轮换赛制</span>
                             <span class="pick-desc">全组合</span>
                         </button>
@@ -169,10 +171,10 @@
                               placeholder="每行一个名字，例如：&#10;张三&#10;李四&#10;王五&#10;赵六"></textarea>
                     <div class="field-hint">至少 4 人才能分组；实力平衡模式会读取下方实力等级。</div>
                     <div class="chip-row mt-3">
-                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="张三">+ 张三</button>
-                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="李四">+ 李四</button>
-                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="王五">+ 王五</button>
-                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="赵六">+ 赵六</button>
+                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="张三"><span class="ic-box" data-icon="plus"></span>张三</button>
+                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="李四"><span class="ic-box" data-icon="plus"></span>李四</button>
+                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="王五"><span class="ic-box" data-icon="plus"></span>王五</button>
+                        <button type="button" class="chip" data-act="grouping:quick-add" data-value="赵六"><span class="ic-box" data-icon="plus"></span>赵六</button>
                     </div>
                 </div>
 
@@ -245,17 +247,17 @@
                     <div class="card-title">分摊方式</div>
                     <div class="group-mode-row">
                         <button type="button" class="pick-card active" data-act="expense:mode" data-mode="equal">
-                            <span class="pick-icon">➗</span>
+                            <span class="pick-icon ic-box" data-icon="divide"></span>
                             <span class="pick-name">平均分摊</span>
                             <span class="pick-desc">人人一致</span>
                         </button>
                         <button type="button" class="pick-card" data-act="expense:mode" data-mode="custom">
-                            <span class="pick-icon">⚖️</span>
+                            <span class="pick-icon ic-box" data-icon="scale"></span>
                             <span class="pick-name">自定义比例</span>
                             <span class="pick-desc">按份数</span>
                         </button>
                         <button type="button" class="pick-card" data-act="expense:mode" data-mode="time">
-                            <span class="pick-icon">⏱️</span>
+                            <span class="pick-icon ic-box" data-icon="timer"></span>
                             <span class="pick-name">按时长</span>
                             <span class="pick-desc">打多久付多少</span>
                         </button>
@@ -335,19 +337,19 @@
 
                 <div class="section-title mt-4">数据图表</div>
                 <div class="chart-card">
-                    <div class="chart-card-title">📈 每月比赛场数</div>
+                    <div class="chart-card-title"><span class="ic-box" data-icon="chart"></span>每月比赛场数</div>
                     <div class="chart-box"><canvas id="monthlyChart"></canvas></div>
                 </div>
                 <div class="chart-card">
-                    <div class="chart-card-title">🥧 胜负分布</div>
+                    <div class="chart-card-title"><span class="ic-box" data-icon="pie"></span>胜负分布</div>
                     <div class="chart-box"><canvas id="winLossChart"></canvas></div>
                 </div>
                 <div class="chart-card">
-                    <div class="chart-card-title">📊 累计胜率趋势</div>
+                    <div class="chart-card-title"><span class="ic-box" data-icon="trend"></span>累计胜率趋势</div>
                     <div class="chart-box"><canvas id="winRateTrendChart"></canvas></div>
                 </div>
                 <div class="chart-card">
-                    <div class="chart-card-title">⏱️ 比赛时长分布</div>
+                    <div class="chart-card-title"><span class="ic-box" data-icon="timer"></span>比赛时长分布</div>
                     <div class="chart-box"><canvas id="durationChart"></canvas></div>
                 </div>
             </div>
@@ -375,7 +377,7 @@
                 </div>
 
                 <div class="empty hidden" id="ability-empty">
-                    <div class="empty-icon">📊</div>
+                    <div class="empty-icon ic-box" data-icon="chart"></div>
                     <div class="empty-title">选择一位选手查看能力分析</div>
                     <div class="empty-hint">数据来自已保存的比赛记录</div>
                 </div>
@@ -395,12 +397,12 @@
                     <div class="stat-grid" id="ability-stats-grid"></div>
 
                     <div class="ability-section">
-                        <div class="ability-section-title">🏅 各项排名</div>
+                        <div class="ability-section-title"><span class="ic-box" data-icon="medal"></span>各项排名</div>
                         <div class="stat-grid" id="ability-ranks"></div>
                     </div>
 
                     <div class="ability-section">
-                        <div class="ability-section-title">🕘 最近 5 场</div>
+                        <div class="ability-section-title"><span class="ic-box" data-icon="clock"></span>最近 5 场</div>
                         <div id="ability-recent"></div>
                     </div>
                 </div>
@@ -434,7 +436,7 @@
 
             <div id="me-home">
                 <div class="me-head">
-                    <span class="me-avatar" aria-hidden="true">🏸</span>
+                    <span class="me-avatar ic-box" data-icon="shuttle" aria-hidden="true"></span>
                     <div>
                         <div class="nm">本机球员</div>
                         <div class="sl" id="about-storage">localStorage（本机）</div>
@@ -442,7 +444,7 @@
                 </div>
 
                 <div class="weather-card hidden" id="weather-box">
-                    <span class="w-icon" id="w-icon">🌡️</span>
+                    <span class="w-icon ic-box" id="w-icon" data-icon="thermo"></span>
                     <div class="w-main">
                         <div class="w-temp" id="w-temp">--°C</div>
                         <div class="w-desc" id="w-desc"></div>
@@ -569,7 +571,7 @@
 
             <div class="me-sub hidden" data-me="about">
                 <div class="about-logo">
-                    <span class="mark" aria-hidden="true">🏸</span>
+                    <span class="mark ic-box" data-icon="shuttle" aria-hidden="true"></span>
                     <span class="nm">羽毛球极速计分板</span>
                     <span class="ver" id="about-version">v2.0.0</span>
                 </div>
@@ -603,19 +605,19 @@
         <div class="dialog-title">快捷操作</div>
         <div class="list">
             <button type="button" class="list-item" data-act="quick:action" data-action="newMatch">
-                <span class="list-item-main"><span class="list-item-title">🏸 新比赛</span>
+                <span class="list-item-main"><span class="list-item-title"><span class="ic-box" data-icon="shuttle"></span>新比赛</span>
                 <span class="list-item-sub">重置并开始一场新比赛</span></span>
             </button>
             <button type="button" class="list-item" data-act="quick:action" data-action="randomTeam">
-                <span class="list-item-main"><span class="list-item-title">🎲 随机分组</span>
+                <span class="list-item-main"><span class="list-item-title"><span class="ic-box" data-icon="dice"></span>随机分组</span>
                 <span class="list-item-sub">前往智能分组</span></span>
             </button>
             <button type="button" class="list-item" data-act="quick:action" data-action="splitCost">
-                <span class="list-item-main"><span class="list-item-title">💰 费用分摊</span>
+                <span class="list-item-main"><span class="list-item-title"><span class="ic-box" data-icon="yuan"></span>费用分摊</span>
                 <span class="list-item-sub">前往费用计算</span></span>
             </button>
             <button type="button" class="list-item" data-act="quick:action" data-action="viewStats">
-                <span class="list-item-main"><span class="list-item-title">📊 查看统计</span>
+                <span class="list-item-main"><span class="list-item-title"><span class="ic-box" data-icon="chart"></span>查看统计</span>
                 <span class="list-item-sub">前往历史与图表</span></span>
             </button>
         </div>
@@ -631,11 +633,11 @@
         <div class="sheet-grip" aria-hidden="true"></div>
         <div class="sheet-header">
             <div class="sheet-title" id="result-title">比赛结束</div>
-            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭">✕</button>
+            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭"><span class="ic-box" data-icon="close"></span></button>
         </div>
 
         <div class="result-hero">
-            <div class="result-trophy" aria-hidden="true">🏆</div>
+            <div class="result-trophy ic-box" data-icon="trophy" aria-hidden="true"></div>
             <div class="result-title" id="result-win">—</div>
             <div class="result-sub">获得本场比赛胜利</div>
         </div>
@@ -682,13 +684,13 @@
         <div class="sheet-grip" aria-hidden="true"></div>
         <div class="sheet-header">
             <div class="sheet-title" id="share-title">分享比赛</div>
-            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭">✕</button>
+            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭"><span class="ic-box" data-icon="close"></span></button>
         </div>
 
         <div class="chip-row mb-4">
-            <button type="button" class="chip active" data-act="share:tpl" data-value="1">热血红</button>
-            <button type="button" class="chip" data-act="share:tpl" data-value="2">赛场蓝</button>
-            <button type="button" class="chip" data-act="share:tpl" data-value="3">深邃黑</button>
+            <button type="button" class="chip active" data-act="share:tpl" data-value="1">VOLT 石墨</button>
+            <button type="button" class="chip" data-act="share:tpl" data-value="2">靛蓝赛场</button>
+            <button type="button" class="chip" data-act="share:tpl" data-value="3">绯红夜战</button>
         </div>
 
         <div class="share-preview">
@@ -708,7 +710,7 @@
         <div class="sheet-grip" aria-hidden="true"></div>
         <div class="sheet-header">
             <div class="sheet-title" id="md-title">比赛详情</div>
-            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭">✕</button>
+            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭"><span class="ic-box" data-icon="close"></span></button>
         </div>
         <div class="split-list" id="match-detail-summary"></div>
         <div class="section-title mt-4">高光时刻</div>
@@ -726,7 +728,7 @@
         <div class="sheet-grip" aria-hidden="true"></div>
         <div class="sheet-header">
             <div class="sheet-title" id="ed-title">分摊详情</div>
-            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭">✕</button>
+            <button type="button" class="sheet-close" data-act="overlay:close" aria-label="关闭"><span class="ic-box" data-icon="close"></span></button>
         </div>
         <div class="split-list" id="expense-detail-summary"></div>
         <div class="section-title mt-4">每人金额</div>
@@ -764,7 +766,7 @@
 
 <!-- ================= 高光徽章 / 成就徽章 / 胜利横幅 / Toast ================= -->
 <div class="highlight-badge" id="highlight-badge" hidden aria-hidden="true">
-    <span class="highlight-icon" id="hl-icon">⭐</span>
+    <span class="highlight-icon ic-box" id="hl-icon" data-icon="star"></span>
     <div class="grow">
         <div class="highlight-title" id="hl-title"></div>
         <div class="highlight-desc" id="hl-desc"></div>
@@ -772,7 +774,7 @@
 </div>
 
 <div class="achv-badge" id="achievement-badge" aria-hidden="true">
-    <span class="achv-icon" id="ab-icon">🏸</span>
+    <span class="achv-icon ic-box" id="ab-icon" data-icon="medal"></span>
     <div class="grow">
         <div class="achv-title" id="ab-title"></div>
         <div class="achv-desc" id="ab-desc"></div>
@@ -780,7 +782,7 @@
 </div>
 
 <div class="victory-banner" id="victory-banner" aria-hidden="true">
-    <div class="vb-icon" aria-hidden="true">🏆</div>
+    <div class="vb-icon ic-box" data-icon="trophy" aria-hidden="true"></div>
     <div class="vb-title" id="vb-title"></div>
     <div class="vb-team num" id="vb-team"></div>
 </div>
@@ -792,7 +794,7 @@
 
 <!-- ================= 新手引导 ================= -->
 <div class="onboard" id="onboarding" hidden>
-    <div class="onboard-art" id="ob-art" aria-hidden="true">🏸</div>
+    <div class="onboard-art ic-box" id="ob-art" data-icon="shuttle" aria-hidden="true"></div>
     <div class="onboard-title" id="ob-title"></div>
     <div class="onboard-desc" id="ob-desc"></div>
     <div class="onboard-dots" id="ob-dots" aria-hidden="true"></div>
@@ -805,6 +807,7 @@
 
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/html2canvas.min.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/store.js"></script>
 <script src="js/state.js"></script>
 <!-- nav 必须在 effects / ui 之前：后两者在 IIFE 顶部就捕获 App.nav -->

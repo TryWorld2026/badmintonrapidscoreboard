@@ -10,12 +10,6 @@ window.App = window.App || {};
     var nav = App.nav;
     var ui = App.ui;
 
-    var TEMPLATES = {
-        1: 'linear-gradient(160deg, #E5484D 0%, #FF7A45 100%)',
-        2: 'linear-gradient(160deg, #1B4DFF 0%, #00C6FF 100%)',
-        3: 'linear-gradient(160deg, #0F151C 0%, #34495E 100%)'
-    };
-
     var tpl = 1;
     var data = {};
 
@@ -66,7 +60,7 @@ window.App = window.App || {};
             highlights +
             '<div class="sc-foot">' +
             '<span class="sc-foot-txt">时长 ' + esc(d.durationText || '00:00') + '</span>' +
-            '<span class="sc-foot-app">🏸 极速计分板</span>' +
+            '<span class="sc-foot-app">VOLT 极速计分板</span>' +
             '</div>';
 
         /* 模板按钮高亮 */

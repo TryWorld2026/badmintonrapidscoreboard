@@ -53,7 +53,7 @@ window.App = window.App || {};
                 }).join('') +
                 '</select>' +
                 '<button type="button" class="del-btn" data-act="grouping:remove-player" data-index="' + i +
-                '" aria-label="删除 ' + ui.escapeHtml(p) + '">✕</button>' +
+                '" aria-label="删除 ' + ui.escapeHtml(p) + '"><span class="ic-box" data-icon="close"></span></button>' +
                 '</div>';
         }).join('');
     }
@@ -256,7 +256,7 @@ window.App = window.App || {};
         if (!box) return;
         var list = App.state.getGroupingHistory();
         if (!list.length) {
-            box.innerHTML = '<div class="empty"><div class="empty-icon">⚔️</div>' +
+            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="swords"></div>' +
                 '<div class="empty-title">还没有分组记录</div>' +
                 '<div class="empty-hint">生成分组后会自动保存最近 10 次</div></div>';
             return;

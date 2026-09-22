@@ -9,6 +9,9 @@ window.App = window.App || {};
     function boot() {
         var nav = App.nav;
 
+        /* 0. 声明式 SVG 图标（必须在任何渲染之前）*/
+        hydrateIcons();
+
         /* 1. 外壳与路由 */
         nav.init();
 
@@ -67,6 +70,29 @@ window.App = window.App || {};
                 /* 注册失败不影响正常使用 */
             });
         });
+    }
+
+    /* 声明式 SVG 图标：
+       静态 markup 与 JS 动态插入的 [data-icon] 占位符都会被 hydrated 成真 SVG。
+       用 MutationObserver 而不是每次渲染后手动调用，避免漏掉插入点。*/
+    function hydrateIcons() {
+        App.icons.hydrate(document);
+        if (!window.MutationObserver) return;
+        var mo = new MutationObserver(function (muts) {
+            for (var i = 0; i < muts.length; i++) {
+                var added = muts[i].addedNodes;
+                for (var j = 0; j < added.length; j++) {
+                    var n = added[j];
+                    if (!n || n.nodeType !== 1) continue;
+                    if (n.hasAttribute && n.hasAttribute('data-icon')) {
+                        App.icons.hydrate(n.parentNode);
+                    } else if (n.querySelector && n.querySelector('[data-icon]')) {
+                        App.icons.hydrate(n);
+                    }
+                }
+            }
+        });
+        mo.observe(document.body, { childList: true, subtree: true });
     }
 
     if (document.readyState === 'loading') {

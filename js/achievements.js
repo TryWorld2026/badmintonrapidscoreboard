@@ -10,18 +10,18 @@ window.App = window.App || {};
 
     /* 与旧版逐字一致 */
     var LIST = [
-        { id: 'first_match', icon: '🏸', title: '初次登场', desc: '完成第一场比赛', type: 'match', value: 1 },
-        { id: 'ten_matches', icon: '🎯', title: '小有成就', desc: '完成10场比赛', type: 'match', value: 10 },
-        { id: 'fifty_matches', icon: '🏆', title: '球场老将', desc: '完成50场比赛', type: 'match', value: 50 },
-        { id: 'first_win', icon: '🎉', title: '首胜', desc: '赢得第一场比赛', type: 'win', value: 1 },
-        { id: 'ten_wins', icon: '🥈', title: '常胜将军', desc: '赢得10场比赛', type: 'win', value: 10 },
-        { id: 'twentyfive_wins', icon: '🥇', title: '羽坛王者', desc: '赢得25场比赛', type: 'win', value: 25 },
-        { id: 'streak_3', icon: '🔥', title: '三连胜', desc: '连续赢得3场比赛', type: 'streak', value: 3 },
-        { id: 'streak_5', icon: '💥', title: '五连胜', desc: '连续赢得5场比赛', type: 'streak', value: 5 },
-        { id: 'play_hour', icon: '⏱️', title: '球痴', desc: '累计打球1小时', type: 'duration', value: 3600 },
-        { id: 'play_5hours', icon: '⌛', title: '球瘾', desc: '累计打球5小时', type: 'duration', value: 18000 },
-        { id: 'perfect_win', icon: '✨', title: '完美胜利', desc: '一局比赛零封对手', type: 'perfect', value: 1 },
-        { id: 'deuce_master', icon: '🎮', title: '加分赛专家', desc: '经历3次加分赛', type: 'deuce', value: 3 }
+        { id: 'first_match', icon: 'shuttle', title: '初次登场', desc: '完成第一场比赛', type: 'match', value: 1 },
+        { id: 'ten_matches', icon: 'target', title: '小有成就', desc: '完成10场比赛', type: 'match', value: 10 },
+        { id: 'fifty_matches', icon: 'medal', title: '球场老将', desc: '完成50场比赛', type: 'match', value: 50 },
+        { id: 'first_win', icon: 'star', title: '首胜', desc: '赢得第一场比赛', type: 'win', value: 1 },
+        { id: 'ten_wins', icon: 'medal', title: '常胜将军', desc: '赢得10场比赛', type: 'win', value: 10 },
+        { id: 'twentyfive_wins', icon: 'crown', title: '羽坛王者', desc: '赢得25场比赛', type: 'win', value: 25 },
+        { id: 'streak_3', icon: 'flame', title: '三连胜', desc: '连续赢得3场比赛', type: 'streak', value: 3 },
+        { id: 'streak_5', icon: 'bolt', title: '五连胜', desc: '连续赢得5场比赛', type: 'streak', value: 5 },
+        { id: 'play_hour', icon: 'timer', title: '球痴', desc: '累计打球1小时', type: 'duration', value: 3600 },
+        { id: 'play_5hours', icon: 'clock', title: '球瘾', desc: '累计打球5小时', type: 'duration', value: 18000 },
+        { id: 'perfect_win', icon: 'spark', title: '完美胜利', desc: '一局比赛零封对手', type: 'perfect', value: 1 },
+        { id: 'deuce_master', icon: 'sliders', title: '加分赛专家', desc: '经历3次加分赛', type: 'deuce', value: 3 }
     ];
 
     var GROUPS = [
@@ -59,7 +59,7 @@ window.App = window.App || {};
         var on = unlocked().indexOf(a.id) >= 0;
         var p = progressFor(a);
         return '<div class="achv-card' + (on ? ' unlocked' : '') + '">' +
-            '<div class="ic">' + (on ? a.icon : '🔒') + '</div>' +
+            '<div class="ic ic-box">' + (on ? App.icons.icon(a.icon) : App.icons.icon('lock')) + '</div>' +
             '<div class="nm">' + a.title + '</div>' +
             '<div class="ds">' + a.desc + '</div>' +
             '<div class="pb"><i style="width:' + p.pct + '%"></i></div>' +

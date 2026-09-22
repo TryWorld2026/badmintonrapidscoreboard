@@ -324,3 +324,88 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 5. 不改 localStorage 键名与数据结构；
 6. 不加新功能、不做后端；
 7. 不 push、不合并 `main`。
+
+
+---
+
+## 10. 对抗式审查
+
+第 8 节的全量回归只证明了「正常路径能用」。这一节换思路：不按设计意图用，
+专门喂脏数据、打空输入、连点、走极端值、劫持键盘和返回键，看它什么时候崩。
+
+### 10.1 结论
+
+四套脚本共 **158 项断言，0 ERR，运行期 0 pageerror / 0 console error**：
+
+| 脚本 | 覆盖 | 结果 |
+|---|---|---|
+| `adv1b.js` | 脏 localStorage 轰炸（类型全错 / 超范围 / 脏字符串 / 坏 JSON / 数组当对象 / localStorage 抛异常）、`<img onerror>` 注入、空与边界输入 | 23/23 |
+| `adv2.js` | 连点竞态、弹层栈与 Esc 链、深链、前进后退、系统返回键、键盘可达性、6 种视口 + 长文本溢出、分享卡三模板 | 35/35 |
+| `verify3.js` | A–M 全量功能回归（第 8 节那套） | 约 100 项全 OK |
+| `rendercheck2.js` | 令牌 / 深色底 / LED 比分 / 图标水合 / 横向溢出 / 弹层 / html2canvas 实导出 / 触摸目标 | 全绿 |
+
+### 10.2 抓到的 6 个真实缺陷
+
+| # | 缺陷 | 根因 | 修法 |
+|---|---|---|---|
+| D1 | **得分流水整表变空白**：`scoreHistory` 里混进一条 `null`，`renderPointLog` 抛 `Cannot read properties of null`，整块流水死掉 | 历史数组读取侧零规整，全靠渲染层逐层判空，太容易漏 | `js/state.js` 新增 `objs()` 过滤器，`normalizeMatch.scoreHistory` 与三条历史 getter 全部走它，再做字段级规整 |
+| D2 | **费用历史页直接白屏**：`expenseHistory` 含 `null` → `item.type` 抛 TypeError，`nav.go('match','expense')` 整条链路中断 | 同上 | `normExpenseItem`（`js/state.js`） |
+| D3 | **少传 amount 产出 NaN 比分**：`updateScore(team)` 时 `oldScore + undefined = NaN`，NaN 灌进 `scoreA` / `scoreHistory`，局末判定、换边提示、得分流水全部失灵 | 公开 API 参数无兜底 | `js/match.js` 的 `updateScore` 对 `amount` 做 `Number()` + `isFinite`，缺省按 +1 |
+| D4 | **统计/图表渗 NaN**：`duration: 'abc'` → `totalDuration += 'abc'` → 界面显示 `NaNh`；`date: 'garbage'` → `Invalid Date` | 比赛历史条目从不规整 | `normMatchItem`（`js/state.js`），比分/时长/日期统一转 number，非法日期给合法时间戳 |
+| D5 | **路由与 URL 完全脱钩**：`nav.go()` 从不写 `location.hash`，也没有 `popstate`/`hashchange` 监听。后果是①在「数据 › 排行榜」刷新一下又被打回记分页，当前视图丢失；②手动改地址栏 hash / 点站内 hash 链接毫无反应；③安卓物理返回键直接退出应用，连打开中的弹层都关不掉 | 路由只改内存态 | `js/nav.js` 增加 `writeHash`/`readHash`/`applyHash`，`go()` 末尾同步 hash（首次 `replaceState`、后续 `pushState`），接管 `popstate` 与 `hashchange`；`popstate` 时有弹层先关弹层并把状态推回去，不消耗这次返回 |
+| D6 | **快捷操作面板全程不可见**：双击顶栏或按 Enter，`#quick-actions` 的 computed `display` 始终是 `none`，功能 100% 失效 | `base.css` 有 `[hidden] { display: none !important }`，压过一切 class；而 `showQuickActions()` 只加 `.show` class，从不动 `hidden` 属性。它是全项目唯一一处这么写的 | `js/settings.js` 改走 `nav.openDialog()` / `nav.closeDialog()`，真的摘掉 `hidden`；顺带接进弹层栈，Esc 也能关（原来只能等 3 秒自动消失），并避免重复压栈导致 Esc 要按两次 |
+
+D6 是最隐蔽的一个：`classList.add('show')` 让 `opacity` 变 1，肉眼扫代码看不出问题，
+只有去读 computed style 才发现 `display: none`。前面第 8 节「快捷操作双击顶栏可唤出」之所以
+通过，是因为断言写的是 `classList.contains('show')`——**测的是实现而不是效果**。
+
+### 10.3 顺带加固
+
+- `js/nav.go()` 增加 `sub` 合法性校验：不在该 Tab 的二级页清单里就回落到默认二级页。
+  否则 `#tab=data&sub=typo` 会留下一个谁都匹配不上的半状态（`route.sub` 是脏值、
+  分段控件无高亮、顶栏标题只剩 Tab 名、hash 里也带着垃圾）。
+- `js/match.js` 的 `renderPointLog` 跳过坏条目（要求 `oldScore`/`newScore` 非 null 且有限），
+  队名与比分走 `ui.escapeHtml`，空表降级为空态。
+- `js/grouping.js` `renderHistory` 对 `g` / `p.name` 判空降级，`reuse` 记录损坏时给提示。
+- `js/expense.js` / `js/stats.js` 注入 `fmtDate()`，历史日期一律经它格式化；`r-date` 走 `escapeHtml`。
+
+### 10.4 测试脚本自己犯的错（都不是应用缺陷）
+
+对抗脚本第一轮报了 8 个 ERR，逐条查下来**全是脚本写错了**，应用行为本来就对。
+记在这里，避免下次再踩：
+
+| 误报 | 真因 |
+|---|---|
+| 「暂停后连点加分被拦」失败 | 连点计时器 10 次是偶数次，`timerRunning` 回到 `true`，根本没真暂停。改成循环点到真暂停为止 |
+| 「Esc 只关最上层」失败 | 互斥逻辑已提前关掉下层，`esc1_detail=false` 是预期。改成断言「只关当前可见的那一层」+ 弹层栈深度归零 |
+| 「对话框 Esc 不影响底层 sheet」失败 | `.dialog` 选择器过宽，匹配到无关元素。收窄成 `#confirm-dialog` |
+| 「深链落地」3 项失败 | `page.goto(URL + '#hash')` 仅 hash 变化属同文档导航，不触发重载。改成先 `goto('about:blank')` 强制完整加载 |
+| 「前进后退与路由同步」失败 | 期望值写错：历史 `[score, data/history, me/settings]` 从末页连退两次停在 `score`，再前进只能到 `data/history` 而不是 `me/settings` |
+| 「焦点环」失败 | 把 `style + width` 拼成一个字符串后 `parseFloat` → NaN。实际是 `solid 2px rgb(212,255,63)`，完全正确 |
+| 「内容被 Dock 盖住」6 种视口全中 | `#content` 的 `overflow` 是 `visible`，真正的滚动容器是 **document**，`content.scrollTop=` 是无效操作。`contentPadBottom` 94px ≥ dock 62px，实际无遮挡 |
+| 「三模板导出」失败 | 模板按钮真实属性是 `data-act="share:tpl"`，我写的 `share:template` 不存在 |
+| `addColorStop non-finite` | 对**还没打开**的 `#share-card` 截图 → 尺寸 0 → NaN。可见状态下三模板均正常出图 |
+| 「role=button 支持 Enter 唤出」先假阳性后暴露 D6 | 原选择器 `.sheet:not(.hidden)` 是恒真的——本项目的弹层用 `hidden` **属性**而非 `.hidden` **class**。改成 `isOpen()`（查属性 + class + computed style）后立刻照出了 D6 |
+| 「运行期 0 error」从未被断言 | `log('errors=' + errs.length)` 是单参数调用，`label` 拿到 `undefined`，永远输出 `OK  undefined`。改成真正的布尔断言 |
+
+最后一条值得单独说：**一个恒真的断言比没有断言更糟**，它会给人「测过了」的错觉。
+D6 能活到对抗审查才被发现， partly 就是因为这个。
+
+### 10.5 证据留存
+
+- 脏数据轰炸：11 个页面全部无 `NaN` / `undefined` / `Invalid Date` / `[object Object]`，
+  核心动作（加分/撤销/重置/计时/渲染/统计刷新/分组渲染）零抛错，4 张图表仍渲染；
+- XSS：队名/玩家名/分组名全程未触发 `<img onerror>`；得分流水与分享卡均已转义，
+  `<b>粗体</b><img src=x oner>` 在界面上原样显示为文本；
+- 空/边界输入：分组 8 组（空名单、1 人、空白行、3 人、超长名、同名、特殊字符、4 人正常）全过；
+  费用 8 组（0 元、空人、超大、小数、负数、份数 0、时长全 0）全过，`|| 1` 已防除零；
+- 连点竞态：+1 二十次精确得 20；撤销连点 25 次不穿透负数；暂停后连点全拦；
+- 深链：合法深链（排行榜/费用分摊/关于）正确落地，`#tab=bogus` 回退记分，
+  只有 `tab` 的深链落默认二级页，空 hash 自写 `#tab=score`；
+- 同文档改 hash（手改地址栏 / 点站内链接）被路由接住；
+- 返回键：弹层打开时先关弹层，路由不跳、不退出；
+- 6 种视口（320×568 / 390×844 / 430×932 / 768×1024 / 1280×800 / 844×390）
+  × 11 个二级页全部无横向溢出、无越界元素、无 Dock 遮挡、无异常文案；
+- 分享卡三模板均 360 宽、`scale:2` 出 `720×948`，超长队名 + 4 条高光无异常文案；
+- `file://` 通道下 hash / history 降级路径正常（`try/catch` 回退 `location.hash`），
+  4 Tab 渲染正常、0 error。

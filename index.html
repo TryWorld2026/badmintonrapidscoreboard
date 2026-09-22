@@ -4586,7 +4586,6 @@
         .share-card-template-1 {
             width: 100%;
             padding: 28px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -6258,6 +6257,32 @@
     </div>
 
     <script>
+
+        // 深色调色板（Chart.js / canvas 特效共用）
+        // 必须使用 hex / rgb(a) 字面量：html2canvas 1.4.1 的颜色解析器
+        // 不支持 oklch、lab、color-mix 等现代色彩函数
+        const CHART = {
+            brand: '#00E5A0',
+            teamA: '#FF4D5E',
+            teamB: '#3D9BFF',
+            gold: '#FFC53D',
+            white: '#FFFFFF',
+            grid: 'rgba(255, 255, 255, 0.06)',
+            tick: '#9AA6B4',
+            border: '#0B0E11',
+            fillBrand: 'rgba(0, 229, 160, 0.12)',
+            fillBrandStrong: 'rgba(0, 229, 160, 0.35)',
+            fillTeamA: 'rgba(255, 77, 94, 0.35)',
+            fillTeamB: 'rgba(61, 155, 255, 0.35)',
+            fillGold: 'rgba(255, 197, 61, 0.35)'
+        };
+
+        // 分享卡模板渐变（字面量，html2canvas 安全）
+        const SHARE_TEMPLATES = {
+            1: 'linear-gradient(135deg, #FF4D5E 0%, #FF8A5C 100%)',
+            2: 'linear-gradient(135deg, #3D9BFF 0%, #00E5A0 100%)',
+            3: 'linear-gradient(135deg, #14181D 0%, #262E38 100%)'
+        };
         // ==================== 全局变量 ====================
         let timerInterval = null;
         let seconds = 0;
@@ -6384,9 +6409,9 @@
             } else {
                 const purpleBtn = document.querySelector('.theme-btn[data-theme="purple"]');
                 if (purpleBtn) {
-                    purpleBtn.style.borderColor = '#27F05C';
+                    purpleBtn.style.borderColor = 'var(--c-brand)';
                     purpleBtn.style.transform = 'scale(1.05)';
-                    purpleBtn.style.boxShadow = '0 0 20px rgba(39, 240, 92, 0.5)';
+                    purpleBtn.style.boxShadow = '0 0 20px rgba(0, 229, 160, 0.35)';
                 }
             }
         }
@@ -7248,7 +7273,7 @@
             const container = document.getElementById('grouping-history-list');
             
             if (history.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无分组历史</div>';
+                container.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无分组历史</div>';
                 return;
             }
             
@@ -7656,7 +7681,7 @@
             const container = document.getElementById('expense-history-list');
             
             if (history.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无分摊历史</div>';
+                container.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无分摊历史</div>';
                 return;
             }
             
@@ -8246,7 +8271,7 @@
          */
         function createConfetti() {
             const container = document.getElementById('confetti-container');
-            const colors = ['#6839E8', '#27F05C', '#FFB800', '#FF4D4D', '#0133A4', '#FFFFFF'];
+            const colors = [CHART.brand, CHART.teamA, CHART.gold, CHART.teamB, CHART.white];
             
             for (let i = 0; i < 150; i++) {
                 setTimeout(() => {
@@ -8271,7 +8296,7 @@
          */
         function createFireworks() {
             const container = document.getElementById('firework-container');
-            const colors = ['#6839E8', '#27F05C', '#FFB800', '#FF4D4D', '#FFFFFF'];
+            const colors = [CHART.brand, CHART.teamA, CHART.gold, CHART.teamB, CHART.white];
             
             for (let f = 0; f < 5; f++) {
                 setTimeout(() => {
@@ -8371,7 +8396,7 @@
             
             if (currentShareTemplate === 1) {
                 html = `
-                    <div class="share-card-template-1">
+                    <div class="share-card-template-1" style="background: ${SHARE_TEMPLATES[1]};">
                         <div class="share-card-header">
                             <div class="share-card-logo">🏸 羽毛球极速记分板</div>
                             <div class="share-card-subtitle">精彩对决</div>
@@ -8397,7 +8422,7 @@
                 `;
             } else if (currentShareTemplate === 2) {
                 html = `
-                    <div class="share-card-template-1" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="share-card-template-1" style="background: ${SHARE_TEMPLATES[2]};">
                         <div class="share-card-header">
                             <div class="share-card-logo">🔥 激情对决</div>
                             <div class="share-card-subtitle">羽毛球比赛</div>
@@ -8423,7 +8448,7 @@
                 `;
             } else {
                 html = `
-                    <div class="share-card-template-1" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="share-card-template-1" style="background: ${SHARE_TEMPLATES[3]};">
                         <div class="share-card-header">
                             <div class="share-card-logo">🎮 快乐羽毛球</div>
                             <div class="share-card-subtitle">精彩瞬间</div>
@@ -8724,12 +8749,12 @@
                     datasets: [{
                         label: '比赛场数',
                         data: data,
-                        borderColor: '#6839E8',
-                        backgroundColor: 'rgba(104, 57, 232, 0.1)',
+                        borderColor: CHART.brand,
+                        backgroundColor: CHART.fillBrand,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#6839E8',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: CHART.brand,
+                        pointBorderColor: CHART.border,
                         pointBorderWidth: 2,
                         pointRadius: 6
                     }]
@@ -8743,11 +8768,14 @@
                         }
                     },
                     scales: {
+                        x: {
+                            grid: { color: CHART.grid, drawBorder: false },
+                            ticks: { color: CHART.tick }
+                        },
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
+                            grid: { color: CHART.grid, drawBorder: false },
+                            ticks: { color: CHART.tick, stepSize: 1 }
                         }
                     }
                 }
@@ -8784,13 +8812,10 @@
                     datasets: [{
                         data: [wins, losses],
                         backgroundColor: [
-                            '#27F05C',
-                            '#FF4D4D'
+                            CHART.brand,
+                            CHART.teamA
                         ],
-                        borderColor: [
-                            '#fff',
-                            '#fff'
-                        ],
+                        borderColor: CHART.border,
                         borderWidth: 3
                     }]
                 },
@@ -8799,7 +8824,8 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: { color: CHART.tick }
                         }
                     }
                 }
@@ -8842,8 +8868,8 @@
                     datasets: [{
                         label: '胜率 (%)',
                         data: recentWinRates,
-                        backgroundColor: 'rgba(39, 240, 92, 0.6)',
-                        borderColor: '#27F05C',
+                        backgroundColor: CHART.fillBrandStrong,
+                        borderColor: CHART.brand,
                         borderWidth: 2
                     }]
                 },
@@ -8856,10 +8882,16 @@
                         }
                     },
                     scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { color: CHART.tick }
+                        },
                         y: {
                             beginAtZero: true,
                             max: 100,
+                            grid: { color: CHART.grid, drawBorder: false },
                             ticks: {
+                                color: CHART.tick,
                                 callback: function(value) {
                                     return value + '%';
                                 }
@@ -8915,12 +8947,14 @@
                     datasets: [{
                         data: data,
                         backgroundColor: [
-                            'rgba(104, 57, 232, 0.7)',
-                            'rgba(39, 240, 92, 0.7)',
-                            'rgba(255, 184, 0, 0.7)',
-                            'rgba(1, 51, 164, 0.7)',
-                            'rgba(255, 77, 77, 0.7)'
-                        ]
+                            CHART.fillBrand,
+                            CHART.fillBrandStrong,
+                            CHART.fillGold,
+                            CHART.fillTeamB,
+                            CHART.fillTeamA
+                        ],
+                        borderColor: CHART.border,
+                        borderWidth: 2
                     }]
                 },
                 options: {
@@ -8928,7 +8962,15 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: { color: CHART.tick }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            grid: { color: CHART.grid },
+                            angleLines: { color: CHART.grid },
+                            ticks: { color: CHART.tick, backdropColor: 'transparent' }
                         }
                     }
                 }
@@ -9271,7 +9313,7 @@
                     <div class="recent-match-item ${m.won ? 'win' : 'lose'}">
                         <div>
                             <div class="recent-match-date">${m.date}</div>
-                            <div style="font-size: 0.85rem; color: #0133A4; opacity: 0.7;">vs ${m.opponent}</div>
+                            <div style="font-size: 0.85rem; color: var(--c-text-2);">vs ${m.opponent}</div>
                         </div>
                         <div class="recent-match-result ${m.won ? 'win' : 'lose'}">
                             ${m.won ? '胜' : '负'} ${m.score}
@@ -9279,7 +9321,7 @@
                     </div>
                 `).join('');
             } else {
-                recentContainer.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无比赛记录</div>';
+                recentContainer.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无比赛记录</div>';
             }
 
             const tags = generateRealTags(wins, matches, winRate, totalDuration, maxWinStreak);
@@ -9524,7 +9566,7 @@
                                 <div class="player-avatar-small">${getPlayerAvatar(player.name)}</div>
                                 <div>
                                     <div class="leaderboard-name">${player.name}</div>
-                                    <div style="font-size: 0.8rem; color: #6839E8; opacity: 0.7;">${statsText}</div>
+                                    <div style="font-size: 0.8rem; color: var(--c-text-2);">${statsText}</div>
                                 </div>
                             </div>
                             <div class="leaderboard-value">${displayValue}</div>
@@ -9532,7 +9574,7 @@
                     `;
                 }).join('');
             } else {
-                leaderboardList.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无更多数据</div>';
+                leaderboardList.innerHTML = '<div style="text-align: center; color: var(--c-text-3); padding: 20px;">暂无更多数据</div>';
             }
         }
 

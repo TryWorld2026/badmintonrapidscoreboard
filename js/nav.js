@@ -315,6 +315,7 @@ window.App = window.App || {};
         el.classList.remove('show');
         el.setAttribute('aria-hidden', 'true');
         popOverlay(el);
+        restoreFocus();
         /* 等动画结束再从渲染树隐藏，避免闪烁 */
         window.setTimeout(function () {
             if (!el.classList.contains('show')) el.setAttribute('hidden', '');
@@ -326,9 +327,19 @@ window.App = window.App || {};
         if (!el) return null;
         el.classList.add('show');
         el.removeAttribute('hidden');
+        el.setAttribute('aria-hidden', 'false');
         pushOverlay(el, 'dialog');
+        /* 必须把焦点移进弹层：没有输入框的对话框（确认框 / 快捷操作）
+           原来根本不聚焦，键盘焦点留在背景的触发按钮上，
+           用户按 Tab 会直接走进被遮罩盖住的页面。
+           兜底选第一个可见可聚焦项 —— 确认框里那是「取消」，
+           破坏性操作不当默认焦点，正是想要的结果。 */
         var input = el.querySelector('input, textarea');
-        if (input) { input.focus(); input.select(); }
+        var target = input || el.querySelector('[data-autofocus]') || visibleFocusables(el)[0];
+        if (target) {
+            target.focus();
+            if (input && input.select) input.select();
+        }
         return el;
     }
 
@@ -336,14 +347,31 @@ window.App = window.App || {};
         var el = byId(id);
         if (!el) return;
         el.classList.remove('show');
+        el.setAttribute('aria-hidden', 'true');
         popOverlay(el);
+        restoreFocus();
         window.setTimeout(function () {
             if (!el.classList.contains('show')) el.setAttribute('hidden', '');
         }, 240);
     }
 
+    /* 打开第一层弹层时记下触发元素，全部关掉后把焦点还回去。
+       否则键盘用户点完「取消」焦点掉到 <body>，得从头 Tab 一遍。 */
+    var lastFocus = null;
+
     function pushOverlay(el, kind) {
+        if (!App.state.overlays.length) {
+            var a = document.activeElement;
+            lastFocus = (a && a !== document.body && typeof a.focus === 'function') ? a : null;
+        }
         App.state.overlays.push({ el: el, kind: kind });
+    }
+
+    function restoreFocus() {
+        if (App.state.overlays.length || !lastFocus) return;
+        var el = lastFocus;
+        lastFocus = null;
+        try { el.focus(); } catch (err) { /* 元素可能已离开文档 */ }
     }
 
     function popOverlay(el) {
@@ -351,6 +379,16 @@ window.App = window.App || {};
         for (var i = list.length - 1; i >= 0; i--) {
             if (list[i].el === el) { list.splice(i, 1); return; }
         }
+    }
+
+    var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), ' +
+        'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    /* 只收真正可见的：隐藏项拿不到 client rects */
+    function visibleFocusables(root) {
+        return $all(FOCUSABLE, root).filter(function (el) {
+            return el.getClientRects().length > 0;
+        });
     }
 
     function closeTopOverlay() {
@@ -385,6 +423,27 @@ window.App = window.App || {};
         toastTimer = window.setTimeout(function () {
             el.classList.remove('show');
         }, 2200);
+    }
+
+    /* ---------- 读屏播报 ----------
+       高光徽章、成就徽章、胜利横幅都是 display:none 的纯视觉提示，
+       读屏用户完全感知不到。统一走这个常驻的 live region 补上。
+       先清后写，保证同一句话连续出现两次也能重新播报。 */
+    var lastAnnounce = '';
+    var announceTimer = null;
+
+    function announce(msg) {
+        var el = byId('sr-announce');
+        if (!el || !msg) return;
+        var text = String(msg);
+        if (text === lastAnnounce && el.textContent === text) {
+            if (announceTimer) window.clearTimeout(announceTimer);
+            el.textContent = '';
+            announceTimer = window.setTimeout(function () { el.textContent = text; }, 60);
+            return;
+        }
+        lastAnnounce = text;
+        el.textContent = text;
     }
 
     /* ================================================================
@@ -464,6 +523,32 @@ window.App = window.App || {};
             if (ev.key === 'Escape' && closeTopOverlay()) ev.preventDefault();
         });
 
+        /* Tab 焦点陷阱：aria-modal 弹层打开时，Tab 不能跑到背后的页面上。
+           没有这一条，键盘用户按几下 Tab 就「穿模」到被遮罩盖住的按钮堆里。 */
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key !== 'Tab') return;
+            var list = App.state.overlays;
+            if (!list.length) return;
+            var top = list[list.length - 1].el;
+            if (!top) return;
+            var items = visibleFocusables(top);
+            if (!items.length) { ev.preventDefault(); return; }
+            /* 焦点不在最上层弹层里（刚打开、或点过遮罩）→ 直接抓回弹层内。
+               少这一条，Tab 会一路走到被遮罩盖住的背景按钮上，
+               而鼠标用户永远发现不了。 */
+            if (!top.contains(ev.target)) {
+                ev.preventDefault();
+                items[0].focus();
+                return;
+            }
+            var first = items[0], last = items[items.length - 1];
+            if (ev.shiftKey) {
+                if (ev.target === first || ev.target === top) { ev.preventDefault(); last.focus(); }
+            } else if (ev.target === last) {
+                ev.preventDefault(); first.focus();
+            }
+        });
+
         /* 键盘激活 role=button 的自定义可交互元素 */
         document.addEventListener('keydown', function (ev) {
             if (ev.key !== 'Enter' && ev.key !== ' ') return;
@@ -518,6 +603,7 @@ window.App = window.App || {};
         closeTopOverlay: closeTopOverlay,
         closeAllOverlays: closeAllOverlays,
         toast: toast,
+        announce: announce,
         on: on,
         dispatch: dispatch,
         $: $,

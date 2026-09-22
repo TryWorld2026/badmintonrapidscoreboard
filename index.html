@@ -600,9 +600,9 @@
 </div>
 
 <!-- ================= 快捷操作（双击顶栏）================= -->
-<div class="dialog-backdrop" id="quick-actions" hidden>
-    <div class="dialog">
-        <div class="dialog-title">快捷操作</div>
+<div class="dialog-backdrop" id="quick-actions" hidden aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="quick-actions-title">
+        <div class="dialog-title" id="quick-actions-title">快捷操作</div>
         <div class="list">
             <button type="button" class="list-item" data-act="quick:action" data-action="newMatch">
                 <span class="list-item-main"><span class="list-item-title"><span class="ic-box" data-icon="shuttle"></span>新比赛</span>
@@ -738,7 +738,7 @@
 
 <!-- ================= 输入对话框 ================= -->
 <div class="dialog-backdrop" id="input-dialog" hidden aria-hidden="true">
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="id-title">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="input-dialog-title">
         <div class="dialog-title" id="input-dialog-title">请输入</div>
         <div class="field">
             <label class="field-label" id="input-dialog-label" for="input-dialog-input"></label>
@@ -754,7 +754,7 @@
 
 <!-- ================= 确认对话框 ================= -->
 <div class="dialog-backdrop" id="confirm-dialog" hidden aria-hidden="true">
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cd-title">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
         <div class="dialog-title" id="confirm-title">确认操作</div>
         <p class="text-2 text-sm" id="confirm-msg" style="white-space: pre-line"></p>
         <div class="dialog-actions">
@@ -793,7 +793,7 @@
 </div>
 
 <!-- ================= 新手引导 ================= -->
-<div class="onboard" id="onboarding" hidden>
+<div class="onboard" id="onboarding" hidden role="dialog" aria-modal="true" aria-labelledby="ob-title">
     <div class="onboard-art ic-box" id="ob-art" data-icon="shuttle" aria-hidden="true"></div>
     <div class="onboard-title" id="ob-title"></div>
     <div class="onboard-desc" id="ob-desc"></div>
@@ -824,5 +824,7 @@
 <script src="js/share.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/app.js"></script>
+<!-- 屏幕阅读器播报区：常驻无障碍树，视觉隐藏（不能用 display:none，否则不播报） -->
+<div class="sr-only" id="sr-announce" role="status" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>

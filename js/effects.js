@@ -98,6 +98,7 @@ window.App = window.App || {};
         var n = document.getElementById('vb-team');
         if (t) t.textContent = text || '比赛结束';
         if (n) n.textContent = teamName || '';
+        nav.announce((text || '比赛结束') + (teamName ? '，' + teamName : ''));
         el.classList.add('show');
         confetti(120);
         fireworks(5);

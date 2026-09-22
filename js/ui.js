@@ -108,6 +108,8 @@ window.App = window.App || {};
         if (i) i.innerHTML = App.icons.icon(icon || 'star');
         if (t) t.textContent = title || '';
         if (d) d.textContent = desc || '';
+        /* 赛点 / 加分赛 / 大逆转是关键节点，读屏用户也得知道 */
+        nav.announce((title || '') + (desc ? '，' + desc : ''));
         el.classList.remove('show', 'hide');
         el.removeAttribute('hidden');
         void el.offsetWidth;

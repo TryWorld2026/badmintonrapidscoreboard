@@ -102,6 +102,7 @@ window.App = window.App || {};
         if (ic) ic.textContent = a.icon;
         if (ti) ti.textContent = '成就解锁：' + a.title;
         if (de) de.textContent = a.desc;
+        nav.announce('成就解锁：' + (a.title || '') + (a.desc ? '，' + a.desc : ''));
         badge.classList.add('show');
         if (badgeTimer) window.clearTimeout(badgeTimer);
         badgeTimer = window.setTimeout(function () {

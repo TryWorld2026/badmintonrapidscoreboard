@@ -310,7 +310,7 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 ### 延后项
 
 - Playwright 视觉回归截图对比（当前用文字化渲染指标替代）；
-- 完整无障碍（ARIA 焦点陷阱、屏幕阅读器语义）；
+- ~~完整无障碍（ARIA 焦点陷阱、屏幕阅读器语义）~~ → 已完成，见 10.8；
 - 天气 API Key 改后端代理。
 
 ---
@@ -451,3 +451,84 @@ panel innerHTML 校验和 + 所有 input/select 的值 + `.active`/`.won` 状态
 双击才弹、Enter 也弹——因为 D6 修好后 `showQuickActions()` 有「已开着就只续期」
 的幂等兜底。但这是白挂一倍的监听，以后往 handler 里加任何非幂等动作就会翻车，
 所以把重复的那次调用删掉了。删前删后各跑一遍验证，行为完全一致。
+
+---
+
+### 10.8 补齐无障碍：4 个真缺陷 + 焦点陷阱 / 焦点还原 / 读屏播报
+
+第 8 节「延后项」里唯一与「体验完整」直接相关的就是无障碍。做完发现它不只是「没做优化」，
+而是藏着 4 个实打实的缺陷——其中两个让最常用的对话框对读屏用户**完全不存在**。
+
+#### 抓到的 4 个真缺陷
+
+| # | 缺陷 | 后果 |
+|---|---|---|
+| A1 | `#input-dialog` 的 `aria-labelledby="id-title"` 指向一个**不存在的 id**（真实 id 是 `input-dialog-title`） | 输入对话框没有可访问名称，读屏只报「对话框」 |
+| A2 | `#confirm-dialog` 的 `aria-labelledby="cd-title"` 同样断链（真实 id 是 `confirm-title`） | 同上。**每一次「确认清空数据？」都是无名的** |
+| A3 | `openDialog()` 从不清 `aria-hidden`，`closeDialog()` 也不恢复 | markup 里写死 `aria-hidden="true"`，于是这两个对话框开着的状态下读屏依然视为不存在。sheet 侧本来是对称的（`openSheet` 置 `false` / `closeSheet` 置 `true`），**dialog 侧整段漏了** |
+| A4 | `#quick-actions` 的 `.dialog` 没有 `role` / `aria-modal` / `aria-labelledby` | 快捷操作面板不具备对话框语义 |
+
+A3 是最典型的一类 bug：**不是没写，而是写了一半**。`openSheet` / `closeSheet` 四行代码里三行都在管 `aria-hidden`，
+`openDialog` / `closeDialog` 是三行空。这种半成品比全不做更难发现，因为看起来「已经有 aria 了」。
+
+#### 补上的三件事
+
+1. **Tab 焦点陷阱**（`js/nav.js`）
+   `aria-modal="true"` 的弹层打开时，Tab 不能跑到背后的页面上。
+   实现上取弹层栈顶元素，用 `getClientRects().length > 0` 过滤出真正可见的可聚焦项，
+   在首/末元素处 `preventDefault()` 并绕回对面一端。
+   没有这一条，键盘用户按几下 Tab 就「穿模」到被遮罩盖住的按钮堆里，
+   而鼠标用户永远发现不了。
+
+   > **第一版陷阱自己是漏的**，而且漏得很隐蔽。`if (!top.contains(ev.target)) return;`
+   > 让陷阱只在「焦点本来就在弹层内」时才生效。可 `openDialog()` 原先只在有
+   > `input/textarea` 时才聚焦——`confirm-dialog` 和 `quick-actions` 都没有输入框，
+   > 焦点一直留在背景的触发按钮上。两者一叠加，弹层开着、Tab 照样走进背景，
+   > `diag9.js` 实测 6/6 全逃逸。
+   > 而 `a11y.js` 第一版却报 22/22 全过——因为那个用例的开场动作恰好把焦点留在了弹层内，
+   > **测中了唯一一条走得通的路径**。补了两个洞才对齐：
+   > ① `openDialog()` 无输入框时兜底聚焦第一个可见可聚焦项（确认框里那是「取消」，
+   > 破坏性操作不当默认焦点，正是想要的）；
+   > ② 焦点不在栈顶弹层内时直接 `preventDefault()` 并抓回弹层，不再提前 return。
+   > 复测三种开场（焦点在 body / 在背景按钮 / 在弹层内）全部 0 逃逸。
+
+2. **焦点还原**（`js/nav.js`）
+   打开第一层弹层时记下 `document.activeElement`，弹层栈清空后把焦点还回去。
+   原先关掉「取消」焦点直接掉到 `<body>`，键盘用户得从页首重新 Tab 一遍。
+   注意只在**栈空**时还原：互斥关闭、连续开两层都不会误触发。
+
+3. **读屏播报**（`#sr-announce` + `nav.announce()`）
+   高光徽章（赛点 / 加分赛 / 大逆转）、成就徽章、胜利横幅三个元素都是 `display:none` 的纯视觉提示，
+   读屏用户完全感知不到——而它们恰恰是这款应用**最关键的反馈时刻**。
+   做法是加一个常驻无障碍树的 live region，视觉上用 `clip-path: inset(50%)` 藏掉。
+   **不能用 `display:none`**：那样元素不在无障碍树里，`aria-live` 根本不会播报——
+   这是 live region 最常见的踩坑点。
+   `announce()` 对同一句话重复出现时会先清空再延迟 60ms 写入，保证连续两次也能重新播报。
+   三个徽章本身保留 `aria-hidden="true"`，避免视觉提示和播报**双重播报**。
+
+#### 验证（`a11y.js`，22/22 OK，0 运行期错误）
+
+- 所有 `role="dialog"` 都有可访问名称（7/7）；文档内 `aria-labelledby` 无断链；
+- 三个对话框打开时 `aria-hidden=false`、关闭后 `=true`，且弹层栈关闭后配平为 0；
+- 弹层内连按 6 次 / 12 次 Tab，`activeElement` 始终在弹层内；`Shift+Tab` 从首元素回绕到末元素；
+- 关弹层后焦点还原到触发它的 Tab 按钮；连续开两层再全关同样还原；
+- `#sr-announce` 计算样式 `display=block / clip-path=inset(50%) / 1x1`（在无障碍树里且不可见）；
+- 高光 / 成就 / 胜利横幅三类播报内容正确，重复播报走「清空 → 重写」。
+
+#### 顺带确认「无效果」的 20 次点击不是死按钮
+
+`everybtn3.js` 第三轮把 20 次点击标成「无效果且可疑」，逐个查完全部有解：
+
+- **17 个导出按钮**（`expense:export` ×10、`stats:export` ×5、`grouping:export` ×2）
+  走 `<a download>` 落盘，不改 DOM，所以签名不动。单独验证三个入口都真的写出文件：
+  `分组结果_*.txt` 159B、`费用分摊记录_*.txt` 132B、`羽毛球比赛记录_*.json` 266B。
+  注意前两个在各自二级页里，必须先 `nav.go()` 切页再点，否则点到的是 `hidden` 元素；
+  `expense:export` 在无费用记录时只弹「还没有费用记录」，是正确空态，不是缺陷。
+- **`grouping:generate` ×2**：`diag8.js` 连续生成 12 次拿到 12 种不同结果，确实在重新洗牌；
+  「无效果」是因为签名比对的是文本，随机结果偶尔撞车。
+- **`grouping:reuse` ×1**：复用上一次分组，渲染结果与当前显示一致时签名不变，属幂等操作。
+
+#### 回归
+
+改动后重跑全部既有套件，无回归：`verify3.js` 96/96、`adv1b.js` 22/22、`adv2.js` 35/35、
+`everybtn3.js`（440 次无差别点击）、`rendercheck2.js` 全绿，`file://` 通道同样通过。

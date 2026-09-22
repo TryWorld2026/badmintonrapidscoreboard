@@ -1,5 +1,6 @@
 /* ================================================================
    base.css — reset、排版、布局原语、工具类
+   深色演播室 + VOLT TRUCK 切角语言
    ================================================================ */
 
 *,
@@ -19,7 +20,15 @@ body {
     font-size: var(--fs-md);
     line-height: var(--lh-normal);
     color: var(--c-text);
-    background: var(--c-bg);
+    /* 演播室底色 + 球场细线 + 全局 3% 扫描线（写在背景层，不叠加遮挡内容）*/
+    background-color: var(--c-bg);
+    background-image:
+        repeating-linear-gradient(0deg,
+            rgba(255, 255, 255, 0.022) 0px,
+            rgba(255, 255, 255, 0.022) 1px,
+            transparent 1px,
+            transparent 3px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, transparent 220px);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
@@ -65,7 +74,27 @@ a {
     text-decoration: none;
 }
 
-/* 数字统一等宽 + tabular，比分不再抖动 */
+::selection {
+    background: var(--c-brand);
+    color: var(--c-brand-ink);
+}
+
+/* ---------- SVG 图标（width:1em 让字号即图标号）---------- */
+.ic {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+}
+
+/* 图标容器：方形硬底，无圆角 */
+.ic-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ---------- 数字 ---------- */
 .num,
 .score-number,
 .timer-value,
@@ -74,6 +103,23 @@ a {
     font-family: var(--font-num);
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
+}
+
+/* 转播比分：窄体 + 斜体 + 微斜切，模拟记分牌 LED 字 */
+.num-display {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+}
+
+/* 转播小标签：全大写 + 宽字距 */
+.micro {
+    font-size: var(--fs-3xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-3);
 }
 
 /* ---------- 应用外壳 ---------- */
@@ -92,40 +138,60 @@ a {
     align-items: center;
     gap: var(--sp-3);
     padding: 0 var(--gutter);
-    background: var(--c-surface);
+    background: rgba(10, 14, 19, 0.92);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--c-line);
 }
 
+/* 顶栏底部 VOLT 高压线 */
+.appbar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            var(--c-brand-line) 18%,
+            var(--c-brand) 50%,
+            var(--c-brand-line) 82%,
+            transparent 100%);
+    opacity: 0.55;
+}
+
 .appbar-title {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-width: 0;
+    flex: 1;
     font-size: var(--fs-lg);
     font-weight: var(--fw-black);
-    letter-spacing: -0.01em;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     cursor: pointer;
     border-radius: var(--r-sm);
 }
 
 /* 键盘可达：顶栏标题兼作快捷操作触发器 */
 .appbar-title:focus-visible {
-    outline: 2px solid var(--c-on-fill);
+    outline: 2px solid var(--c-brand);
     outline-offset: 3px;
 }
 
 .appbar-title .version-badge {
     display: inline-block;
-    margin-left: var(--sp-2);
     padding: 2px var(--sp-2);
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
     color: var(--c-brand);
     background: var(--c-brand-soft);
-    border-radius: var(--r-full);
-    vertical-align: middle;
+    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    border-radius: var(--r-sm);
+    white-space: nowrap;
 }
 
 .appbar-actions {
@@ -135,6 +201,7 @@ a {
     flex-shrink: 0;
 }
 
+/* 图标按钮：切角方块，非圆形 */
 .icon-btn {
     display: inline-flex;
     align-items: center;
@@ -145,18 +212,23 @@ a {
     font-size: var(--fs-lg);
     background: var(--c-surface-2);
     border: none;
-    border-radius: var(--r-full);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
     cursor: pointer;
-    transition: background var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+    color: var(--c-text-2);
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
+        transform var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.icon-btn:hover { background: var(--c-surface-3); }
+.icon-btn:hover { background: var(--c-surface-3); color: var(--c-text); }
 .icon-btn:active { transform: scale(0.92); }
 .icon-btn[disabled] { opacity: 0.4; cursor: default; }
 
 /* ---------- 内容区 ---------- */
 .content {
+    position: relative;
+    z-index: var(--z-content);
     flex: 1;
     width: 100%;
     max-width: var(--content-max);
@@ -168,7 +240,7 @@ a {
 .tab-panel.active { display: block; animation: panelIn var(--dur-3) var(--ease-out); }
 
 @keyframes panelIn {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: none; }
 }
 
@@ -182,18 +254,21 @@ a {
     height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     display: flex;
-    background: var(--c-surface);
+    background: rgba(10, 14, 19, 0.94);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border-top: 1px solid var(--c-line);
     box-shadow: var(--sh-dock);
 }
 
 .tabbar-item {
+    position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: 3px;
     min-width: 0;
     padding: var(--sp-1) 0;
     background: none;
@@ -212,13 +287,26 @@ a {
 
 .tabbar-item .tab-label {
     font-size: var(--fs-3xs);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.02em;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .tabbar-item.active { color: var(--c-brand); }
-.tabbar-item.active .tab-icon { transform: translateY(-1px) scale(1.08); }
 
+/* 激活态：顶部 VOLT 硬切指示条 */
+.tabbar-item.active::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 22%;
+    right: 22%;
+    height: 2px;
+    background: var(--c-brand);
+    box-shadow: var(--glow-brand);
+}
+
+.tabbar-item.active .tab-icon { transform: translateY(-1px); }
 .tabbar-item:active .tab-icon { transform: scale(0.9); }
 
 /* ---------- 分段控件（二级导航）---------- */
@@ -227,8 +315,8 @@ a {
     gap: 2px;
     padding: 3px;
     margin-bottom: var(--sp-4);
-    background: var(--c-surface-2);
-    border-radius: var(--r-full);
+    background: var(--c-bg);
+    box-shadow: inset 0 0 0 1px var(--c-line);
     overflow-x: auto;
     scrollbar-width: none;
 }
@@ -239,33 +327,35 @@ a {
     flex: 1 0 auto;
     min-width: 0;
     padding: var(--sp-2) var(--sp-4);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     white-space: nowrap;
     text-align: center;
-    color: var(--c-text-2);
+    color: var(--c-text-3);
     background: none;
     border: none;
-    border-radius: var(--r-full);
+    border-radius: var(--r-sm);
     cursor: pointer;
     transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
 .segmented-item.active {
-    color: var(--c-text);
-    background: var(--c-surface);
-    box-shadow: var(--sh-1);
+    color: var(--c-brand-ink);
+    background: var(--c-brand);
 }
 
 .sub-panel { display: none; }
 .sub-panel.active { display: block; animation: panelIn var(--dur-3) var(--ease-out); }
 
-/* ---------- 卡片 ---------- */
+/* ---------- 卡片：硬矩形 + 发丝线 + 金属高光边 ---------- */
 .card {
+    position: relative;
     background: var(--c-surface);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sh-1);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     padding: var(--sp-4);
     margin-bottom: var(--sp-4);
 }
@@ -278,6 +368,7 @@ a {
     gap: var(--sp-2);
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.04em;
     margin-bottom: var(--sp-3);
 }
 
@@ -285,6 +376,7 @@ a {
     margin-left: auto;
     font-size: var(--fs-xs);
     font-weight: var(--fw-medium);
+    letter-spacing: 0;
     color: var(--c-text-3);
 }
 
@@ -309,6 +401,7 @@ a {
 .text-xs { font-size: var(--fs-xs); }
 .text-2xs { font-size: var(--fs-2xs); }
 .text-center { text-align: center; }
+.text-right { text-align: right; }
 .fw-bold { font-weight: var(--fw-bold); }
 .fw-black { font-weight: var(--fw-black); }
 .hidden { display: none !important; }

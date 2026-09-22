@@ -217,21 +217,38 @@ window.App = window.App || {};
     /* ================================================================
        快捷操作（双击顶栏唤出；旧版 quickAction → switchScreen 未定义）
        ================================================================ */
+    function armAutoDismiss(panel) {
+        if (panel._timer) window.clearTimeout(panel._timer);
+        panel._timer = window.setTimeout(function () {
+            panel._timer = null;
+            hideQuickActions();
+        }, 3000);
+    }
+
+    /* 打开：必须真的摘掉 hidden 属性。base.css 里 [hidden] { display:none !important }
+       压过一切 class，只加 .show 是显示不出来的（旧代码就是这样，面板全程不可见）。 */
     function showQuickActions() {
         var panel = $('quick-actions');
         if (!panel) return;
-        panel.classList.remove('show');
-        void panel.offsetWidth;
-        panel.classList.add('show');
-        if (panel._timer) window.clearTimeout(panel._timer);
-        panel._timer = window.setTimeout(function () {
-            panel.classList.remove('show');
-        }, 3000);
+        if (panel._timer) { window.clearTimeout(panel._timer); panel._timer = null; }
+        /* 已经开着就只续期：重复压栈会让 Esc 要按两次才关掉 */
+        if (panel.classList.contains('show') && !panel.hasAttribute('hidden')) {
+            armAutoDismiss(panel);
+            return;
+        }
+        nav.openDialog('quick-actions');
+        /* 键盘用户一进来焦点就落在面板里，而不是留在顶栏标题上 */
+        var first = panel.querySelector('button, [href], [tabindex]:not([tabindex="-1"])');
+        if (first) first.focus();
+        armAutoDismiss(panel);
     }
 
     function hideQuickActions() {
         var panel = $('quick-actions');
-        if (panel) panel.classList.remove('show');
+        if (!panel) return;
+        if (panel._timer) { window.clearTimeout(panel._timer); panel._timer = null; }
+        /* closeDialog 会摘 .show、出栈、并把 hidden 补回去（延迟到动画结束） */
+        nav.closeDialog('quick-actions');
     }
 
     function bindQuickTrigger() {

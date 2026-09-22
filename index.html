@@ -1182,6 +1182,8 @@
 
         .history-card:hover {
             background: var(--c-surface-2);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 45px rgba(0, 229, 160, 0.2);
         }
 
         .history-card.win {
@@ -1623,6 +1625,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex: 1;
         }
 
         .player-avatar-small {
@@ -1794,6 +1797,8 @@
 
         .achievement-card:hover {
             background: var(--c-surface-2);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 229, 160, 0.2);
         }
 
         .achievement-card.unlocked {
@@ -2671,9 +2676,6 @@
 
         .btn-next:hover {
             background: var(--c-brand-hi);
-        }
-
-        .btn-next:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 229, 160, 0.3);
         }
@@ -3068,6 +3070,8 @@
 
         .group-card:hover {
             background: var(--c-surface-2);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 229, 160, 0.35);
         }
 
         .group-card::before {
@@ -3081,10 +3085,6 @@
             border-radius: 50%;
         }
 
-        .group-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px rgba(0, 229, 160, 0.35);
-        }
 
         .group-card-header {
             display: flex;
@@ -3606,6 +3606,8 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            cursor: pointer;
+            transition: all var(--dur-1);
         }
 
         .expense-history-info {
@@ -3630,10 +3632,6 @@
             opacity: 0.6;
         }
 
-        .expense-history-item {
-            cursor: pointer;
-            transition: all var(--dur-1);
-        }
 
         .expense-history-item:hover {
             background: var(--c-surface-2);
@@ -4157,10 +4155,6 @@
             transition: all var(--dur-2);
         }
 
-        .history-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 45px rgba(0, 229, 160, 0.2);
-        }
 
         .history-header {
             display: flex;
@@ -4789,10 +4783,6 @@
             transition: all 0.3s ease;
         }
 
-        .achievement-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 229, 160, 0.2);
-        }
 
         .achievement-card.locked {
             opacity: 0.5;
@@ -5046,9 +5036,6 @@
             color: var(--c-brand);
         }
 
-        .leaderboard-info {
-            flex: 1;
-        }
 
         .leaderboard-name {
             font-size: 1.1rem;

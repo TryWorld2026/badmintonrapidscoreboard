@@ -62,6 +62,15 @@ window.App = window.App || {};
         return Array.isArray(v) ? v : [];
     }
 
+    /* 只保留「像对象」的条目：null / 字符串 / 数字 / 数组一律丢掉。
+       老数据或手改过的 localStorage 里常混进这些，渲染层逐层判空太容易漏，
+       在这里一次性过滤掉，三条历史链路的渲染才有干净输入。 */
+    function objs(v) {
+        return arr(v).filter(function (x) {
+            return !!x && typeof x === 'object' && !Array.isArray(x);
+        });
+    }
+
     function bool(v, d) {
         return typeof v === 'boolean' ? v : d;
     }
@@ -78,7 +87,7 @@ window.App = window.App || {};
             seconds: num(raw.seconds, d.seconds),
             teamNameA: str(raw.teamNameA, d.teamNameA),
             teamNameB: str(raw.teamNameB, d.teamNameB),
-            scoreHistory: arr(raw.scoreHistory),
+            scoreHistory: objs(raw.scoreHistory),
             gameScoresHistory: arr(raw.gameScoresHistory),
             timerRunning: bool(raw.timerRunning, d.timerRunning)
         };
@@ -147,9 +156,22 @@ window.App = window.App || {};
         expense: 20
     };
 
+    /* 分组历史条目规整：groups 必须是「数组的数组」，否则渲染层 .map 会抛 */
+    function normGroupItem(raw) {
+        var groups = arr(raw.groups).map(function (g) {
+            return arr(g).filter(function (p) { return p && typeof p === 'object'; });
+        });
+        return {
+            groups: groups,
+            mode: str(raw.mode, 'random'),
+            modeName: str(raw.modeName, ''),
+            players: arr(raw.players),
+            date: num(raw.date, Date.now())
+        };
+    }
+
     function getGroupingHistory() {
-        var v = store.readJSON(store.KEYS.GROUPING_HISTORY, []);
-        return Array.isArray(v) ? v : [];
+        return objs(store.readJSON(store.KEYS.GROUPING_HISTORY, [])).map(normGroupItem);
     }
 
     function setGroupingHistory(list) {
@@ -165,9 +187,21 @@ window.App = window.App || {};
         return setGroupingHistory(list);
     }
 
+    /* 费用历史条目规整：金额/时长全部转 number，避免 NaN 渗进 UI 与图表 */
+    function normExpenseItem(raw) {
+        return {
+            type: str(raw.type, '其他'),
+            total: num(raw.total, 0),
+            splitMode: str(raw.splitMode, 'equal'),
+            participants: arr(raw.participants).map(String),
+            ratios: arr(raw.ratios).map(function (r) { return num(r, 0); }),
+            durations: arr(raw.durations).map(function (d) { return num(d, 0); }),
+            date: num(raw.date, Date.now())
+        };
+    }
+
     function getExpenseHistory() {
-        var v = store.readJSON(store.KEYS.EXPENSE_HISTORY, []);
-        return Array.isArray(v) ? v : [];
+        return objs(store.readJSON(store.KEYS.EXPENSE_HISTORY, [])).map(normExpenseItem);
     }
 
     function setExpenseHistory(list) {
@@ -183,9 +217,32 @@ window.App = window.App || {};
         return setExpenseHistory(list);
     }
 
+    /* 比赛历史条目规整：比分/时长转 number，日期给合法时间戳，
+       字符串日期（老数据）也能被 new Date() 正确解析。 */
+    function normMatchItem(raw) {
+        var d = raw.date;
+        if (typeof d === 'string') {
+            var t = Date.parse(d);
+            d = isFinite(t) ? t : Date.now();
+        }
+        return {
+            id: num(raw.id, Date.now()),
+            teamA: str(raw.teamA, '队伍 A'),
+            teamB: str(raw.teamB, '队伍 B'),
+            scoreA: num(raw.scoreA, 0),
+            scoreB: num(raw.scoreB, 0),
+            gamesWonA: num(raw.gamesWonA, 0),
+            gamesWonB: num(raw.gamesWonB, 0),
+            gameScores: str(raw.gameScores, ''),
+            duration: num(raw.duration, 0),
+            mode: str(raw.mode, ''),
+            date: num(d, Date.now()),
+            highlights: arr(raw.highlights).map(String)
+        };
+    }
+
     function getMatchHistory() {
-        var v = store.readJSON(store.KEYS.MATCH_HISTORY, []);
-        return Array.isArray(v) ? v : [];
+        return objs(store.readJSON(store.KEYS.MATCH_HISTORY, [])).map(normMatchItem);
     }
 
     function setMatchHistory(list) {

@@ -335,7 +335,7 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 
 ### 10.1 结论
 
-四套脚本共 **158 项断言，0 ERR，运行期 0 pageerror / 0 console error**：
+六套脚本共 **约 600 次交互，0 ERR，运行期 0 pageerror / 0 console error**：
 
 | 脚本 | 覆盖 | 结果 |
 |---|---|---|
@@ -343,6 +343,8 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 | `adv2.js` | 连点竞态、弹层栈与 Esc 链、深链、前进后退、系统返回键、键盘可达性、6 种视口 + 长文本溢出、分享卡三模板 | 35/35 |
 | `verify3.js` | A–M 全量功能回归（第 8 节那套） | 约 100 项全 OK |
 | `rendercheck2.js` | 令牌 / 深色底 / LED 比分 / 图标水合 / 横向溢出 / 弹层 / html2canvas 实导出 / 触摸目标 | 全绿 |
+| `everybtn3.js` | **无差别点遍 11 个视图里每一个可见 `[data-act]`**，用强化签名判断每次点击是否真有反应（详见 10.6） | 440 次点击 / 0 死按钮 / 0 运行期错误 |
+| `exports.js` | 四个导出入口是否真的落盘（而不是静默失败） | 4/4 出文件 |
 
 ### 10.2 抓到的 6 个真实缺陷
 
@@ -409,3 +411,43 @@ D6 能活到对抗审查才被发现， partly 就是因为这个。
 - 分享卡三模板均 360 宽、`scale:2` 出 `720×948`，超长队名 + 4 条高光无异常文案；
 - `file://` 通道下 hash / history 降级路径正常（`try/catch` 回退 `location.hash`），
   4 Tab 渲染正常、0 error。
+
+### 10.6 点遍每一个按钮
+
+第 10.2 节的 D6 是「功能存在但完全不可用」。这类缺陷靠功能回归是抓不到的——
+回归只走设计意图那条路。所以又做了一遍**无差别点击**：把 11 个视图里所有可见的
+`[data-act]` 元素逐个点掉，每次点击前后比对一份强化签名（路由 + 弹层栈 +
+panel innerHTML 校验和 + 所有 input/select 的值 + `.active`/`.won` 状态校验和 +
+完整 localStorage 内容 + toast/dialog/sheet 状态），只要签名一动就算「有反应」。
+
+**结果：440 次点击，0 运行期错误，0 个死按钮。**
+
+第一轮报了 20 个「点了什么都没发生」，逐条查下来全部有合理解释，没有一个是缺陷：
+
+| 现象 | 真相 |
+|---|---|
+| 17 个导出按钮「无效果」 | 导出走的是文件下载，不改 DOM 也不改 localStorage，签名当然不动。单独写脚本验证过：四个导出入口全部真的落盘——`stats:export` 308B json、`expense:export` 142B txt、`grouping:export` 156B txt、`backup:export` 1854B json |
+| `grouping:generate` / `grouping:reuse`「无效果」 | 幂等操作：同一批人 + 同一个模式重新生成，结果当然一样；复用一条已经在展示的历史分组也不会变 |
+| `nav:tab` / `nav:sub`「无效果」 | 点到当前已激活的 Tab / 二级页，正确无操作 |
+| `match:team-name`「无效果」 | 那是 `<input>`，单击只会上焦点 |
+| `grouping:mode` / `expense:mode`「无效果」 | 点到已激活的模式 |
+
+顺带做了两次静态对账，也都干净：
+
+- **data-act ↔ handler**：56 个触发点、60 个 handler，没有「有按钮没 handler」的死按钮；
+  5 个 handler 静态找不到触发点（`backup:file` / `match:quick-action` / `me:back` /
+  `settings:save` / `ui:copy`），逐个确认是**冗余注册**——功能走的是
+  `addEventListener` 直连或另一个 `data-act`，行为正常，只是注册表里留了一条
+  永远走不到的线。
+- **DOM id 对账**：JS 引用的 126 个 id，3 个在 index.html 和 JS 自建里都找不到——
+  `scroller` 有 `|| window` 兜底（有意为之），`games-count-a/b` 是
+  `renderGamesWon()` 里两行**带判空保护的死代码**（局分实际渲染进
+  `games-won-a/b` 的圆点），不报错也不显示，属于无害残留。
+
+### 10.7 收尾时清掉的一处重复绑定
+
+`js/settings.js` 的 `init()` 里 `bindQuickTrigger()` 被调用了两次（第 292 行和第 304 行），
+顶栏标题上因此挂了两份 click / keydown 监听。实测当前行为是对的——单击不弹、
+双击才弹、Enter 也弹——因为 D6 修好后 `showQuickActions()` 有「已开着就只续期」
+的幂等兜底。但这是白挂一倍的监听，以后往 handler 里加任何非幂等动作就会翻车，
+所以把重复的那次调用删掉了。删前删后各跑一遍验证，行为完全一致。

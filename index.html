@@ -796,68 +796,89 @@
             50% { transform: scale(1.06); }
         }
 
+        /* ===== 3c 通用控件：按钮 ===== */
         .btn {
-            padding: 14px 28px;
-            font-size: 1rem;
-            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--sp-2);
+            padding: var(--sp-3) var(--sp-6);
+            font-family: var(--font-sans);
+            font-size: var(--fs-md);
+            font-weight: var(--fw-medium);
             border: none;
             border-radius: var(--r-md);
             cursor: pointer;
-            transition: all var(--dur-2);
+            transition: background var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out);
             position: relative;
-            overflow: hidden;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            min-height: 44px;
+            text-align: center;
         }
 
         .btn-primary {
-            background: #27F05C;
-            color: #000000;
-            box-shadow: 0 6px 20px rgba(39, 240, 92, 0.4);
+            background: var(--c-brand);
+            color: var(--c-brand-ink);
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 35px rgba(39, 240, 92, 0.55);
+            background: #00FFB3;
         }
 
         .btn-danger {
-            background: #FF4D4D;
+            background: var(--c-danger);
             color: #FFFFFF;
-            box-shadow: 0 6px 20px rgba(255, 77, 77, 0.35);
         }
 
         .btn-danger:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 35px rgba(255, 77, 77, 0.5);
+            background: #FF7079;
         }
 
+        /* .btn-dark 语义改为 .btn-ghost：中性面 + 发丝线 */
         .btn-dark {
-            background: rgba(255, 255, 255, 0.15);
-            color: #FFFFFF;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: var(--c-surface-2);
+            color: var(--c-text);
+            box-shadow: var(--line-1);
         }
 
         .btn-dark:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.25);
+            background: var(--c-surface-3);
         }
 
         .btn-success {
-            background: #27F05C;
-            color: #000000;
-            box-shadow: 0 6px 20px rgba(39, 240, 92, 0.4);
+            background: var(--c-success);
+            color: var(--c-brand-ink);
         }
 
         .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 35px rgba(39, 240, 92, 0.55);
+            background: #00FFB3;
         }
 
         .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
+            padding: var(--sp-2) var(--sp-4);
+            font-size: var(--fs-sm);
+            min-height: 36px;
+        }
+
+        .btn-large {
+            padding: var(--sp-4) var(--sp-8);
+            font-size: var(--fs-lg);
+            min-height: 52px;
+        }
+
+        .btn-icon {
+            font-size: var(--fs-md);
+            line-height: 1;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--c-text-2);
+            box-shadow: var(--line-1);
+        }
+
+        .btn-outline:hover {
+            background: var(--c-surface-2);
+            color: var(--c-text);
         }
 
         .control-panel {
@@ -1406,25 +1427,29 @@
         .tab-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 12px 20px;
-            background: white;
-            border: 2px solid rgba(104, 57, 232, 0.15);
+            gap: var(--sp-2);
+            padding: var(--sp-3) var(--sp-5);
+            background: var(--c-surface);
+            box-shadow: var(--line-1);
+            border: none;
             border-radius: var(--r-md);
             cursor: pointer;
-            transition: all var(--dur-1);
+            transition: background var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+            color: var(--c-text-2);
+            font-size: var(--fs-sm);
+            font-weight: var(--fw-medium);
+            min-height: 44px;
         }
 
         .tab-item:hover {
-            border-color: rgba(104, 57, 232, 0.3);
-            background: #F5F0FF;
+            background: var(--c-surface-3);
+            color: var(--c-text);
         }
 
         .tab-item.active {
-            background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 100%);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 15px rgba(104, 57, 232, 0.3);
+            background: var(--c-brand);
+            color: var(--c-brand-ink);
+            font-weight: var(--fw-semibold);
         }
 
         .tab-icon {
@@ -1921,19 +1946,22 @@
 
         .setting-input {
             width: 70px;
-            padding: 8px 12px;
-            border: 2px solid rgba(104, 57, 232, 0.2);
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: var(--sp-2) var(--sp-3);
+            border: none;
+            box-shadow: var(--line-1);
+            border-radius: var(--r-sm);
+            font-family: var(--font-num);
+            font-size: var(--fs-md);
+            font-weight: var(--fw-semibold);
             text-align: center;
-            color: #6839E8;
-            background: white;
+            color: var(--c-text);
+            background: var(--c-bg);
+            font-variant-numeric: tabular-nums;
         }
 
         .setting-input:focus {
             outline: none;
-            border-color: #6839E8;
+            box-shadow: inset 0 0 0 1px var(--c-brand);
         }
 
         .avatar-section {
@@ -3035,25 +3063,8 @@
             gap: 12px;
         }
 
-        .btn-large {
-            padding: 16px 32px;
-            font-size: 1.1rem;
-        }
-
-        .btn-icon {
-            margin-right: 8px;
-        }
-
-        .btn-outline {
-            background: white;
-            color: #6839E8;
-            border: 2px solid rgba(104, 57, 232, 0.3);
-        }
-
-        .btn-outline:hover {
-            background: #F5F0FF;
-            border-color: #6839E8;
-        }
+        /* .btn-large / .btn-icon / .btn-outline 基础定义见 3c 通用控件区，
+           响应式覆写集中在文件末尾 @media 区 */
 
         .group-results-section {
             background: white;
@@ -3342,37 +3353,38 @@
         .amount-input-wrapper {
             display: flex;
             align-items: center;
-            background: #FAFAFF;
-            border: 2px solid rgba(104, 57, 232, 0.15);
+            background: var(--c-bg);
+            box-shadow: var(--line-1);
+            border: none;
             border-radius: var(--r-md);
-            padding: 4px;
-            transition: all var(--dur-1);
+            padding: var(--sp-1);
+            transition: box-shadow var(--dur-1) var(--ease-out);
         }
 
         .amount-input-wrapper:focus-within {
-            border-color: #6839E8;
-            box-shadow: 0 0 0 4px rgba(104, 57, 232, 0.1);
+            box-shadow: inset 0 0 0 1px var(--c-brand);
         }
 
         .currency-symbol {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #6839E8;
-            padding: 12px 16px;
-            background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 100%);
-            border-radius: 10px;
-            color: white;
+            font-size: var(--fs-lg);
+            font-weight: var(--fw-bold);
+            color: var(--c-brand-ink);
+            background: var(--c-brand);
+            padding: var(--sp-2) var(--sp-4);
+            border-radius: var(--r-sm);
         }
 
         .amount-input {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 16px;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #0133A4;
+            padding: var(--sp-4);
+            font-family: var(--font-num);
+            font-size: var(--fs-2xl);
+            font-weight: var(--fw-bold);
+            color: var(--c-text);
             text-align: right;
+            font-variant-numeric: tabular-nums;
         }
 
         .amount-input:focus {
@@ -3747,30 +3759,31 @@
         }
 
         .player-selector-section {
-            background: white;
+            background: var(--c-surface);
+            box-shadow: var(--line-1);
             border-radius: var(--r-lg);
-            padding: 24px;
-            box-shadow: var(--e-2);
-            margin-bottom: 24px;
+            padding: var(--sp-6);
+            margin-bottom: var(--sp-6);
         }
 
         .player-select {
             width: 100%;
-            padding: 14px 18px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border: 2px solid rgba(104, 57, 232, 0.15);
+            padding: var(--sp-3) var(--sp-4);
+            font-family: var(--font-sans);
+            font-size: var(--fs-md);
+            font-weight: var(--fw-medium);
+            border: none;
+            box-shadow: var(--line-1);
             border-radius: var(--r-md);
-            background: #FAFAFF;
-            color: #0133A4;
+            background: var(--c-bg);
+            color: var(--c-text);
             cursor: pointer;
-            transition: all var(--dur-1);
+            transition: box-shadow var(--dur-1) var(--ease-out);
         }
 
         .player-select:focus {
             outline: none;
-            border-color: #6839E8;
-            box-shadow: 0 0 0 4px rgba(104, 57, 232, 0.1);
+            box-shadow: inset 0 0 0 1px var(--c-brand);
         }
 
         .player-info-card {
@@ -3965,29 +3978,28 @@
             font-size: 0.95rem;
         }
 
+        /* ===== 3c 通用控件：表单 ===== */
         input, select {
             width: 100%;
-            padding: 14px 18px;
-            border-radius: var(--r-md);
-            border: 3px solid rgba(104, 57, 232, 0.15);
-            background: #FFFFFF;
-            font-size: 1rem;
+            padding: var(--sp-3) var(--sp-4);
+            border-radius: var(--r-sm);
+            border: none;
+            box-shadow: var(--line-1);
+            background: var(--c-bg);
+            font-size: var(--fs-md);
             font-family: inherit;
-            transition: all var(--dur-2);
-            color: #0133A4;
-            font-weight: 500;
+            transition: box-shadow var(--dur-2) var(--ease-out);
+            color: var(--c-text);
+            font-weight: var(--fw-normal);
         }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #6839E8;
-            box-shadow: 0 0 0 4px rgba(104, 57, 232, 0.1);
+        input::placeholder, textarea::placeholder {
+            color: var(--c-text-3);
         }
 
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: rgba(102, 126, 234, 0.5);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            box-shadow: inset 0 0 0 1px var(--c-brand);
         }
 
         .participants-list {

@@ -28,6 +28,12 @@ window.App = window.App || {};
         try { fn(); } catch (err) { /* 静默降级 */ }
     }
 
+    /* 宽口径取数：非有限数字一律回退到默认值 */
+    function num(v, d) {
+        var n = typeof v === 'number' ? v : parseFloat(v);
+        return isFinite(n) ? n : d;
+    }
+
     function scoreA() { return App.state.match.scoreA; }
     function scoreB() { return App.state.match.scoreB; }
 
@@ -88,12 +94,28 @@ window.App = window.App || {};
             return;
         }
         var html = '';
-        for (var i = h.length - 1; i >= 0 && i >= h.length - 40; i--) {
+        var shown = 0;
+        for (var i = h.length - 1; i >= 0 && shown < 40; i--) {
             var it = h[i];
-            html += '<div class="point-log-item ' + (it.team === 'a' ? 'a' : 'b') + '">' +
-                '<span>' + (it.team === 'a' ? App.state.match.teamNameA : App.state.match.teamNameB) + '</span>' +
-                '<span class="log-score">' + it.oldScore + ' → ' + it.newScore + '</span>' +
+            /* 坏条目（老数据 / 手改过的存档）单独跳过，不能让它把整张流水表搞死。
+               真实条目的 oldScore / newScore 一定是有限数字，其余一律视为脏数据。 */
+            if (!it || typeof it !== 'object') continue;
+            if (it.oldScore == null || it.newScore == null) continue;
+            if (!isFinite(it.oldScore) || !isFinite(it.newScore)) continue;
+            shown++;
+            var isA = it.team === 'a';
+            var nm = isA ? App.state.match.teamNameA : App.state.match.teamNameB;
+            html += '<div class="point-log-item ' + (isA ? 'a' : 'b') + '">' +
+                '<span>' + ui.escapeHtml(nm) + '</span>' +
+                '<span class="log-score">' + ui.escapeHtml(String(it.oldScore)) +
+                ' → ' + ui.escapeHtml(String(it.newScore)) + '</span>' +
                 '</div>';
+        }
+        if (!shown) {
+            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="list"></div>' +
+                '<div class="empty-title">还没有得分</div>' +
+                '<div class="empty-hint">点击「开始比赛」后用底部按钮加分</div></div>';
+            return;
         }
         box.innerHTML = html;
     }
@@ -104,7 +126,7 @@ window.App = window.App || {};
         var s = App.state.settings;
         var modeName = s.gameMode === 'custom' ? ('自定义 ' + s.targetScore) : s.gameMode + ' 分制';
         box.innerHTML =
-            '<span class="tag tag-brand">' + modeName + '</span>' +
+            '<span class="tag tag-brand">' + ui.escapeHtml(modeName) + '</span>' +
             '<span class="tag">' + (s.bestOfThree ? '三局两胜' : '单局') + '</span>' +
             '<span class="tag">' + (s.deuceMode ? '加分赛开' : '加分赛关') + '</span>' +
             '<span class="grow text-3">目标 ' + App.state.targetScore() + ' 分</span>';
@@ -209,7 +231,13 @@ window.App = window.App || {};
             return;
         }
 
-        var oldScore = team === 'a' ? m.scoreA : m.scoreB;
+        /* amount 是外部可传的公开参数：缺省按 +1，非有限数字直接拒掉。
+           否则 oldScore + undefined = NaN，NaN 会灌进 scoreA / scoreHistory，
+           之后局末判定、换边提示全部失灵，得分流水也会整表变空白。 */
+        amount = Number(amount);
+        if (!isFinite(amount)) amount = 1;
+
+        var oldScore = num(team === 'a' ? m.scoreA : m.scoreB, 0);
         var newScore = Math.max(0, oldScore + amount);
 
         m.scoreHistory.push({ team: team, oldScore: oldScore, newScore: newScore, timestamp: Date.now() });
@@ -243,8 +271,10 @@ window.App = window.App || {};
             return;
         }
         var last = m.scoreHistory.pop();
-        if (last.team === 'a') m.scoreA = last.oldScore;
-        else m.scoreB = last.oldScore;
+        if (!last || typeof last !== 'object') { saveMatchState(); render(); return; }
+        var back = num(last.oldScore, 0);
+        if (last.team === 'a') m.scoreA = back;
+        else m.scoreB = back;
 
         fx.clickSound();
         fx.vibrate([30, 30, 30]);

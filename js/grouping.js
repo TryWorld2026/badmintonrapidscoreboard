@@ -263,7 +263,9 @@ window.App = window.App || {};
         }
         box.innerHTML = list.map(function (item, i) {
             var pairs = (item.groups || []).map(function (g) {
-                return g.map(function (p) { return ui.escapeHtml(p.name); }).join(' & ');
+                return (g || []).map(function (p) {
+                    return ui.escapeHtml(p && p.name ? p.name : '?');
+                }).join(' & ');
             }).join(' ｜ ');
             return '<div class="history-row">' +
                 '<div class="h-main">' +
@@ -281,7 +283,7 @@ window.App = window.App || {};
     function reuse(el) {
         var idx = parseInt(el.getAttribute('data-index'), 10);
         var item = App.state.getGroupingHistory()[idx];
-        if (!item) return;
+        if (!item || !item.groups) { ui.notify('该分组记录已损坏', '错误'); return; }
         displayGroups(item.groups, item.mode, null);
         ui.notify('已载入历史分组', '已复用');
     }

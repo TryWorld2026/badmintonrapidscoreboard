@@ -14,6 +14,13 @@ window.App = window.App || {};
 
     function $(id) { return document.getElementById(id); }
 
+    /* 非法日期统一降级，避免把 "Invalid Date" 摆到用户脸上 */
+    function fmtDate(v, mode) {
+        var d = new Date(v);
+        if (!d || isNaN(d.getTime())) return '—';
+        return mode === 'date' ? d.toLocaleDateString() : d.toLocaleString();
+    }
+
     function splitPlayers(str) {
         return String(str || '').split(/[\/、]/).map(function (p) { return p.trim(); })
             .filter(function (p) { return p !== ''; });
@@ -365,7 +372,7 @@ window.App = window.App || {};
             else { totalScoreFor += m.scoreB; totalScoreAgainst += m.scoreA; }
 
             recent.unshift({
-                date: new Date(m.date).toLocaleDateString(),
+                date: fmtDate(m.date, 'date'),
                 won: won,
                 score: m.scoreA + ' : ' + m.scoreB,
                 opponent: isA ? m.teamB : m.teamA
@@ -418,7 +425,7 @@ window.App = window.App || {};
                         '<span class="tag ' + (m.won ? 'tag-win' : 'tag-lose') + '">' +
                         (m.won ? '胜' : '负') + '</span>' +
                         '<span class="r-main"><span class="r-teams">vs ' + ui.escapeHtml(m.opponent) + '</span>' +
-                        '<span class="r-date">' + m.date + '</span></span>' +
+                        '<span class="r-date">' + ui.escapeHtml(m.date) + '</span></span>' +
                         '<span class="r-score num">' + m.score + '</span>' +
                         '</div>';
                 }).join('')

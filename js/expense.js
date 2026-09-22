@@ -13,6 +13,14 @@ window.App = window.App || {};
 
     function $(id) { return document.getElementById(id); }
 
+    /* 非法日期统一降级，避免把 "Invalid Date" 摆到用户脸上 */
+    function fmtDate(v, mode) {
+        var d = new Date(v);
+        if (!d || isNaN(d.getTime())) return '—';
+        return mode === 'date' ? d.toLocaleDateString() : d.toLocaleString();
+    }
+
+
     function readParticipants() {
         var ta = $('expense-players');
         if (!ta) return [];
@@ -185,7 +193,7 @@ window.App = window.App || {};
                 '<div class="h-main">' +
                 '<div class="h-teams">' + ui.escapeHtml(item.type) + ' · ¥' +
                 Number(item.total || 0).toFixed(2) + '</div>' +
-                '<div class="h-meta"><span>' + new Date(item.date).toLocaleString() + '</span>' +
+                '<div class="h-meta"><span>' + fmtDate(item.date) + '</span>' +
                 '<span class="tag">' + ui.escapeHtml(MODE_NAMES[item.splitMode] || item.splitMode) + '</span>' +
                 '<span class="tag">' + (item.participants ? item.participants.length : 0) + ' 人</span></div>' +
                 '</div>' +

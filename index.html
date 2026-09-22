@@ -4195,19 +4195,20 @@
             transform: translateX(5px);
         }
 
+        /* ===== 3a 导航 ===== */
         .nav-tabs {
             display: flex;
             list-style: none;
-            margin-bottom: 30px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: var(--r-lg);
-            padding: 6px;
-            box-shadow: 0 8px 30px rgba(104, 57, 232, 0.12);
+            margin-bottom: var(--sp-8);
+            background: var(--c-surface);
+            box-shadow: var(--line-1);
+            border-radius: var(--r-full);
+            padding: var(--sp-1);
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            gap: 4px;
+            gap: var(--sp-1);
         }
 
         .nav-tabs::-webkit-scrollbar {
@@ -4216,46 +4217,34 @@
 
         .nav-tab {
             flex-shrink: 0;
-            padding: 12px 16px;
+            padding: var(--sp-3) var(--sp-4);
             text-align: center;
             cursor: pointer;
-            border-radius: var(--r-md);
-            transition: all var(--dur-2);
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #0133A4;
+            border-radius: var(--r-full);
+            transition: background var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out);
+            font-weight: var(--fw-medium);
+            font-size: var(--fs-sm);
+            color: var(--c-text-2);
             position: relative;
             white-space: nowrap;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            user-select: none;
         }
 
         .nav-tab:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--c-surface-3);
+            color: var(--c-text);
         }
 
         .nav-tab.active {
-            background: #27F05C;
-            color: #000000;
-            box-shadow: 0 4px 15px rgba(39, 240, 92, 0.4);
+            background: var(--c-brand);
+            color: var(--c-brand-ink);
+            font-weight: var(--fw-semibold);
         }
 
-        @media (max-width: 768px) {
-            .nav-tabs {
-                padding: 5px;
-                margin-bottom: 20px;
-            }
-            
-            .nav-tab {
-                padding: 10px 12px;
-                font-size: 0.8rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .nav-tab {
-                padding: 8px 10px;
-                font-size: 0.75rem;
-            }
-        }
+        /* 响应式覆写已集中到文件末尾的 @media 区（见 §4.2 约定） */
 
         .weather-container {
             position: fixed;
@@ -4506,11 +4495,7 @@
                 position: relative;
                 top: auto;
                 right: auto;
-                margin-bottom: 20px;
-            }
-
-            .nav-tab {
-                padding: 12px 15px;
+                margin-bottom: var(--sp-5);
             }
 
             .match-info {
@@ -5325,6 +5310,30 @@
                 margin-bottom: 5px;
             }
         }
+        /* ================================================================
+           响应式覆写集中区（§4.2：组件只定义一次，响应式覆写全部集中于此）
+           断点：768px（平板）/ 480px（大手机）/ 360px（小手机）
+           ================================================================ */
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                padding: var(--sp-1);
+                margin-bottom: var(--sp-5);
+            }
+
+            .nav-tab {
+                padding: var(--sp-2) var(--sp-3);
+                font-size: var(--fs-xs);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-tab {
+                padding: var(--sp-2) var(--sp-2);
+                font-size: var(--fs-2xs);
+            }
+        }
+
     </style>
 </head>
 <body>

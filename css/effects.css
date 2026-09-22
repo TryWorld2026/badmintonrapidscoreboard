@@ -1,0 +1,140 @@
+/* ================================================================
+   effects.css — 全屏特效：彩带 / 烟花 / 胜利横幅 / 得分脉冲
+   浅色主题适配：粒子用高饱和实色，避免在白底上不可见。
+   ================================================================ */
+
+.fx-layer {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-highlight);
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* ---------- 彩带 ---------- */
+.confetti {
+    position: absolute;
+    top: -12px;
+    width: 9px;
+    height: 14px;
+    border-radius: 2px;
+    will-change: transform, opacity;
+    animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate3d(var(--dx, 0), calc(100dvh + 40px), 0) rotate(var(--rot, 720deg));
+        opacity: 0.9;
+    }
+}
+
+/* ---------- 烟花 ---------- */
+.firework {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--r-full);
+    will-change: transform, opacity;
+    animation: fireworkOut var(--fdur, 1100ms) var(--ease-out) forwards;
+}
+
+@keyframes fireworkOut {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 1;
+    }
+    70% { opacity: 1; }
+    100% {
+        transform: translate3d(var(--dx), var(--dy), 0) scale(0.3);
+        opacity: 0;
+    }
+}
+
+/* ---------- 胜利横幅 ---------- */
+.victory-banner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: var(--z-highlight);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-6) var(--sp-7);
+    text-align: center;
+    background: var(--c-surface);
+    border-radius: var(--r-2xl);
+    box-shadow: var(--sh-3), inset 0 0 0 2px var(--c-gold);
+    transform: translate(-50%, -50%);
+}
+
+.victory-banner.show {
+    display: flex;
+    animation: victoryIn var(--dur-3) var(--ease-out);
+}
+
+.victory-banner .vb-icon { font-size: 56px; line-height: 1; }
+
+.victory-banner .vb-title {
+    font-size: var(--fs-2xl);
+    font-weight: var(--fw-black);
+    letter-spacing: -0.02em;
+}
+
+.victory-banner .vb-team {
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    color: var(--c-brand);
+}
+
+@keyframes victoryIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.86); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ---------- 得分脉冲（大比分旁的扩散圈）---------- */
+.score-pulse {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border-radius: var(--r-full);
+    pointer-events: none;
+    animation: pulseOut 520ms var(--ease-out) forwards;
+}
+
+@keyframes pulseOut {
+    from { transform: scale(0.4); opacity: 0.55; }
+    to { transform: scale(3.4); opacity: 0; }
+}
+
+/* ---------- 加载骨架（图表/数据）---------- */
+.skeleton {
+    background: linear-gradient(90deg, var(--c-surface-2) 25%, var(--c-surface-3) 37%, var(--c-surface-2) 63%);
+    background-size: 400% 100%;
+    border-radius: var(--r-sm);
+    animation: skeletonShift 1.4s var(--ease) infinite;
+}
+
+@keyframes skeletonShift {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
+/* ---------- 屏幕微震动（加分赛/赛点提示）---------- */
+@keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+}
+
+.shake { animation: shakeX 380ms var(--ease); }

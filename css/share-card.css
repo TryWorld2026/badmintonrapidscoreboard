@@ -1,0 +1,220 @@
+/* ================================================================
+   share-card.css — 分享卡（html2canvas 导出）
+   ⚠️ 本文件是令牌层的例外：全部使用字面量，禁止 var(--*)。
+   原因：html2canvas 在离屏克隆节点上解析 CSS 自定义属性不稳定，
+   且不支持 oklch() / lab() / color-mix()。
+   ⚠️ 同时避免使用 gap / grid / backdrop-filter / filter，
+   以保证导出结果与预览一致。
+   ================================================================ */
+
+.share-card {
+    position: relative;
+    width: 360px;
+    padding: 28px 26px 24px;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+        "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #FFFFFF;
+    background: #E5484D;
+    box-sizing: border-box;
+}
+
+/* 装饰光斑（实色叠加，不用 radial-gradient）*/
+.share-card::before {
+    content: "";
+    position: absolute;
+    top: -70px;
+    right: -70px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 50%;
+}
+
+.share-card::after {
+    content: "";
+    position: absolute;
+    bottom: -90px;
+    left: -60px;
+    width: 220px;
+    height: 220px;
+    background: rgba(0, 0, 0, 0.10);
+    border-radius: 50%;
+}
+
+.share-card-tpl-1 { background: #E5484D; background: linear-gradient(160deg, #E5484D 0%, #FF7A45 100%); }
+.share-card-tpl-2 { background: #1B4DFF; background: linear-gradient(160deg, #1B4DFF 0%, #00C6FF 100%); }
+.share-card-tpl-3 { background: #0F151C; background: linear-gradient(160deg, #0F151C 0%, #34495E 100%); }
+
+.share-card > * { position: relative; z-index: 1; }
+
+/* ---------- 顶部品牌行 ---------- */
+.sc-head {
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.sc-brand {
+    float: left;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.sc-date {
+    float: right;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+/* ---------- 对阵区 ---------- */
+.sc-teams {
+    overflow: hidden;
+    text-align: center;
+}
+
+.sc-team {
+    display: inline-block;
+    vertical-align: top;
+    width: 108px;
+    text-align: center;
+}
+
+.sc-avatar {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 8px;
+    font-size: 28px;
+    line-height: 54px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+}
+
+.sc-name {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sc-score {
+    margin-top: 4px;
+    font-family: ui-monospace, "SF Mono", Consolas, "Roboto Mono", monospace;
+    font-size: 46px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.sc-team.win .sc-score { color: #FFD166; }
+.sc-team.lose .sc-score { opacity: 0.72; }
+
+.sc-vs {
+    display: inline-block;
+    vertical-align: top;
+    width: 44px;
+    padding-top: 42px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+/* ---------- 局数行 ---------- */
+.sc-games {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    overflow: hidden;
+}
+
+.sc-games-title {
+    float: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.sc-games-list { float: right; }
+
+.sc-game {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 9px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+}
+
+/* ---------- 高光区 ---------- */
+.sc-highlights {
+    margin-top: 16px;
+}
+
+.sc-hl-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    margin-bottom: 8px;
+}
+
+.sc-hl {
+    margin-bottom: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+    opacity: 0.95;
+}
+
+.sc-hl b { font-weight: 800; }
+
+/* ---------- 底部 ---------- */
+.sc-foot {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    overflow: hidden;
+}
+
+.sc-foot-txt {
+    float: left;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.sc-foot-app {
+    float: right;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    opacity: 0.95;
+}
+
+/* ---------- 预览容器（页面内嵌，非导出目标）---------- */
+.share-preview {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    background: #EDF1F6;
+    border-radius: 12px;
+    overflow: auto;
+}
+
+.share-preview .share-card {
+    box-shadow: 0 4px 8px rgba(15, 21, 28, 0.06), 0 12px 32px rgba(15, 21, 28, 0.10);
+    flex-shrink: 0;
+}

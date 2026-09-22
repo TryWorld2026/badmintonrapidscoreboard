@@ -1,0 +1,147 @@
+/* ================================================================
+   设计令牌层 — Court Light 明亮球场 / 转播洁净风
+   本文件是全项目唯一允许出现裸 #hex / rgb() 的位置。
+   其余 CSS 只允许写 var(--*)，禁止裸值。
+   分享卡（share-card.css）例外：html2canvas 需字面量。
+   ================================================================ */
+:root {
+    /* ---- 表面（冷灰白，不用纯白刺眼）---- */
+    --c-bg: #F4F6F9;
+    --c-surface: #FFFFFF;
+    --c-surface-2: #EDF1F6;
+    --c-surface-3: #E2E8F0;
+
+    /* ---- 发丝线（替代 border，避免影响盒模型）---- */
+    --c-line: #E2E8F0;
+    --c-line-strong: #CBD5E1;
+
+    /* ---- 文本（不用纯黑）---- */
+    --c-text: #0F151C;
+    --c-text-2: #5A6673;
+    --c-text-3: #8B96A4;
+
+    /* ---- 品牌 / 行动 ---- */
+    --c-brand: #1B4DFF;
+    --c-brand-ink: #FFFFFF;
+    --c-brand-hi: #0B3AD1;
+    --c-brand-soft: #EEF3FF;
+    --c-brand-line: #C7D6FF;
+
+    /* ---- 队伍色：全应用唯一两组高饱和对比色 ---- */
+    --c-team-a: #E5484D;
+    --c-team-a-soft: #FDECEC;
+    --c-team-a-line: #F7C9CB;
+    --c-team-b: #0090FF;
+    --c-team-b-soft: #E6F4FF;
+    --c-team-b-line: #B3DFFF;
+
+    /* ---- 语义色 ---- */
+    --c-success: #0E9F6E;
+    --c-success-soft: #E7F7F1;
+    --c-warning: #F5A524;
+    --c-warning-soft: #FEF4E4;
+    --c-danger: #E5484D;
+    --c-danger-soft: #FDECEC;
+    --c-gold: #FFB020;
+    --c-gold-soft: #FFF6E5;
+    --c-silver: #94A3B8;
+    --c-silver-soft: #F1F5F9;
+    --c-bronze: #C0763C;
+    --c-bronze-soft: #FBF0E7;
+
+    /* ---- 彩色按钮上的固定文字色 / 遮罩 ---- */
+    --c-on-fill: #FFFFFF;
+    --c-on-warning: #3A2600;
+    --c-on-gold: #8A5A00;
+    --c-scrim: rgba(15, 21, 28, 0.45);
+
+    /* ---- 阴影（浅色主题用柔和分层，不用霓虹辉光）---- */
+    --sh-1: 0 1px 2px rgba(15, 21, 28, 0.05), 0 1px 3px rgba(15, 21, 28, 0.06);
+    --sh-2: 0 2px 4px rgba(15, 21, 28, 0.05), 0 4px 12px rgba(15, 21, 28, 0.07);
+    --sh-3: 0 4px 8px rgba(15, 21, 28, 0.06), 0 12px 32px rgba(15, 21, 28, 0.10);
+    --sh-dock: 0 -2px 16px rgba(15, 21, 28, 0.07);
+    --sh-sheet: 0 -8px 40px rgba(15, 21, 28, 0.16);
+    --sh-pop: 0 8px 32px rgba(15, 21, 28, 0.14);
+
+    /* ---- 圆角 ---- */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 22px;
+    --r-2xl: 28px;
+    --r-full: 999px;
+
+    /* ---- 间距 ---- */
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 20px;
+    --sp-6: 24px;
+    --sp-7: 32px;
+    --sp-8: 40px;
+
+    /* ---- 字号（clamp 流体缩放）---- */
+    --fs-3xs: clamp(0.625rem, 0.6rem + 0.1vw, 0.6875rem);
+    --fs-2xs: clamp(0.6875rem, 0.66rem + 0.12vw, 0.75rem);
+    --fs-xs: clamp(0.75rem, 0.72rem + 0.14vw, 0.8125rem);
+    --fs-sm: clamp(0.8125rem, 0.78rem + 0.16vw, 0.875rem);
+    --fs-md: clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem);
+    --fs-lg: clamp(1rem, 0.95rem + 0.22vw, 1.125rem);
+    --fs-xl: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+    --fs-2xl: clamp(1.375rem, 1.25rem + 0.5vw, 1.75rem);
+    --fs-3xl: clamp(1.75rem, 1.5rem + 1vw, 2.5rem);
+
+    /* ---- 行高 ---- */
+    --lh-tight: 1.2;
+    --lh-snug: 1.4;
+    --lh-normal: 1.6;
+
+    /* ---- 字重 ---- */
+    --fw-normal: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+    --fw-black: 800;
+
+    /* ---- 字体栈 ---- */
+    --font-ui: -apple-system, BlinkMacSystemFont, "PingFang SC",
+        "HarmonyOS Sans SC", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC",
+        "Helvetica Neue", Arial, sans-serif;
+    /* 数字 / 计时：等宽 + tabular-nums，避免比分跳动导致布局抖动 */
+    --font-num: ui-monospace, "SF Mono", "SFMono-Regular", "Roboto Mono",
+        "DejaVu Sans Mono", "Consolas", "Liberation Mono", monospace;
+
+    /* ---- 动效 ---- */
+    --dur-1: 120ms;
+    --dur-2: 200ms;
+    --dur-3: 320ms;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+    /* ---- 布局 ---- */
+    --appbar-h: 52px;
+    --tabbar-h: 60px;
+    --content-max: 560px;
+    --gutter: var(--sp-4);
+
+    /* ---- 层级 ---- */
+    --z-content: 1;
+    --z-sticky: 20;
+    --z-dock: 100;
+    --z-tabbar: 110;
+    --z-sheet: 200;
+    --z-modal: 210;
+    --z-toast: 300;
+    --z-highlight: 310;
+    --z-onboard: 400;
+}
+
+/* 桌面端：内容居中，tab bar 变窄 */
+@media (min-width: 720px) {
+    :root {
+        --content-max: 680px;
+        --gutter: var(--sp-6);
+    }
+}

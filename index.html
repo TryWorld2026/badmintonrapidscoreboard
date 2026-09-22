@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>缂囪姤鐦洪悶鍐╃€柅鐔活唶閸掑棙婢?- 娑撴挷绗熼悧?/title>
+    <title>羽毛球极速记分板 - 专业版</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&display=swap">
@@ -11,39 +11,39 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         /* ================================================================
-           鐠佹崘顓告禒銈囧鐏?閳?濞ｈ精澹婂鏃€鎸辩€?/ 娴ｆ捁鍋?HUD
-           閸忋劍鏋冩禒璺烘暜娑撯偓閸忎浇顔忛崙铏瑰箛鐟?#hex / rgba() 閻ㄥ嫪缍呯純顔衡偓?
-           缂佸嫪娆㈢仦鍌氬涧閸忎浇顔忛崘?var(--*)閿涘瞼顩﹀銏ｏ紭閸婄鈧?
+           设计令牌层 — 深色演播室 / 体育 HUD
+           全文件唯一允许出现裸 #hex / rgba() 的位置。
+           组件层只允许写 var(--*)，禁止裸值。
            ================================================================ */
         :root {
-            /* ---- 鐞涖劑娼伴敍鍫濆枎娑擃厽鈧勭箒閼硅绱濇稉宥囨暏缁绢垶绮﹂敍?--- */
-            --c-bg: #0B0E11;          /* 妞ょ敻娼伴張鈧ǎ鍗炵湴 */
-            --c-surface: #14181D;     /* 娑撯偓缁狙嶇窗閸楋紕澧?/ 闂堛垺婢?*/
-            --c-surface-2: #1C222A;   /* 娴滃瞼楠囬敍姘付娴?/ 閹稿鎸虫惔?*/
-            --c-surface-3: #262E38;   /* 娑撳楠囬敍姝╫ver / 濠碘偓濞?*/
+            /* ---- 表面（冷中性深色，不用纯黑）---- */
+            --c-bg: #0B0E11;          /* 页面最深层 */
+            --c-surface: #14181D;     /* 一级：卡片 / 面板 */
+            --c-surface-2: #1C222A;   /* 二级：控件 / 按钮底 */
+            --c-surface-3: #262E38;   /* 三级：hover / 激活 */
 
-            /* ---- 閸欐垳绗ｇ痪鍖＄礄閺囧じ鍞?border閿涘矂浼╅崗宥呭閸濆秶娲呭Ο鈥崇€烽敍?--- */
-            --c-line: #232A33;        /* 姒涙顓婚崚鍡涙 */
-            --c-line-strong: #38424F; /* 鏉堟挸鍙嗗?/ 閹剙浠?*/
+            /* ---- 发丝线（替代 border，避免影响盒模型）---- */
+            --c-line: #232A33;        /* 默认分隔 */
+            --c-line-strong: #38424F; /* 输入框 / 悬停 */
 
-            /* ---- 閺傚洦婀伴敍鍫滅瑝閻劎鍑介惂鏂ょ礉闂勫秳缍嗛崚铏规簜閿?--- */
-            --c-text: #F2F5F8;        /* 娑?*/
-            --c-text-2: #9AA6B4;      /* 濞嗏槄绱伴弽鍥╊劮 / 鐠囧瓨妲?/ 閸楃姳缍?*/
-            --c-text-3: #5F6B7A;      /* 瀵唻绱扮粋浣烘暏 / 瀵邦喗鏁?*/
+            /* ---- 文本（不用纯白，降低刺眼）---- */
+            --c-text: #F2F5F8;        /* 主 */
+            --c-text-2: #9AA6B4;      /* 次：标签 / 说明 / 占位 */
+            --c-text-3: #5F6B7A;      /* 弱：禁用 / 微注 */
 
-            /* ---- 闂冪喍绱為懝璇х窗閸忋劌绨查悽銊ユ暜娑撯偓妤傛﹢銈遍崪宀冨 ---- */
-            --c-team-a: #FF4D5E;      /* A 闂?閻濆﹦鎲电痪?*/
-            --c-team-b: #3D9BFF;      /* B 闂?婢垛晞鎽?*/
-            --c-brand: #00E5A0;       /* 閸濅胶澧?/ 鐞涘苯濮?/ 鏉╂稖顢戞稉?*/
-            --c-brand-ink: #06281D;   /* 閸濅胶澧濋懝韫瑐閻ㄥ嫭鏋冪€?*/
-            --c-gold: #FFC53D;        /* 閹存劕姘?/ 婵傛牜澧?*/
+            /* ---- 队伍色：全应用唯一高饱和色 ---- */
+            --c-team-a: #FF4D5E;      /* A 队 珊瑚红 */
+            --c-team-b: #3D9BFF;      /* B 队 天蓝 */
+            --c-brand: #00E5A0;       /* 品牌 / 行动 / 进行中 */
+            --c-brand-ink: #06281D;   /* 品牌色上的文字 */
+            --c-gold: #FFC53D;        /* 成就 / 奖牌 */
 
-            /* ---- 鐠囶厺绠?---- */
+            /* ---- 语义 ---- */
             --c-success: #00E5A0;
             --c-warning: #FFB020;
             --c-danger: #FF4D5E;
 
-            /* ---- 閹烘帞澧?---- */
+            /* ---- 排版 ---- */
             --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC',
                          'HarmonyOS Sans SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
             --font-num: 'Barlow Condensed', 'Oswald', 'Archivo Narrow',
@@ -55,18 +55,18 @@
             --tracking-tight: -.01em;
             --tracking-wide: .04em;
 
-            /* ---- 缁屾椽妫块敍?px 閸╂椽顣堕敍?--- */
+            /* ---- 空间（4px 基频）---- */
             --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 20px;
             --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
 
-            /* ---- 閸﹀棜顫?---- */
-            --r-sm: 6px;    /* 鏉堟挸鍙嗗?/ chip / 鐏忓繐绐樼粩?*/
-            --r-md: 10px;   /* 閹稿鎸?/ 鐏忓繐宕?*/
-            --r-lg: 14px;   /* 閸楋紕澧?/ 闂堛垺婢?*/
-            --r-xl: 20px;   /* 濡剝鈧?*/
+            /* ---- 圆角 ---- */
+            --r-sm: 6px;    /* 输入框 / chip / 小徽章 */
+            --r-md: 10px;   /* 按钮 / 小卡 */
+            --r-lg: 14px;   /* 卡片 / 面板 */
+            --r-xl: 20px;   /* 模态 */
             --r-full: 999px;
 
-            /* ---- 妤傛ê瀹抽敍鍫熸閼硅弓绗呴梼鏉戝闂団偓閺囨挳鍣搁幍宥呭讲鐟欎緤绱?--- */
+            /* ---- 高度（暗色下阴影需更重才可见）---- */
             --e-1: 0 1px 2px rgba(0, 0, 0, .40);
             --e-2: 0 2px 8px rgba(0, 0, 0, .45);
             --e-3: 0 8px 24px rgba(0, 0, 0, .55);
@@ -74,16 +74,16 @@
             --line-1: inset 0 0 0 1px var(--c-line);
             --line-2: inset 0 0 0 1px var(--c-line-strong);
 
-            /* ---- 閸斻劍鏅?---- */
+            /* ---- 动效 ---- */
             --dur-1: 120ms; --dur-2: 200ms; --dur-3: 320ms;
             --ease-out: cubic-bezier(.22, 1, .36, 1);
             --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
 
-            /* ---- 鐏炲倻楠?---- */
+            /* ---- 层级 ---- */
             --z-sticky: 100; --z-overlay: 200; --z-modal: 300; --z-toast: 400;
         }
 
-        /* ---- 閸╄櫣顢呯仦?reset ---- */
+        /* ---- 基础层 reset ---- */
 
         * {
             margin: 0;
@@ -91,7 +91,7 @@
             box-sizing: border-box;
         }
 
-        /* 濠婃艾濮╅弶锛勭矎閺嶅嘲绱￠崠鏍电礄娑撳秴鍟€閸忋劌鐪梾鎰閿涘奔绻氶悾娆愮泊閸斻劎鍤庣槐顫礆 */
+        /* 滚动条细样式化（不再全局隐藏，保留滚动线索） */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -126,7 +126,7 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* 閺嬩焦璐伴惃鍕Е娴煎秷澹婂娑樻纯閸忓绱檕pacity 閳?.06閿涘奔绮庨弳妤冦仛濠曟梹鎸辩€广倗浼呴崗澶涚礆 */
+        /* 极淡的队伍色氛围光（opacity ≤ .06，仅暗示演播室灯光） */
         body::before {
             content: '';
             position: fixed;
@@ -141,7 +141,7 @@
             z-index: 0;
         }
 
-        /* ---- 闁瀚ㄦ稉搴ｅ妽閻?---- */
+        /* ---- 选择与焦点 ---- */
         ::selection {
             background: rgba(0, 229, 160, 0.28);
             color: var(--c-text);
@@ -153,7 +153,7 @@
             border-radius: var(--r-sm);
         }
 
-        /* ---- 閺佹澘鐡ц箛鍛淬€忕粵澶婎啍閿涘牊鐦崚?9閳?0 娑撳秵濮堥崝顭掔礆---- */
+        /* ---- 数字必须等宽（比分 9→10 不抖动）---- */
         .score-number, .score-label, .timer-value, .games-won-dots,
         .stat-value, .stat-card-value, .leaderboard-score, .expense-amount,
         .ability-stat-value, [class*='number'], [class*='count'] {
@@ -161,7 +161,7 @@
             font-feature-settings: 'tnum' 1;
         }
 
-        /* ---- 閸斻劍鏅ラ梽宥囬獓 ---- */
+        /* ---- 动效降级 ---- */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
@@ -274,7 +274,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 妞ょ敻娼伴崚鍥ㄥ床閸斻劎鏁炬晶鐐插繁 */
+        /* 页面切换动画增强 */
         .screen.fade-out {
             animation: fadeOut 0.2s ease forwards;
         }
@@ -284,7 +284,7 @@
             to { opacity: 0; }
         }
 
-        /* 缁岃櫣濮搁幀浣风喘閸?*/
+        /* 空状态优化 */
         .empty-state-enhanced {
             text-align: center;
             padding: 60px 20px;
@@ -337,7 +337,7 @@
             box-shadow: 0 10px 25px rgba(104, 57, 232, 0.35);
         }
 
-        /* 妤犮劍鐏︾仦蹇撳鏉炶姤鏅ラ弸?*/
+        /* 骨架屏加载效果 */
         .skeleton {
             background: linear-gradient(90deg, #F0EBFF 25%, #E8E0FF 50%, #F0EBFF 75%);
             background-size: 200% 100%;
@@ -364,7 +364,7 @@
             width: 60%;
         }
 
-        /* 閸旂姾娴囬崝銊ф暰 */
+        /* 加载动画 */
         .loading-spinner {
             width: 40px;
             height: 40px;
@@ -378,8 +378,8 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ==================== 鐠佹澘鍨庨弶鎸庣壉瀵?==================== */
-        /* ===== 3b 鐠佹澘鍨庨弶?===== */
+        /* ==================== 记分板样式 ==================== */
+        /* ===== 3a 导航 ===== */
         .scoreboard-wrapper {
             background: var(--c-surface);
             box-shadow: var(--line-1);
@@ -390,7 +390,7 @@
             overflow: hidden;
         }
 
-        /* 妞ゅ爼鍎?3px 閸濅胶澧濋懝鍙夋蒋 閳?濠曟梹鎸辩€广倛顔囬崚鍡欏閺嶅洩鐦?*/
+        /* 顶部 3px 品牌色条，演播室记分牌标识 */
         .scoreboard-wrapper::before {
             content: '';
             position: absolute;
@@ -477,7 +477,7 @@
             margin-bottom: var(--sp-5);
         }
 
-        /* 鍝嶅簲寮忚鍐欏凡闆嗕腑鍒版枃浠舵湯灏剧殑 @media 鍖?*/
+        /* ---- 数字必须等宽（比分 9→10 不抖动）---- */
 
         .team-section {
             flex: 1;
@@ -490,7 +490,7 @@
             user-select: none;
         }
 
-        /* 闂冪喍绱炵拠鍡楀焼閿涙岸銆婇柈?3px 閼瑰弶娼敍鍫濆絿娴狅絾鏆ｉ崷鍫㈡鏉?+ 閸嬪繒些閹舵洖濂栭敍?*/
+        /* 队伍识别：顶部 3px 色条（取代整圈白边 + 偏移投影）*/
         .team-section.team-a {
             border-top: 3px solid var(--c-team-a);
         }
@@ -568,7 +568,7 @@
             background: var(--c-team-b);
         }
 
-        /* 濠曟梹鎸辩€广倛顔囬崚鍡欏閺勵垳鐓╄ぐ顫礉娑撳秵妲搁崷?*/
+        /* 能力分析移动端优化 */
         .score-circle {
             width: clamp(120px, 34vw, 180px);
             aspect-ratio: 3 / 4;
@@ -660,7 +660,7 @@
             padding: var(--sp-5) 0;
         }
 
-        /* VS 閺€閫涜礋鐏忓繐绐樼粩鐙呯礉閸掔娀娅庢径褍娓?+ 閸欐垵鍘?*/
+        /* VS 改为小徽章，删除大圆 + 发光 */
         .vs-text {
             font-family: var(--font-num);
             font-size: var(--fs-lg);
@@ -777,7 +777,7 @@
             background: #FFC44D;
         }
 
-        /* 閼虫粌鍤妯瑰瘨閿涘牆甯?.winner-glow 閺?CSS 鐎规矮绠熼敍灞绢劃婢跺嫪绔撮獮璺虹暰娑斿绱?*/
+        /* 胜出高亮（.winner-glow 由 CSS 定义，此处一并定义）*/
         .score-circle.winner {
             animation: winnerPulse var(--dur-3) var(--ease-spring);
             box-shadow: var(--line-2), 0 0 0 2px var(--c-team-a), 0 0 24px rgba(255, 77, 94, 0.35);
@@ -796,7 +796,7 @@
             50% { transform: scale(1.06); }
         }
 
-        /* ===== 3c 閫氱敤鎺т欢锛氭寜閽?===== */
+        /* ===== 3a 导航 ===== */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -833,7 +833,7 @@
             background: #FF7079;
         }
 
-        /* .btn-dark 璇箟鏀逛负 .btn-ghost锛氫腑鎬ч潰 + 鍙戜笣绾?*/
+        /* .btn-dark 已重命名为 .btn-ghost（surface-2 背景 + 细边框）*/
         .btn-dark {
             background: var(--c-surface-2);
             color: var(--c-text);
@@ -1026,7 +1026,7 @@
             padding: 20px;
         }
 
-        /* ==================== 閸樺棗褰剁拋鏉跨秿閺嶅嘲绱?==================== */
+        /* ==================== 历史记录样式 ==================== */
         .history-wrapper {
             padding: 20px;
         }
@@ -1255,7 +1255,7 @@
             margin-top: 8px;
         }
 
-        /* 濮ｆ棁绂岀拠锔藉剰濡剝鈧焦顢?*/
+        /* 比赛详情模态框 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -1405,7 +1405,7 @@
             background: #5a2fd1;
         }
 
-        /* ==================== 閹烘帟顢戝婊勭壉瀵?==================== */
+        /* ==================== 排行榜样式 ==================== */
         .leaderboard-wrapper {
             padding: 20px;
         }
@@ -1645,7 +1645,7 @@
             text-align: right;
         }
 
-        /* ==================== 閹存劕姘ㄧ化鑽ょ埠閺嶅嘲绱?==================== */
+        /* ==================== 成就系统样式 ==================== */
         .achievements-wrapper {
             padding: 20px;
         }
@@ -1828,7 +1828,7 @@
             50% { transform: scale(1.2); }
         }
 
-        /* ==================== 鐠佸墽鐤嗘い鐢告桨閺嶅嘲绱?==================== */
+        /* ==================== 设置页面样式 ==================== */
         .settings-wrapper {
             padding: 20px;
         }
@@ -2091,7 +2091,7 @@
             opacity: 0.6;
         }
 
-        /* ==================== 閸忋劌鐪粔璇插З缁旑垯绱崠?==================== */
+        /* ==================== 全局移动端优化 ==================== */
         @media (max-width: 768px) {
             .container {
                 padding: 12px;
@@ -2198,7 +2198,7 @@
                 font-size: 0.75rem;
             }
 
-            /* 閺呴缚鍏橀崚鍡欑矋缁夎濮╃粩顖欑喘閸?*/
+            /* 智能分组移动端优化 */
             .grouping-result {
                 padding: 12px;
             }
@@ -2220,7 +2220,7 @@
                 font-size: 0.8rem;
             }
 
-            /* 鐠愬湱鏁ょ拋锛勭暬缁夎濮╃粩顖欑喘閸?*/
+            /* 费用计算移动端优化 */
             .expense-type-card,
             .split-mode-card {
                 padding: 12px;
@@ -2241,7 +2241,7 @@
                 font-size: 0.85rem;
             }
 
-            /* 閸樺棗褰剁拋鏉跨秿缁夎濮╃粩顖欑喘閸?*/
+            /* 历史记录移动端优化 */
             .stats-summary-card {
                 padding: 20px;
             }
@@ -2271,7 +2271,7 @@
                 padding: 12px;
             }
 
-            /* 閹烘帟顢戝婊呅╅崝銊ь伂娴兼ê瀵?*/
+            /* 排行榜移动端优化 */
             .tab-item {
                 padding: 8px 12px;
             }
@@ -2329,7 +2329,7 @@
                 font-size: 0.95rem;
             }
 
-            /* 閼宠棄濮忛崚鍡樼€界粔璇插З缁旑垯绱崠?*/
+            /* 能力分析移动端优化 */
             .player-info-card {
                 padding: 20px;
             }
@@ -2376,7 +2376,7 @@
                 font-size: 0.8rem;
             }
 
-            /* 閹存劕姘ㄧ化鑽ょ埠缁夎濮╃粩顖欑喘閸?*/
+            /* 成就系统移动端优化 */
             .achievements-progress-card {
                 padding: 20px;
                 gap: 20px;
@@ -2420,7 +2420,7 @@
                 font-size: 0.7rem;
             }
 
-            /* 鐠佸墽鐤嗘い鐢告桨缁夎濮╃粩顖欑喘閸?*/
+            /* 设置页面移动端优化 */
             .settings-card {
                 padding: 14px;
             }
@@ -2500,7 +2500,7 @@
                 font-size: 0.75rem;
             }
 
-            /* Footer缁夎濮╃粩顖欑喘閸?*/
+            /* Footer移动端优化 */
             .footer-content {
                 padding: 8px 14px;
                 gap: 6px;
@@ -2518,7 +2518,7 @@
                 font-size: 0.75rem;
             }
 
-            /* 濡剝鈧焦顢嬬粔璇插З缁旑垯绱崠?*/
+            /* 模态框移动端优化 */
             .modal-overlay {
                 padding: 12px;
             }
@@ -2543,7 +2543,7 @@
                 padding: 8px 12px;
             }
 
-            /* 闁氨鐓″鍦崶缁夎濮╃粩顖欑喘閸?*/
+            /* 通知弹窗移动端优化 */
             .notification {
                 padding: 16px;
                 max-width: calc(100% - 24px);
@@ -2589,7 +2589,7 @@
             }
         }
 
-        /* ==================== 閺傜増澧滃鏇烆嚤閺嶅嘲绱?==================== */
+        /* ==================== 新手引导样式 ==================== */
         .onboarding-overlay {
             position: fixed;
             top: 0;
@@ -2745,7 +2745,7 @@
             box-shadow: 0 8px 20px rgba(104, 57, 232, 0.3);
         }
 
-        /* ==================== 韫囶偅宓庨幙宥勭稊閺嶅嘲绱?==================== */
+        /* ==================== 快捷操作样式 ==================== */
         .quick-actions-panel {
             position: fixed;
             top: 50%;
@@ -2802,7 +2802,7 @@
             color: #0133A4;
         }
 
-        /* 缁夎濮╃粩顖欑喘閸?*/
+        /* 移动端优化 */
         @media (max-width: 480px) {
             .onboarding-modal {
                 padding: 30px 20px;
@@ -3084,8 +3084,8 @@
             gap: 12px;
         }
 
-        /* .btn-large / .btn-icon / .btn-outline 鍩虹瀹氫箟瑙?3c 閫氱敤鎺т欢鍖猴紝
-           鍝嶅簲寮忚鍐欓泦涓湪鏂囦欢鏈熬 @media 鍖?*/
+        /* .btn-large / .btn-icon / .btn-outline 尺寸规则见 3c 通用控件；
+           响应式覆写统一收敛到文件末尾 @media 区 */
 
         .group-results-section {
             background: white;
@@ -3290,7 +3290,7 @@
             opacity: 0.6;
         }
 
-        /* ==================== 鐠愬湱鏁ょ拋锛勭暬閺嶅嘲绱?==================== */
+        /* ==================== 费用计算样式 ==================== */
         .expense-container {
             padding: 20px;
         }
@@ -3705,7 +3705,7 @@
             transform: translateX(4px);
         }
 
-        /* 鐠愬湱鏁ょ拠锔藉剰濡剝鈧焦顢?*/
+        /* 费用详情模态框 */
         .expense-detail-modal {
             position: fixed;
             top: 0;
@@ -3767,7 +3767,7 @@
             color: white;
         }
 
-        /* ==================== 闁澧滈懗钘夊閸掑棙鐎介弽宄扮础 ==================== */
+        /* ==================== 选手能力分析样式 ==================== */
         .ability-container {
             padding: 20px;
         }
@@ -4006,7 +4006,7 @@
             font-size: 0.95rem;
         }
 
-        /* ===== 3c 閫氱敤鎺т欢锛氳〃鍗?===== */
+        /* ===== 3a 导航 ===== */
         input, select {
             width: 100%;
             padding: var(--sp-3) var(--sp-4);
@@ -4104,7 +4104,7 @@
             transform: translateX(5px);
         }
 
-        /* ===== 3a 鐎佃壈鍩?===== */
+        /* ===== 3a 导航 ===== */
         .nav-tabs {
             display: flex;
             list-style: none;
@@ -4153,7 +4153,7 @@
             font-weight: var(--fw-semibold);
         }
 
-        /* 閸濆秴绨插蹇氼洬閸愭瑥鍑￠梿鍡曡厬閸掔増鏋冩禒鑸垫汞鐏忓墽娈?@media 閸栫尨绱欑憴?鎼?.2 缁撅箑鐣鹃敍?*/
+        /* 响应式覆写已集中到文件末尾的 @media 区（见 §4.2 约定） */
 
         .weather-container {
             position: fixed;
@@ -4259,7 +4259,7 @@
             margin-bottom: 30px;
         }
 
-        /* ===== 3d 卡片族（统一：surface + 发丝线 + 圆角，hover 仅变背景）===== */
+        ================================================================ */
         .stat-card {
             background: var(--c-surface);
             box-shadow: var(--line-1);
@@ -4431,7 +4431,7 @@
             }
         }
 
-        /* ==================== 鎼村棛顨㈤崝銊ф暰缁崵绮?==================== */
+        /* ==================== 庆祝动画系统 ==================== */
         .confetti-container {
             position: fixed;
             top: 0;
@@ -4545,7 +4545,7 @@
             }
         }
 
-        /* ==================== 閸掑棔闊╅崡锛勫閺嶅嘲绱?==================== */
+        /* ==================== 分享卡片样式 ==================== */
         .share-card-modal {
             position: fixed;
             top: 0;
@@ -4790,7 +4790,7 @@
             box-shadow: 0 4px 12px rgba(104, 57, 232, 0.3);
         }
 
-        /* ==================== 閹存劕姘ㄧ化鑽ょ埠閺嶅嘲绱?==================== */
+        /* ==================== 成就系统样式 ==================== */
         .achievement-badge {
             position: fixed;
             top: 20px;
@@ -4918,7 +4918,7 @@
             margin-top: 5px;
         }
 
-        /* ==================== 缂佺喕顓搁崶鎹愩€冮弽宄扮础 ==================== */
+        /* ==================== 统计图表样式 ==================== */
         .charts-container {
             margin-bottom: 30px;
         }
@@ -4950,7 +4950,7 @@
             height: 250px;
         }
 
-        /* ==================== 妤傛ê鍘滈弮璺哄煝閺嶅嘲绱?==================== */
+        /* ==================== 高光时刻样式 ==================== */
         .highlight-badge {
             position: fixed;
             top: 80px;
@@ -5018,7 +5018,7 @@
             font-weight: 600;
         }
 
-        /* ==================== 閹烘帟顢戝婊勭壉瀵?==================== */
+        /* ==================== 排行榜样式 ==================== */
         .leaderboard-container {
             padding: 20px;
         }
@@ -5137,7 +5137,7 @@
             color: transparent;
         }
 
-        /* ==================== 婢舵潙鍎氱化鑽ょ埠閺嶅嘲绱?==================== */
+        /* ==================== 头像系统样式 ==================== */
         .avatar-item {
             width: 60px;
             height: 60px;
@@ -5224,8 +5224,8 @@
             }
         }
         /* ================================================================
-           閸濆秴绨插蹇氼洬閸愭瑩娉︽稉顓炲隘閿涘煪?.2閿涙氨绮嶆禒璺哄涧鐎规矮绠熸稉鈧▎鈽呯礉閸濆秴绨插蹇氼洬閸愭瑥鍙忛柈銊╂肠娑擃厺绨銈忕礆
-           閺傤厾鍋ｉ敍?68px閿涘牆閽╅弶鍖＄礆/ 480px閿涘牆銇囬幍瀣簚閿? 360px閿涘牆鐨幍瀣簚閿?
+           响应式覆写集中区（§4.2：组件只定义一次，响应式覆写全部集中于此）
+           断点：768px（平板）/ 480px（大手机）/ 360px（小手机）
            ================================================================ */
 
         @media (max-width: 768px) {
@@ -5247,7 +5247,7 @@
             }
         }
 
-        /* ---- 3b 璁板垎鏉垮搷搴斿紡 ---- */
+        /* ---- 3b 记分板响应式 ---- */
         @media (max-width: 600px) {
             .scoreboard-main {
                 flex-direction: column;
@@ -5306,7 +5306,7 @@
                 font-size: var(--fs-xl);
             }
 
-            /* 鎸夐挳鍦ㄥ皬灞忎繚鐣欐枃瀛楋紙缂╃煭鏂囨鑰岄潪闅愯棌锛夛紝涓嶅啀 display:none */
+            /* ==================== 选手能力分析样式 ==================== */
             .control-btn .btn-text {
                 font-size: var(--fs-2xs);
             }
@@ -5345,18 +5345,18 @@
 <body>
     <div class="container">
         <header>
-            <h1>缂囪姤鐦洪悶鍐╃€柅鐔活唶閸掑棙婢?span class="version-badge">娑撴挷绗熼悧?/span></h1>
+            <h1>羽毛球极速记分板<span class="version-badge">专业版</span></h1>
         </header>
 
         <ul class="nav-tabs">
-            <li class="nav-tab active" data-screen="scoreboard">鐠佹澘鍨庨弶?/li>
-            <li class="nav-tab" data-screen="grouping">閺呴缚鍏橀崚鍡欑矋</li>
-            <li class="nav-tab" data-screen="expense">鐠愬湱鏁ょ拋锛勭暬</li>
-            <li class="nav-tab" data-screen="history">閸樺棗褰剁拋鏉跨秿</li>
-            <li class="nav-tab" data-screen="leaderboard">閹烘帟顢戝?/li>
-            <li class="nav-tab" data-screen="player-ability">閼宠棄濮忛崚鍡樼€?/li>
-            <li class="nav-tab" data-screen="achievements">閹存劕姘ㄧ化鑽ょ埠</li>
-            <li class="nav-tab" data-screen="settings">鐠佸墽鐤?/li>
+            <li class="nav-tab active" data-screen="scoreboard">记分板</li>
+            <li class="nav-tab" data-screen="grouping">智能分组</li>
+            <li class="nav-tab" data-screen="expense">费用计算</li>
+            <li class="nav-tab" data-screen="history">历史记录</li>
+            <li class="nav-tab" data-screen="leaderboard">排行榜</li>
+            <li class="nav-tab" data-screen="player-ability">能力分析</li>
+            <li class="nav-tab" data-screen="achievements">成就系统</li>
+            <li class="nav-tab" data-screen="settings">设置</li>
         </ul>
 
         <!-- Scoreboard Screen -->
@@ -5365,13 +5365,13 @@
                 <div class="scoreboard-header">
                     <div class="header-left">
                         <div class="timer-display">
-                            <span class="timer-icon">閳存唻绗?/span>
+                            <span class="timer-icon">⏱️</span>
                             <span class="timer-value" id="match-timer">00:00</span>
                         </div>
                     </div>
                     <div class="header-center">
                         <div class="game-indicator">
-                            <span id="current-game">缁?1 鐏炩偓</span>
+                            <span id="current-game">第 1 局</span>
                         </div>
                     </div>
                     <div class="header-right">
@@ -5386,18 +5386,18 @@
                 <div class="scoreboard-main">
                     <div class="team-section team-a">
                         <div class="team-header">
-                            <div class="team-avatar" id="team-a-avatar" onclick="selectAvatar('a')">棣冨緝</div>
+                            <div class="team-avatar" id="team-a-avatar" onclick="selectAvatar('a')">🏸</div>
                             <div class="team-name-wrapper">
-                                <input type="text" class="team-name-input" id="team-a-name" value="瀹歌鲸鏌? onclick="this.select()">
+                                <input type="text" class="team-name-input" id="team-a-name" value="己方" onclick="this.select()">
                             </div>
                             <div class="games-won-dots" id="team-a-games"></div>
                         </div>
                         <div class="score-circle" id="score-a-circle" onclick="updateScore('a', 1)">
                             <span class="score-number" id="team-a-score">0</span>
-                            <span class="score-label">閸?/span>
+                            <span class="score-label">分</span>
                         </div>
                         <div class="score-buttons">
-                            <button class="score-btn minus" onclick="updateScore('a', -1)">閳?/button>
+                            <button class="score-btn minus" onclick="updateScore('a', -1)">−</button>
                             <button class="score-btn plus" onclick="updateScore('a', 1)">+</button>
                         </div>
                     </div>
@@ -5409,71 +5409,71 @@
 
                     <div class="team-section team-b">
                         <div class="team-header">
-                            <div class="team-avatar" id="team-b-avatar" onclick="selectAvatar('b')">棣冨緝</div>
+                            <div class="team-avatar" id="team-b-avatar" onclick="selectAvatar('b')">🏸</div>
                             <div class="team-name-wrapper">
-                                <input type="text" class="team-name-input" id="team-b-name" value="鐎佃鏌? onclick="this.select()">
+                                <input type="text" class="team-name-input" id="team-b-name" value="对方" onclick="this.select()">
                             </div>
                             <div class="games-won-dots" id="team-b-games"></div>
                         </div>
                         <div class="score-circle" id="score-b-circle" onclick="updateScore('b', 1)">
                             <span class="score-number" id="team-b-score">0</span>
-                            <span class="score-label">閸?/span>
+                            <span class="score-label">分</span>
                         </div>
                         <div class="score-buttons">
-                            <button class="score-btn minus" onclick="updateScore('b', -1)">閳?/button>
+                            <button class="score-btn minus" onclick="updateScore('b', -1)">−</button>
                             <button class="score-btn plus" onclick="updateScore('b', 1)">+</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="game-mode-section">
-                    <div class="mode-label">鐠ф稑鍩楅柅澶嬪</div>
+                    <div class="mode-label">赛制选择</div>
                     <div class="game-mode-chips">
-                        <div class="mode-chip active" data-mode="21" onclick="setGameMode(21)">21閸?/div>
-                        <div class="mode-chip" data-mode="15" onclick="setGameMode(15)">15閸?/div>
-                        <div class="mode-chip" data-mode="11" onclick="setGameMode(11)">11閸?/div>
-                        <div class="mode-chip" data-mode="custom" onclick="setGameMode('custom')">閼奉亜鐣炬稊?/div>
+                        <div class="mode-chip active" data-mode="21" onclick="setGameMode(21)">21分</div>
+                        <div class="mode-chip" data-mode="15" onclick="setGameMode(15)">15分</div>
+                        <div class="mode-chip" data-mode="11" onclick="setGameMode(11)">11分</div>
+                        <div class="mode-chip" data-mode="custom" onclick="setGameMode('custom')">自定义</div>
                     </div>
                 </div>
 
                 <div class="control-buttons">
                     <button class="control-btn secondary" onclick="undoScore()">
-                        <span class="btn-icon">閳晪绗?/span>
-                        <span class="btn-text">閹俱倝鏀?/span>
+                        <span class="btn-icon">↩️</span>
+                        <span class="btn-text">撤销</span>
                     </button>
                     <button class="control-btn primary" id="timer-button" onclick="toggleTimer()">
-                        <span class="btn-icon">閳昏绗?/span>
-                        <span class="btn-text">瀵偓婵鐦挧?/span>
+                        <span class="btn-icon">▶️</span>
+                        <span class="btn-text">开始比赛</span>
                     </button>
                     <button class="control-btn warning" onclick="endGame()">
-                        <span class="btn-icon">棣冨极</span>
-                        <span class="btn-text">缂佹挻娼張顒€鐪?/span>
+                        <span class="btn-icon">🏁</span>
+                        <span class="btn-text">结束本局</span>
                     </button>
                     <button class="control-btn secondary" onclick="resetMatch()">
-                        <span class="btn-icon">棣冩敡</span>
-                        <span class="btn-text">闁插秶鐤?/span>
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-text">重置</span>
                     </button>
                 </div>
             </div>
 
             <!-- Result Form -->
             <div id="result-form" class="result-card" style="display: none;">
-                <h2 class="result-title">濮ｆ棁绂岀紒鎾寸亯</h2>
+                <h2 class="result-title">比赛结果</h2>
                 <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
                     <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label for="team-a-names">瀹歌鲸鏌熼柅澶嬪</label>
-                        <input type="text" id="team-a-names" placeholder="娓氬顩ч敍姘斥偓浣哄竾/閼颁礁绱?>
+                        <label for="team-a-names">己方选手</label>
+                        <input type="text" id="team-a-names" placeholder="例如：老王/老张">
                     </div>
                     <div style="display: flex; align-items: flex-end; padding-bottom: 24px;">vs</div>
                     <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label for="team-b-names">鐎佃鏌熼柅澶嬪</label>
-                        <input type="text" id="team-b-names" placeholder="娓氬顩ч敍姘毈閺?鐏忓繘妾?>
+                        <label for="team-b-names">对方选手</label>
+                        <input type="text" id="team-b-names" placeholder="例如：小李/小陈">
                     </div>
                 </div>
                 <div class="control-panel">
-                    <button class="btn btn-primary" onclick="saveMatchResult()">娣囨繂鐡ㄥВ鏃囩</button>
-                    <button class="btn btn-success" onclick="openShareCardModal()">閻㈢喐鍨氶崚鍡曢煩閸楋紕澧?閴?/button>
-                    <button class="btn btn-dark" onclick="shareResult()">閸掑棔闊╃紒鎾寸亯</button>
+                    <button class="btn btn-primary" onclick="saveMatchResult()">保存比赛</button>
+                    <button class="btn btn-success" onclick="openShareCardModal()">生成分享卡片 ✨</button>
+                    <button class="btn btn-dark" onclick="shareResult()">分享结果</button>
                 </div>
             </div>
         </div>
@@ -5482,30 +5482,30 @@
         <div id="grouping" class="screen">
             <div class="grouping-container">
                 <div class="grouping-header">
-                    <h2 class="section-title">棣冨緝 閺呴缚鍏橀崚鍡欑矋缁崵绮?/h2>
-                    <p class="section-subtitle">韫囶偊鈧喓鏁撻幋鎰彆楠炲啿鎮庨悶鍡欐畱濮ｆ棁绂岄崚鍡欑矋</p>
+                    <h2 class="section-title">🏸 智能分组系统</h2>
+                    <p class="section-subtitle">快速生成公平合理的比赛分组</p>
                 </div>
 
                 <div class="grouping-main">
                     <div class="grouping-left">
                         <div class="input-section">
                             <label class="input-label">
-                                <span class="label-icon">棣冩噧</span>
-                                閸欏倷绗屾禍鍝勬喅
+                                <span class="label-icon">👥</span>
+                                参与人员
                             </label>
-                            <textarea id="players-list" class="players-textarea" placeholder="濮ｅ繗顢戞潏鎾冲弳娑撯偓娑擃亜鎮曠€涙绱濇笟瀣洤閿?#10;瀵姳绗?#10;閺夊骸娲?#10;閻滃绨?#10;鐠ч潧鍙?#10;闁藉彉绔?#10;鐎涙瑥鍙? rows="8"></textarea>
+                            <textarea id="players-list" class="players-textarea" placeholder="每行输入一个名字，例如：&#10;张三&#10;李四&#10;王五&#10;赵六&#10;钱七&#10;孙八" rows="8"></textarea>
                             <div class="player-count-hint">
-                                瀹歌尪绶崗?<span id="player-count">0</span> 娴?
+                                已输入 <span id="player-count">0</span> 人
                             </div>
                         </div>
 
                         <div class="quick-add-section">
-                            <label class="input-label">韫囶偊鈧喐鍧婇崝?/label>
+                            <label class="input-label">快速添加</label>
                             <div class="quick-add-buttons">
-                                <button class="quick-add-btn" onclick="quickAddPlayer('瀵姳绗?)">+ 瀵姳绗?/button>
-                                <button class="quick-add-btn" onclick="quickAddPlayer('閺夊骸娲?)">+ 閺夊骸娲?/button>
-                                <button class="quick-add-btn" onclick="quickAddPlayer('閻滃绨?)">+ 閻滃绨?/button>
-                                <button class="quick-add-btn" onclick="quickAddPlayer('鐠ч潧鍙?)">+ 鐠ч潧鍙?/button>
+                                <button class="quick-add-btn" onclick="quickAddPlayer('张三')">+ 张三</button>
+                                <button class="quick-add-btn" onclick="quickAddPlayer('李四')">+ 李四</button>
+                                <button class="quick-add-btn" onclick="quickAddPlayer('王五')">+ 王五</button>
+                                <button class="quick-add-btn" onclick="quickAddPlayer('赵六')">+ 赵六</button>
                             </div>
                         </div>
                     </div>
@@ -5513,24 +5513,24 @@
                     <div class="grouping-right">
                         <div class="mode-section">
                             <label class="input-label">
-                                <span class="label-icon">閳挎瑱绗?/span>
-                                閸掑棛绮嶅Ο鈥崇础
+                                <span class="label-icon">⚙️</span>
+                                分组模式
                             </label>
                             <div class="mode-cards">
                                 <div class="mode-card active" data-mode="random" onclick="selectGroupMode('random')">
-                                    <div class="mode-icon">棣冨箟</div>
-                                    <div class="mode-name">闂呭繑婧€閸掑棛绮?/div>
-                                    <div class="mode-desc">鐎瑰苯鍙忛梾蹇旀簚闁板秴顕?/div>
+                                    <div class="mode-icon">🎲</div>
+                                    <div class="mode-name">随机分组</div>
+                                    <div class="mode-desc">完全随机配对</div>
                                 </div>
                                 <div class="mode-card" data-mode="balanced" onclick="selectGroupMode('balanced')">
-                                    <div class="mode-icon">閳挎牭绗?/div>
-                                    <div class="mode-name">鐎圭偛濮忛獮瀹犮€€</div>
-                                    <div class="mode-desc">瀵搫鎬ラ幖顓㈠帳閺囨潙鍙曢獮?/div>
+                                    <div class="mode-icon">⚖️</div>
+                                    <div class="mode-name">实力平衡</div>
+                                    <div class="mode-desc">强弱搭配更公平</div>
                                 </div>
                                 <div class="mode-card" data-mode="rotation" onclick="selectGroupMode('rotation')">
-                                    <div class="mode-icon">棣冩敡</div>
-                                    <div class="mode-name">鏉烆喗宕茬挧娑樺煑</div>
-                                    <div class="mode-desc">娴滆桨姹夐柈鍊熷厴閹碱厽銆?/div>
+                                    <div class="mode-icon">🔄</div>
+                                    <div class="mode-name">轮换赛制</div>
+                                    <div class="mode-desc">人人都能搭档</div>
                                 </div>
                             </div>
                             <input type="hidden" id="group-mode" value="random">
@@ -5538,21 +5538,21 @@
 
                         <div class="skill-section" id="skill-input-container" style="display: none;">
                             <label class="input-label">
-                                <span class="label-icon">棣冩尛</span>
-                                鐎圭偛濮忕粵澶岄獓
+                                <span class="label-icon">💪</span>
+                                实力等级
                             </label>
-                            <div class="skill-hint">娑撶儤鐦℃担宥夆偓澶嬪鐠佸墽鐤嗙€圭偛濮忕粵澶岄獓閿?-5閸掑棴绱?/div>
+                            <div class="skill-hint">为每位选手设置实力等级（1-5分）</div>
                             <div id="skill-inputs" class="skill-inputs-grid"></div>
                         </div>
 
                         <div class="grouping-actions">
                             <button class="btn btn-primary btn-large" onclick="generateGroups()">
-                                <span class="btn-icon">閴?/span>
-                                閺呴缚鍏橀崚鍡欑矋
+                                <span class="btn-icon">✨</span>
+                                智能分组
                             </button>
                             <button class="btn btn-outline" onclick="clearGroups()">
-                                <span class="btn-icon">棣冩閿?/span>
-                                濞撳懐鈹?
+                                <span class="btn-icon">🗑️</span>
+                                清空
                             </button>
                         </div>
                     </div>
@@ -5560,10 +5560,10 @@
 
                 <div class="group-results-section" id="group-results-section" style="display: none;">
                     <div class="results-header">
-                        <h3 class="results-title">棣冩惖 閸掑棛绮嶇紒鎾寸亯</h3>
+                        <h3 class="results-title">📋 分组结果</h3>
                         <div class="results-actions">
-                            <button class="btn btn-small btn-outline" onclick="regenerateGroups()">棣冩敡 闁插秵鏌婇崚鍡欑矋</button>
-                            <button class="btn btn-small btn-success" onclick="exportGroups()">棣冩憶 鐎电厧鍤?/button>
+                            <button class="btn btn-small btn-outline" onclick="regenerateGroups()">🔄 重新分组</button>
+                            <button class="btn btn-small btn-success" onclick="exportGroups()">📤 导出</button>
                         </div>
                     </div>
                     <div class="group-results" id="group-results"></div>
@@ -5572,8 +5572,8 @@
 
                 <div class="grouping-history-section" id="grouping-history-section">
                     <div class="history-header">
-                        <h3 class="history-title">棣冩憪 閸掑棛绮嶉崢鍡楀蕉</h3>
-                        <button class="btn btn-small btn-outline" onclick="clearGroupingHistory()">濞撳懐鈹栭崢鍡楀蕉</button>
+                        <h3 class="history-title">📜 分组历史</h3>
+                        <button class="btn btn-small btn-outline" onclick="clearGroupingHistory()">清空历史</button>
                     </div>
                     <div class="grouping-history-list" id="grouping-history-list"></div>
                 </div>
@@ -5584,52 +5584,52 @@
         <div id="expense" class="screen">
             <div class="expense-container">
                 <div class="expense-header">
-                    <h2 class="section-title">棣冩尩 鐠愬湱鏁ら崚鍡樻啞鐠侊紕鐣婚崳?/h2>
-                    <p class="section-subtitle">鏉炵粯婢楃拋锛勭暬AA鐠愬湱鏁ら敍灞藉彆楠炲啿鎮庨悶鍡楀瀻閹?/p>
+                    <h2 class="section-title">💰 费用分摊计算器</h2>
+                    <p class="section-subtitle">轻松计算AA费用，公平合理分摊</p>
                 </div>
 
                 <div class="expense-main">
                     <div class="expense-left">
                         <div class="expense-type-section">
                             <label class="input-label">
-                                <span class="label-icon">棣冩惖</span>
-                                鐠愬湱鏁ょ猾璇茬€?
+                                <span class="label-icon">📋</span>
+                                费用类型
                             </label>
                             <div class="expense-type-cards">
-                                <div class="expense-type-card active" data-type="閸﹀搫婀寸拹? onclick="selectExpenseType('閸﹀搫婀寸拹?)">
-                                    <div class="type-icon">棣冨綉閿?/div>
-                                    <div class="type-name">閸﹀搫婀寸拹?/div>
+                                <div class="expense-type-card active" data-type="场地费" onclick="selectExpenseType('场地费')">
+                                    <div class="type-icon">🏟️</div>
+                                    <div class="type-name">场地费</div>
                                 </div>
-                                <div class="expense-type-card" data-type="閻炲啳鍨? onclick="selectExpenseType('閻炲啳鍨?)">
-                                    <div class="type-icon">棣冨緝</div>
-                                    <div class="type-name">閻炲啳鍨?/div>
+                                <div class="expense-type-card" data-type="球费" onclick="selectExpenseType('球费')">
+                                    <div class="type-icon">🏸</div>
+                                    <div class="type-name">球费</div>
                                 </div>
-                                <div class="expense-type-card" data-type="妤楊喚鏁ゅ? onclick="selectExpenseType('妤楊喚鏁ゅ?)">
-                                    <div class="type-icon">棣冩導</div>
-                                    <div class="type-name">妤楊喚鏁ゅ?/div>
+                                <div class="expense-type-card" data-type="饮用水" onclick="selectExpenseType('饮用水')">
+                                    <div class="type-icon">💧</div>
+                                    <div class="type-name">饮用水</div>
                                 </div>
-                                <div class="expense-type-card" data-type="閸忔湹绮? onclick="selectExpenseType('閸忔湹绮?)">
-                                    <div class="type-icon">棣冩憹</div>
-                                    <div class="type-name">閸忔湹绮?/div>
+                                <div class="expense-type-card" data-type="其他" onclick="selectExpenseType('其他')">
+                                    <div class="type-icon">📦</div>
+                                    <div class="type-name">其他</div>
                                 </div>
                             </div>
-                            <input type="hidden" id="expense-type" value="閸﹀搫婀寸拹?>
+                            <input type="hidden" id="expense-type" value="场地费">
                         </div>
 
                         <div class="amount-section">
                             <label class="input-label">
-                                <span class="label-icon">棣冩尲</span>
-                                閹鍣炬０?
+                                <span class="label-icon">💵</span>
+                                总金额
                             </label>
                             <div class="amount-input-wrapper">
-                                <span class="currency-symbol">妤?/span>
+                                <span class="currency-symbol">¥</span>
                                 <input type="number" id="total-amount" class="amount-input" min="0" step="0.01" placeholder="0.00">
                             </div>
                             <div class="quick-amounts">
-                                <button class="quick-amount-btn" onclick="setQuickAmount(50)">50閸?/button>
-                                <button class="quick-amount-btn" onclick="setQuickAmount(100)">100閸?/button>
-                                <button class="quick-amount-btn" onclick="setQuickAmount(150)">150閸?/button>
-                                <button class="quick-amount-btn" onclick="setQuickAmount(200)">200閸?/button>
+                                <button class="quick-amount-btn" onclick="setQuickAmount(50)">50元</button>
+                                <button class="quick-amount-btn" onclick="setQuickAmount(100)">100元</button>
+                                <button class="quick-amount-btn" onclick="setQuickAmount(150)">150元</button>
+                                <button class="quick-amount-btn" onclick="setQuickAmount(200)">200元</button>
                             </div>
                         </div>
                     </div>
@@ -5637,24 +5637,24 @@
                     <div class="expense-right">
                         <div class="split-mode-section">
                             <label class="input-label">
-                                <span class="label-icon">閳挎牭绗?/span>
-                                閸掑棙鎲″Ο鈥崇础
+                                <span class="label-icon">⚖️</span>
+                                分摊模式
                             </label>
                             <div class="split-mode-cards">
                                 <div class="split-mode-card active" data-mode="equal" onclick="selectSplitMode('equal')">
-                                    <div class="mode-icon">閴?/div>
-                                    <div class="mode-name">楠炲啿娼庨崚鍡樻啞</div>
-                                    <div class="mode-desc">濮ｅ繋姹夐獮鍐插瀻</div>
+                                    <div class="mode-icon">➗</div>
+                                    <div class="mode-name">平均分摊</div>
+                                    <div class="mode-desc">每人平分</div>
                                 </div>
                                 <div class="split-mode-card" data-mode="custom" onclick="selectSplitMode('custom')">
-                                    <div class="mode-icon">棣冩惓</div>
-                                    <div class="mode-name">閼奉亜鐣炬稊澶嬬槷娓?/div>
-                                    <div class="mode-desc">閹稿鐦笟瀣瀻闁?/div>
+                                    <div class="mode-icon">📊</div>
+                                    <div class="mode-name">自定义比例</div>
+                                    <div class="mode-desc">按比例分配</div>
                                 </div>
                                 <div class="split-mode-card" data-mode="time" onclick="selectSplitMode('time')">
-                                    <div class="mode-icon">閳存唻绗?/div>
-                                    <div class="mode-name">閹稿妞傞梹?/div>
-                                    <div class="mode-desc">閹稿鐦挧娑欐闂€?/div>
+                                    <div class="mode-icon">⏱️</div>
+                                    <div class="mode-name">按时长</div>
+                                    <div class="mode-desc">按比赛时长</div>
                                 </div>
                             </div>
                             <input type="hidden" id="split-mode" value="equal">
@@ -5662,29 +5662,29 @@
 
                         <div class="participants-section">
                             <label class="input-label">
-                                <span class="label-icon">棣冩噧</span>
-                                閸欏倷绗屾禍鍝勬喅
+                                <span class="label-icon">👥</span>
+                                参与人员
                             </label>
                             <div class="participants-input-wrapper">
-                                <textarea id="expense-players" class="participants-textarea" placeholder="濮ｅ繗顢戞潏鎾冲弳娑撯偓娑擃亜鎮曠€? rows="4"></textarea>
+                                <textarea id="expense-players" class="participants-textarea" placeholder="每行输入一个名字" rows="4"></textarea>
                                 <div class="participant-count-hint">
-                                    瀹稿弶鍧婇崝?<span id="participant-count">0</span> 娴?
+                                    已添加 <span id="participant-count">0</span> 人
                                 </div>
                             </div>
                             <div id="custom-ratio-container" class="custom-ratio-container" style="display: none;">
-                                <label class="input-label">閸掑棙鎲″В鏂剧伐</label>
+                                <label class="input-label">分摊比例</label>
                                 <div id="ratio-inputs" class="ratio-inputs-grid"></div>
                             </div>
                         </div>
 
                         <div class="expense-actions">
                             <button class="btn btn-primary btn-large" onclick="calculateExpense()">
-                                <span class="btn-icon">棣冃?/span>
-                                鐠侊紕鐣婚崚鍡樻啞
+                                <span class="btn-icon">📥</span>
+                                计算分摊
                             </button>
                             <button class="btn btn-outline" onclick="clearExpenseForm()">
-                                <span class="btn-icon">棣冩閿?/span>
-                                濞撳懐鈹?
+                                <span class="btn-icon">🗑️</span>
+                                清空
                             </button>
                         </div>
                     </div>
@@ -5692,10 +5692,10 @@
 
                 <div class="expense-result-section" id="expense-result-section" style="display: none;">
                     <div class="result-header">
-                        <h3 class="result-title">棣冩惓 閸掑棙鎲＄紒鎾寸亯</h3>
+                        <h3 class="result-title">📊 分摊结果</h3>
                         <div class="result-actions">
-                            <button class="btn btn-small btn-outline" onclick="copyExpenseResult()">棣冩惖 婢跺秴鍩?/button>
-                            <button class="btn btn-small btn-success" onclick="exportExpense()">棣冩憶 鐎电厧鍤?/button>
+                            <button class="btn btn-small btn-outline" onclick="copyExpenseResult()">📋 复制</button>
+                            <button class="btn btn-small btn-success" onclick="exportExpense()">📤 导出</button>
                         </div>
                     </div>
                     <div class="expense-summary-card" id="expense-summary"></div>
@@ -5704,8 +5704,8 @@
 
                 <div class="expense-history-section" id="expense-history-section">
                     <div class="history-header">
-                        <h3 class="history-title">棣冩憪 閸掑棙鎲￠崢鍡楀蕉</h3>
-                        <button class="btn btn-small btn-outline" onclick="clearExpenseHistory()">濞撳懐鈹栭崢鍡楀蕉</button>
+                        <h3 class="history-title">📜 分摊历史</h3>
+                        <button class="btn btn-small btn-outline" onclick="clearExpenseHistory()">清空历史</button>
                     </div>
                     <div class="expense-history-list" id="expense-history-list"></div>
                 </div>
@@ -5716,8 +5716,8 @@
         <div class="expense-detail-modal" id="expense-detail-modal">
             <div class="expense-detail-wrapper">
                 <div class="detail-modal-header">
-                    <h3 class="detail-modal-title">棣冩惖 閸掑棙鎲＄拠锔藉剰</h3>
-                    <button class="detail-close-btn" onclick="closeExpenseDetailModal()">閴?/button>
+                    <h3 class="detail-modal-title">📋 分摊详情</h3>
+                    <button class="detail-close-btn" onclick="closeExpenseDetailModal()">✕</button>
                 </div>
                 <div class="expense-summary-card" id="expense-detail-summary"></div>
                 <div class="expense-details-list" id="expense-detail-list"></div>
@@ -5728,75 +5728,75 @@
         <div id="history" class="screen">
             <div class="history-wrapper">
                 <div class="history-header">
-                    <h2 class="section-title">棣冩惓 濮ｆ棁绂岀拋鏉跨秿</h2>
-                    <p class="section-subtitle">閺屻儳婀呴崢鍡楀蕉濮ｆ棁绂岄弫鐗堝祦娑撳海绮虹拋?/p>
+                    <h2 class="section-title">📊 比赛记录</h2>
+                    <p class="section-subtitle">查看历史比赛数据与统计</p>
                 </div>
 
-                <!-- 缂佺喕顓稿鍌濐潔 -->
+                <!-- 统计概览 -->
                 <div class="stats-overview">
                     <div class="stats-summary-card">
                         <div class="stats-summary-main">
                             <div class="stats-big-number" id="total-matches">0</div>
-                            <div class="stats-big-label">閸︾儤鐦挧?/div>
+                            <div class="stats-big-label">场比赛</div>
                         </div>
                         <div class="stats-summary-details">
                             <div class="stats-detail-item">
                                 <span class="detail-value" id="total-wins">0</span>
-                                <span class="detail-label">閼?/span>
+                                <span class="detail-label">胜</span>
                             </div>
                             <div class="stats-detail-item">
                                 <span class="detail-value" id="total-losses">0</span>
-                                <span class="detail-label">鐠?/span>
+                                <span class="detail-label">负</span>
                             </div>
                             <div class="stats-detail-item">
                                 <span class="detail-value" id="win-rate">0%</span>
-                                <span class="detail-label">閼虫粎宸?/span>
+                                <span class="detail-label">胜率</span>
                             </div>
                             <div class="stats-detail-item">
                                 <span class="detail-value" id="total-time">0h</span>
-                                <span class="detail-label">閺冨爼鏆?/span>
+                                <span class="detail-label">时长</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 閸ユ崘銆冮崠鍝勭厵 -->
+                <!-- 图表区域 -->
                 <div class="charts-section">
                     <div class="chart-card">
-                        <div class="chart-title">棣冩惐 閺堝牆瀹冲В鏃囩鐡掑濞?/div>
+                        <div class="chart-title">📈 月度比赛趋势</div>
                         <div class="chart-canvas-container">
                             <canvas id="monthlyChart"></canvas>
                         </div>
                     </div>
                     <div class="chart-card">
-                        <div class="chart-title">棣冦偋 閼虫粏绀嬮崚鍡楃</div>
+                        <div class="chart-title">🥧 胜负分布</div>
                         <div class="chart-canvas-container">
                             <canvas id="winLossChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- 閹垮秳缍旈幐澶愭尦 -->
+                <!-- 操作按钮 -->
                 <div class="history-actions-bar">
                     <button class="btn btn-outline" onclick="exportHistory()">
-                        <span>棣冩憶</span> 鐎电厧鍤拋鏉跨秿
+                        <span>📤</span> 导出记录
                     </button>
                     <button class="btn btn-outline" onclick="clearHistory()">
-                        <span>棣冩閿?/span> 濞撳懐鈹栭崢鍡楀蕉
+                        <span>🗑️</span> 清空历史
                     </button>
                 </div>
 
-                <!-- 閸樺棗褰剁拋鏉跨秿閸掓銆?-->
+                <!-- 历史记录列表 -->
                 <div class="history-list-section">
                     <div class="list-header">
-                        <h3 class="list-title">濮ｆ棁绂岄崢鍡楀蕉</h3>
-                        <span class="list-count" id="history-count">0 閸?/span>
+                        <h3 class="list-title">比赛历史</h3>
+                        <span class="list-count" id="history-count">0 场</span>
                     </div>
                     <div class="history-list" id="history-list">
                         <div class="empty-state">
-                            <div class="empty-state-icon">棣冨緝</div>
-                            <p>閺嗗倹妫ゅВ鏃囩鐠佹澘缍?/p>
-                            <p class="empty-state-hint">瀵偓婵绔撮崷鐑樼槷鐠ф稑鎮楁导姘冲殰閸斻劏顔囪ぐ鏇炴躬鏉╂瑩鍣?/p>
+                            <div class="empty-state-icon">🏸</div>
+                            <p>暂无比赛记录</p>
+                            <p class="empty-state-hint">开始一场比赛后会自动记录在这里</p>
                         </div>
                     </div>
                 </div>
@@ -5807,26 +5807,26 @@
         <div id="leaderboard" class="screen">
             <div class="leaderboard-wrapper">
                 <div class="leaderboard-header">
-                    <h2 class="section-title">棣冨汲 闁澧滈幒鎺曨攽濮?/h2>
-                    <p class="section-subtitle">閸╄桨绨惇鐔风杽濮ｆ棁绂岄弫鐗堝祦閻ㄥ嫭甯撻崥?/p>
+                    <h2 class="section-title">🏆 选手排行榜</h2>
+                    <p class="section-subtitle">基于真实比赛数据的排名</p>
                 </div>
 
                 <div class="leaderboard-tabs">
                     <div class="tab-item active" data-type="wins" onclick="switchLeaderboard('wins')">
-                        <span class="tab-icon">棣冾殞</span>
-                        <span class="tab-text">閼虫粌婧€</span>
+                        <span class="tab-icon">🥇</span>
+                        <span class="tab-text">胜场</span>
                     </div>
                     <div class="tab-item" data-type="matches" onclick="switchLeaderboard('matches')">
-                        <span class="tab-icon">棣冨箚</span>
-                        <span class="tab-text">閸欏倽绂?/span>
+                        <span class="tab-icon">🎯</span>
+                        <span class="tab-text">参赛</span>
                     </div>
                     <div class="tab-item" data-type="winrate" onclick="switchLeaderboard('winrate')">
-                        <span class="tab-icon">棣冩惐</span>
-                        <span class="tab-text">閼虫粎宸?/span>
+                        <span class="tab-icon">📈</span>
+                        <span class="tab-text">胜率</span>
                     </div>
                     <div class="tab-item" data-type="duration" onclick="switchLeaderboard('duration')">
-                        <span class="tab-icon">閳存唻绗?/span>
-                        <span class="tab-text">閺冨爼鏆?/span>
+                        <span class="tab-icon">⏱️</span>
+                        <span class="tab-text">时长</span>
                     </div>
                 </div>
 
@@ -5834,15 +5834,15 @@
                     <div class="top-three-section" id="top-three-section"></div>
                     <div class="leaderboard-list-section">
                         <div class="list-header">
-                            <span>閹烘帒鎮?/span>
-                            <span>闁澧?/span>
-                            <span>閺佺増宓?/span>
+                            <span>排名</span>
+                            <span>选手</span>
+                            <span>数据</span>
                         </div>
                         <div class="leaderboard-list" id="leaderboard-list">
                             <div class="empty-state">
-                                <div class="empty-state-icon">棣冨緝</div>
-                                <p>閺嗗倹妫ら弫鐗堝祦</p>
-                                <p class="empty-state-hint">瀵偓婵鐦挧娑樻倵娴兼俺鍤滈崝銊ф晸閹存劖甯撶悰灞绢渷</p>
+                                <div class="empty-state-icon">🏸</div>
+                                <p>暂无数据</p>
+                                <p class="empty-state-hint">开始比赛后会自动生成排行榜</p>
                             </div>
                         </div>
                     </div>
@@ -5854,52 +5854,52 @@
         <div id="player-ability" class="screen">
             <div class="ability-container">
                 <div class="ability-header">
-                    <h2 class="section-title">棣冩惓 闁澧滈弫鐗堝祦閸掑棙鐎?/h2>
-                    <p class="section-subtitle">閸╄桨绨惇鐔风杽濮ｆ棁绂岀拋鏉跨秿閻ㄥ嫮绮虹拋鈩冩殶閹?/p>
+                    <h2 class="section-title">📊 选手数据分析</h2>
+                    <p class="section-subtitle">基于真实比赛记录的统计数据</p>
                 </div>
 
                 <div class="ability-main">
                     <div class="player-selector-section">
                         <label class="input-label">
-                            <span class="label-icon">棣冩噥</span>
-                            闁瀚ㄩ柅澶嬪
+                            <span class="label-icon">👤</span>
+                            选择选手
                         </label>
                         <select id="ability-player-select" class="player-select" onchange="renderPlayerAbility()">
-                            <option value="">鐠囩兘鈧瀚ㄩ柅澶嬪...</option>
+                            <option value="">请选择选手...</option>
                         </select>
                     </div>
 
                     <div id="ability-display" style="display: none;">
                         <div class="player-info-card">
-                            <div class="player-avatar" id="player-avatar">棣冨緝</div>
+                            <div class="player-avatar" id="player-avatar">🏸</div>
                             <div class="player-name-display" id="player-name-display"></div>
                         </div>
 
                         <div class="ability-stats-section">
-                            <h3 class="stats-section-title">棣冩惐 閸╄櫣顢呯紒鐔活吀</h3>
+                            <h3 class="stats-section-title">📈 基础统计</h3>
                             <div class="ability-stats-grid" id="ability-stats-grid"></div>
                         </div>
 
                         <div class="ability-rank-section">
-                            <h3 class="stats-section-title">棣冨疾 閹烘帒鎮曢幆鍛枌</h3>
+                            <h3 class="stats-section-title">🏅 排名情况</h3>
                             <div class="rank-cards" id="rank-cards"></div>
                         </div>
 
                         <div class="ability-trend-section">
-                            <h3 class="stats-section-title">棣冩惒 鏉╂垶婀＄悰銊у箛</h3>
+                            <h3 class="stats-section-title">📉 近期表现</h3>
                             <div class="recent-matches" id="recent-matches"></div>
                         </div>
 
                         <div class="ability-tags-section">
-                            <h3 class="stats-section-title">棣冨娇閿?閹存劕姘ㄩ弽鍥╊劮</h3>
+                            <h3 class="stats-section-title">🏷️ 成就标签</h3>
                             <div class="ability-tags" id="ability-tags"></div>
                         </div>
                     </div>
 
                     <div id="no-data-hint" class="no-data-hint">
-                        <div class="hint-icon">棣冨緝</div>
-                        <div class="hint-text">闁瀚ㄩ柅澶嬪閺屻儳婀呯拠锔剧矎閺佺増宓侀崚鍡樼€?/div>
-                        <div class="hint-sub">閺佺増宓侀弶銉︾爱娴滃海婀＄€圭偞鐦挧娑滎唶瑜?/div>
+                        <div class="hint-icon">🏸</div>
+                        <div class="hint-text">选择选手查看详细数据分析</div>
+                        <div class="hint-sub">数据来源于真实比赛记录</div>
                     </div>
                 </div>
             </div>
@@ -5909,8 +5909,8 @@
         <div id="achievements" class="screen">
             <div class="achievements-wrapper">
                 <div class="achievements-header">
-                    <h2 class="section-title">棣冨汲 閹存劕姘ㄧ化鑽ょ埠</h2>
-                    <p class="section-subtitle">鐠佹澘缍嶆担鐘垫畱濮ｅ繋绔存稉顏堝櫡缁嬪顣?/p>
+                    <h2 class="section-title">🏆 成就系统</h2>
+                    <p class="section-subtitle">记录你的每一个里程碑</p>
                 </div>
 
                 <div class="achievements-progress-card">
@@ -5921,17 +5921,17 @@
                         </svg>
                         <div class="progress-text">
                             <span class="progress-value" id="achievements-progress">0%</span>
-                            <span class="progress-label">鐎瑰本鍨氭惔?/span>
+                            <span class="progress-label">完成度</span>
                         </div>
                     </div>
                     <div class="progress-stats">
                         <div class="progress-stat">
                             <span class="stat-num" id="achievements-unlocked">0</span>
-                            <span class="stat-text">瀹歌尪袙闁?/span>
+                            <span class="stat-text">已解锁</span>
                         </div>
                         <div class="progress-stat">
                             <span class="stat-num" id="achievements-total">12</span>
-                            <span class="stat-text">閹粯鍨氱亸?/span>
+                            <span class="stat-text">总成就</span>
                         </div>
                     </div>
                 </div>
@@ -5939,32 +5939,32 @@
                 <div class="achievements-categories">
                     <div class="achievement-category">
                         <div class="category-header">
-                            <span class="category-icon">棣冨緝</span>
-                            <span class="category-title">濮ｆ棁绂岄幋鎰皑</span>
+                            <span class="category-icon">🏸</span>
+                            <span class="category-title">比赛成就</span>
                         </div>
                         <div class="category-achievements" id="match-achievements"></div>
                     </div>
                     
                     <div class="achievement-category">
                         <div class="category-header">
-                            <span class="category-icon">棣冨汲</span>
-                            <span class="category-title">閼虫粌鍩勯幋鎰皑</span>
+                            <span class="category-icon">🏆</span>
+                            <span class="category-title">胜利成就</span>
                         </div>
                         <div class="category-achievements" id="win-achievements"></div>
                     </div>
                     
                     <div class="achievement-category">
                         <div class="category-header">
-                            <span class="category-icon">閳存唻绗?/span>
-                            <span class="category-title">閺冨爼鏆遍幋鎰皑</span>
+                            <span class="category-icon">⏱️</span>
+                            <span class="category-title">时长成就</span>
                         </div>
                         <div class="category-achievements" id="duration-achievements"></div>
                     </div>
                     
                     <div class="achievement-category">
                         <div class="category-header">
-                            <span class="category-icon">閴?/span>
-                            <span class="category-title">閻楄鐣╅幋鎰皑</span>
+                            <span class="category-icon">✨</span>
+                            <span class="category-title">特殊成就</span>
                         </div>
                         <div class="category-achievements" id="special-achievements"></div>
                     </div>
@@ -5976,57 +5976,57 @@
         <div id="settings" class="screen">
             <div class="settings-wrapper">
                 <div class="settings-header">
-                    <h2 class="section-title">閳挎瑱绗?鐠佸墽鐤?/h2>
-                    <p class="section-subtitle">娑擃亝鈧冨娴ｇ姷娈戞担璺ㄦ暏娴ｆ捇鐛?/p>
+                    <h2 class="section-title">⚙️ 设置</h2>
+                    <p class="section-subtitle">个性化你的使用体验</p>
                 </div>
 
                 <div class="settings-content">
                     <div class="settings-card">
                         <div class="settings-card-header">
-                            <span class="card-icon">棣冨腹</span>
-                            <span class="card-title">娑撳顣界拋鍓х枂</span>
+                            <span class="card-icon">🎨</span>
+                            <span class="card-title">主题设置</span>
                         </div>
                         <div class="theme-grid">
                             <div class="theme-card active" data-theme="purple" onclick="setTheme('purple')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #6839E8, #0133A4);"></div>
                                 <div class="theme-info">
-                                    <span class="theme-emoji">棣冩審</span>
-                                    <span class="theme-name">閺嗘顧佺槐?/span>
+                                    <span class="theme-emoji">💜</span>
+                                    <span class="theme-name">暗夜紫</span>
                                 </div>
                             </div>
                             <div class="theme-card" data-theme="orange" onclick="setTheme('orange')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #FF6B35, #D63031);"></div>
                                 <div class="theme-info">
-                                    <span class="theme-emoji">棣冃?/span>
-                                    <span class="theme-name">濞茶濮忓?/span>
+                                    <span class="theme-emoji">💚</span>
+                                    <span class="theme-name">活力橙</span>
                                 </div>
                             </div>
                             <div class="theme-card" data-theme="blue" onclick="setTheme('blue')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #0984E3, #0066CC);"></div>
                                 <div class="theme-info">
-                                    <span class="theme-emoji">棣冩寢</span>
-                                    <span class="theme-name">婢垛晝鈹栭拑?/span>
+                                    <span class="theme-emoji">💙</span>
+                                    <span class="theme-name">天空蓝</span>
                                 </div>
                             </div>
                             <div class="theme-card" data-theme="green" onclick="setTheme('green')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #00B894, #009432);"></div>
                                 <div class="theme-info">
-                                    <span class="theme-emoji">棣冩寣</span>
-                                    <span class="theme-name">濡喗鐏勭紒?/span>
+                                    <span class="theme-emoji">💚</span>
+                                    <span class="theme-name">森林绿</span>
                                 </div>
                             </div>
                             <div class="theme-card" data-theme="pink" onclick="setTheme('pink')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #E84393, #C44569);"></div>
                                 <div class="theme-info">
-                                    <span class="theme-emoji">棣冩寙</span>
-                                    <span class="theme-name">濡精濮崇划?/span>
+                                    <span class="theme-emoji">💗</span>
+                                    <span class="theme-name">樱花粉</span>
                                 </div>
                             </div>
                             <div class="theme-card" data-theme="blackgold" onclick="setTheme('blackgold')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #2D2D2D, #1A1A1A);"></div>
                                 <div class="theme-info">
-                                    <span class="theme-emoji">棣冩灮</span>
-                                    <span class="theme-name">姒涙垿鍣鹃崯鍡楀</span>
+                                    <span class="theme-emoji">🖤</span>
+                                    <span class="theme-name">黑金商务</span>
                                 </div>
                             </div>
                         </div>
@@ -6034,21 +6034,21 @@
 
                     <div class="settings-card">
                         <div class="settings-card-header">
-                            <span class="card-icon">棣冨緝</span>
-                            <span class="card-title">濮ｆ棁绂岀拋鍓х枂</span>
+                            <span class="card-icon">🏸</span>
+                            <span class="card-title">比赛设置</span>
                         </div>
                         <div class="settings-options">
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <span class="setting-label">閼奉亜鐣炬稊澶屾窗閺嶅洤鍨庨弫?/span>
-                                    <span class="setting-desc">鐠佸墽鐤嗗В鏃囩閻ㄥ嫯骞忛懗婊冨瀻閺?/span>
+                                    <span class="setting-label">自定义目标分数</span>
+                                    <span class="setting-desc">设置比赛的获胜分数</span>
                                 </div>
                                 <input type="number" id="custom-score" value="21" min="1" max="50" class="setting-input">
                             </div>
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <span class="setting-label">娑撳鐪稉銈堝劏閸?/span>
-                                    <span class="setting-desc">閸忓牐鑰芥稉銈呯湰閼板懓骞忛懗?/span>
+                                    <span class="setting-label">三局两胜制</span>
+                                    <span class="setting-desc">先赢两局者获胜</span>
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="best-of-three" checked>
@@ -6057,8 +6057,8 @@
                             </div>
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <span class="setting-label">閸旂姴鍨庣挧?/span>
-                                    <span class="setting-desc">楠炲啿鍨庨崥搴ㄦ付妫板棗鍘?閸掑棜骞忛懗婊愮礉30閸掑棗鐨濇い?/span>
+                                    <span class="setting-label">加分赛</span>
+                                    <span class="setting-desc">平分后需领先2分获胜，30分封顶</span>
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="deuce-mode" checked>
@@ -6070,14 +6070,14 @@
 
                     <div class="settings-card">
                         <div class="settings-card-header">
-                            <span class="card-icon">棣冩晜</span>
-                            <span class="card-title">婢逛即鐓舵稉搴″冀妫?/span>
+                            <span class="card-icon">🔔</span>
+                            <span class="card-title">声音与反馈</span>
                         </div>
                         <div class="settings-options">
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <span class="setting-label">瀵版鍨庨棅铏櫏</span>
-                                    <span class="setting-desc">瀵版鍨庨弮鑸垫尡閺€鐐絹缁€娲叾</span>
+                                    <span class="setting-label">得分音效</span>
+                                    <span class="setting-desc">得分时播放提示音</span>
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="sound-enabled" checked>
@@ -6086,8 +6086,8 @@
                             </div>
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <span class="setting-label">闂囧洤濮╅崣宥夘洯</span>
-                                    <span class="setting-desc">瀵版鍨庨弮鍫曟缚閸斻劍褰佺粈?/span>
+                                    <span class="setting-label">震动反馈</span>
+                                    <span class="setting-desc">得分时震动提示</span>
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="vibration-enabled" checked>
@@ -6096,8 +6096,8 @@
                             </div>
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <span class="setting-label">閹广垼绔熼幓鎰板晪</span>
-                                    <span class="setting-desc">鏉堟儳鍩岀憴鍕暰閸掑棙鏆熼弮鑸靛絹闁辨帗宕叉潏?/span>
+                                    <span class="setting-label">换边提醒</span>
+                                    <span class="setting-desc">达到规定分数时提醒换边</span>
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="side-change-alert" checked>
@@ -6109,42 +6109,42 @@
 
                     <div class="settings-card">
                         <div class="settings-card-header">
-                            <span class="card-icon">棣冩噥</span>
-                            <span class="card-title">闁澧滄径鏉戝剼</span>
+                            <span class="card-icon">👤</span>
+                            <span class="card-title">选手头像</span>
                         </div>
                         <div class="avatar-section">
                             <div class="avatar-library" id="avatar-library"></div>
                             <button class="btn btn-outline" onclick="openAvatarManager()">
-                                <span>閴佸骏绗?/span> 缁狅紕鎮婇柅澶嬪婢舵潙鍎?
+                                <span>✏️</span> 管理选手头像
                             </button>
                         </div>
                     </div>
 
                     <div class="settings-card">
                         <div class="settings-card-header">
-                            <span class="card-icon">棣冩崙</span>
-                            <span class="card-title">閺佺増宓佺粻锛勬倞</span>
+                            <span class="card-icon">💾</span>
+                            <span class="card-title">数据管理</span>
                         </div>
                         <div class="data-actions">
                             <button class="data-btn backup" onclick="backupData()">
-                                <span class="btn-icon">棣冩憶</span>
+                                <span class="btn-icon">📤</span>
                                 <div class="btn-content">
-                                    <span class="btn-title">婢跺洣鍞ら弫鐗堝祦</span>
-                                    <span class="btn-desc">鐎电厧鍤幍鈧張澶嬫殶閹诡喖鍩岄弬鍥︽</span>
+                                    <span class="btn-title">备份数据</span>
+                                    <span class="btn-desc">导出所有数据到文件</span>
                                 </div>
                             </button>
                             <button class="data-btn restore" onclick="restoreData()">
-                                <span class="btn-icon">棣冩憸</span>
+                                <span class="btn-icon">📥</span>
                                 <div class="btn-content">
-                                    <span class="btn-title">閹垹顦查弫鐗堝祦</span>
-                                    <span class="btn-desc">娴犲骸顦禒鑺ユ瀮娴犺埖浠径?/span>
+                                    <span class="btn-title">恢复数据</span>
+                                    <span class="btn-desc">从备份文件恢复</span>
                                 </div>
                             </button>
                             <button class="data-btn danger" onclick="clearAllData()">
-                                <span class="btn-icon">棣冩閿?/span>
+                                <span class="btn-icon">🗑️</span>
                                 <div class="btn-content">
-                                    <span class="btn-title">濞撳懘娅庨弫鐗堝祦</span>
-                                    <span class="btn-desc">閸掔娀娅庨幍鈧張澶嬫拱閸︾増鏆熼幑?/span>
+                                    <span class="btn-title">清除数据</span>
+                                    <span class="btn-desc">删除所有本地数据</span>
                                 </div>
                             </button>
                         </div>
@@ -6153,11 +6153,11 @@
 
                     <div class="settings-card about-card">
                         <div class="about-content">
-                            <div class="about-logo">棣冨緝</div>
+                            <div class="about-logo">🏸</div>
                             <div class="about-info">
-                                <div class="about-name">缂囪姤鐦洪悶鍐╃€柅鐔活吀閸掑棙婢?/div>
-                                <div class="about-version">閻楀牊婀?2.0</div>
-                                <div class="about-author">鐠佹崘顓?& 瀵偓閸欐埊绱扮拠鏇犳櫕</div>
+                                <div class="about-name">羽毛球极速计分板</div>
+                                <div class="about-version">版本 2.0</div>
+                                <div class="about-author">设计 & 开发：试界</div>
                             </div>
                         </div>
                     </div>
@@ -6168,39 +6168,39 @@
 
     <footer>
         <div class="footer-content">
-            <span class="footer-logo">棣冨緝</span>
-            <span class="footer-text">缂囪姤鐦洪悶鍐╃€柅鐔活吀閸掑棙婢?/span>
-            <span class="footer-divider">璺?/span>
-            <span class="footer-author">娴滃秴娌?/span>
+            <span class="footer-logo">🏸</span>
+            <span class="footer-text">羽毛球极速计分板</span>
+            <span class="footer-divider">·</span>
+            <span class="footer-author">亍幵</span>
         </div>
     </footer>
 
     <!-- Notification -->
     <div class="notification" id="notification">
-        <h3 id="notification-title">閹绘劗銇?/h3>
-        <p id="notification-message">濞戝牊浼呴崘鍛啇</p>
-        <button class="btn btn-primary btn-small" onclick="hideNotification()">绾喖鐣?/button>
+        <h3 id="notification-title">提示</h3>
+        <p id="notification-message">消息内容</p>
+        <button class="btn btn-primary btn-small" onclick="hideNotification()">确定</button>
     </div>
 
     <!-- Input Dialog -->
     <div class="input-dialog" id="input-dialog">
-        <h3 id="input-dialog-title">鐠囩柉绶崗?/h3>
-        <input type="text" id="input-dialog-input" placeholder="鐠囩柉绶崗銉ュ敶鐎?..">
+        <h3 id="input-dialog-title">请输入</h3>
+        <input type="text" id="input-dialog-input" placeholder="请输入内容...">
         <div class="input-dialog-buttons">
-            <button class="btn btn-dark btn-small" onclick="hideInputDialog(false)">閸欐牗绉?/button>
-            <button class="btn btn-primary btn-small" onclick="hideInputDialog(true)">绾喖鐣?/button>
+            <button class="btn btn-dark btn-small" onclick="hideInputDialog(false)">取消</button>
+            <button class="btn btn-primary btn-small" onclick="hideInputDialog(true)">确定</button>
         </div>
     </div>
 
     <!-- Weather Container -->
     <div class="weather-container" id="weather-container">
         <div class="weather-info">
-            <div class="location">閼惧嘲褰囨担宥囩枂娑?..</div>
-            <div class="temperature">-- 鎺矯</div>
+            <div class="location">获取位置中...</div>
+            <div class="temperature">-- °C</div>
             <div class="condition">--</div>
             <div class="details">
-                <span>濠€鍨: --%</span>
-                <span>妞嬪骸濮? -- 缁?/span>
+                <span>湿度: --%</span>
+                <span>风力: -- 级</span>
             </div>
         </div>
     </div>
@@ -6209,16 +6209,16 @@
     <div class="confetti-container" id="confetti-container"></div>
     <div class="firework-container" id="firework-container"></div>
     <div class="victory-banner" id="victory-banner" style="display: none;">
-        <div class="trophy">棣冨汲</div>
-        <h2>閼剧柉鍎?</h2>
+        <div class="trophy">🏆</div>
+        <h2>获胜!</h2>
     </div>
 
     <!-- Achievement Badge -->
     <div class="achievement-badge" id="achievement-badge" style="display: none;">
-        <div class="achievement-icon">棣冨疾</div>
+        <div class="achievement-icon">🏅</div>
         <div class="achievement-text">
-            <div class="achievement-title" id="achievement-title">閹存劕姘ㄧ憴锝夋敚!</div>
-            <div class="achievement-desc" id="achievement-desc">閹诲繗鍫?/div>
+            <div class="achievement-title" id="achievement-title">成就解锁!</div>
+            <div class="achievement-desc" id="achievement-desc">描述</div>
         </div>
     </div>
 
@@ -6226,14 +6226,14 @@
     <div class="share-card-modal" id="share-card-modal">
         <div class="share-card-wrapper">
             <div class="template-selector">
-                <button class="template-btn active" data-template="1" onclick="selectShareTemplate(1)">棣冩審 缁鳖偊鐓?/button>
-                <button class="template-btn" data-template="2" onclick="selectShareTemplate(2)">棣冩寘 閻戭厽鍎?/button>
-                <button class="template-btn" data-template="3" onclick="selectShareTemplate(3)">棣冩寢 濞撳懏鏌?/button>
+                <button class="template-btn active" data-template="1" onclick="selectShareTemplate(1)">💜 紫韵</button>
+                <button class="template-btn" data-template="2" onclick="selectShareTemplate(2)">💖 热情</button>
+                <button class="template-btn" data-template="3" onclick="selectShareTemplate(3)">💙 清新</button>
             </div>
             <div class="share-card-preview" id="share-card-preview"></div>
             <div class="share-card-controls">
-                <button class="btn btn-success" onclick="downloadShareCard()">棣冩崙 娣囨繂鐡ㄩ崶鍓у</button>
-                <button class="btn btn-dark" onclick="closeShareCardModal()">閸忔娊妫?/button>
+                <button class="btn btn-success" onclick="downloadShareCard()">💾 保存图片</button>
+                <button class="btn btn-dark" onclick="closeShareCardModal()">关闭</button>
             </div>
         </div>
     </div>
@@ -6241,24 +6241,24 @@
     <!-- Avatar Manager Modal -->
     <div class="share-card-modal" id="avatar-manager-modal">
         <div class="share-card-wrapper">
-            <h3 style="text-align: center; margin-bottom: 20px; color: var(--c-brand); font-size: 1.5rem; font-weight: 900;">棣冨箒 闁澧滄径鏉戝剼缁狅紕鎮?/h3>
+            <h3 style="text-align: center; margin-bottom: 20px; color: var(--c-brand); font-size: 1.5rem; font-weight: 900;">🎭 选手头像管理</h3>
             <div class="form-group" style="margin-bottom: 20px;">
-                <label>闁澧滈崥宥囆?/label>
-                <input type="text" id="avatar-player-name" placeholder="鏉堟挸鍙嗛柅澶嬪閸氬秶袨">
+                <label>选手名称</label>
+                <input type="text" id="avatar-player-name" placeholder="输入选手名称">
             </div>
             <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 700; color: var(--c-text-2);">闁瀚ㄦ径鏉戝剼</label>
+                <label style="display: block; margin-bottom: 10px; font-weight: 700; color: var(--c-text-2);">选择头像</label>
                 <div class="avatar-selector" id="avatar-selector" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 10px;"></div>
             </div>
             <div class="share-card-controls">
-                <button class="btn btn-primary" onclick="savePlayerAvatar()">娣囨繂鐡ㄦ径鏉戝剼</button>
-                <button class="btn btn-dark" onclick="closeAvatarManager()">閸忔娊妫?/button>
+                <button class="btn btn-primary" onclick="savePlayerAvatar()">保存头像</button>
+                <button class="btn btn-dark" onclick="closeAvatarManager()">关闭</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ==================== 閸忋劌鐪崣姗€鍣?====================
+        // ==================== 全局变量 ====================
         let timerInterval = null;
         let seconds = 0;
         let timerRunning = false;
@@ -6272,23 +6272,23 @@
         let scoreHistory = [];
         let gameScoresHistory = [];
         let currentScreen = 'scoreboard';
-        let teamNameA = '瀹歌鲸鏌?;
-        let teamNameB = '鐎佃鏌?;
+        let teamNameA = '己方';
+        let teamNameB = '对方';
 
-        // ==================== 閹存劕姘ㄧ化鑽ょ埠 ====================
+        // ==================== 成就系统 ====================
         const achievementsList = [
-            { id: 'first_match', icon: '棣冨緝', title: '閸掓繃顐奸惂璇叉簚', desc: '鐎瑰本鍨氱粭顑跨閸︾儤鐦挧?, type: 'match', value: 1 },
-            { id: 'ten_matches', icon: '棣冨箚', title: '鐏忓繑婀侀幋鎰皑', desc: '鐎瑰本鍨?0閸︾儤鐦挧?, type: 'match', value: 10 },
-            { id: 'fifty_matches', icon: '棣冨汲', title: '閻炲啫婧€閼颁礁鐨?, desc: '鐎瑰本鍨?0閸︾儤鐦挧?, type: 'match', value: 50 },
-            { id: 'first_win', icon: '棣冨竴', title: '妫ｆ牞鍎?, desc: '鐠с垹绶辩粭顑跨閸︾儤鐦挧?, type: 'win', value: 1 },
-            { id: 'ten_wins', icon: '棣冾殟', title: '鐢瓕鍎ㄧ亸鍡楀晽', desc: '鐠с垹绶?0閸︾儤鐦挧?, type: 'win', value: 10 },
-            { id: 'twentyfive_wins', icon: '棣冾殞', title: '缂囪棄娼ч悳瀣偓?, desc: '鐠с垹绶?5閸︾儤鐦挧?, type: 'win', value: 25 },
-            { id: 'streak_3', icon: '棣冩暉', title: '娑撳绻涢懗?, desc: '鏉╃偟鐢荤挧銏犵繁3閸︾儤鐦挧?, type: 'streak', value: 3 },
-            { id: 'streak_5', icon: '棣冩寽', title: '娴滄棁绻涢懗?, desc: '鏉╃偟鐢荤挧銏犵繁5閸︾儤鐦挧?, type: 'streak', value: 5 },
-            { id: 'play_hour', icon: '閳存唻绗?, title: '閻炲啰妫?, desc: '缁鳖垵顓搁幍鎾舵倖1鐏忓繑妞?, type: 'duration', value: 3600 },
-            { id: 'play_5hours', icon: '閳?, title: '閻炲啰妯?, desc: '缁鳖垵顓搁幍鎾舵倖5鐏忓繑妞?, type: 'duration', value: 18000 },
-            { id: 'perfect_win', icon: '閴?, title: '鐎瑰瞼绶ㄩ懗婊冨焺', desc: '娑撯偓鐏炩偓濮ｆ棁绂岄梿璺虹殱鐎佃澧?, type: 'perfect', value: 1 },
-            { id: 'deuce_master', icon: '棣冨箖', title: '閸旂姴鍨庣挧娑楃瑩鐎?, desc: '缂佸繐宸?濞嗏€冲閸掑棜绂?, type: 'deuce', value: 3 }
+            { id: 'first_match', icon: '🏸', title: '初次登场', desc: '完成第一场比赛', type: 'match', value: 1 },
+            { id: 'ten_matches', icon: '🎯', title: '小有成就', desc: '完成10场比赛', type: 'match', value: 10 },
+            { id: 'fifty_matches', icon: '🏆', title: '球场老将', desc: '完成50场比赛', type: 'match', value: 50 },
+            { id: 'first_win', icon: '🎉', title: '首胜', desc: '赢得第一场比赛', type: 'win', value: 1 },
+            { id: 'ten_wins', icon: '🥈', title: '常胜将军', desc: '赢得10场比赛', type: 'win', value: 10 },
+            { id: 'twentyfive_wins', icon: '🥇', title: '羽坛王者', desc: '赢得25场比赛', type: 'win', value: 25 },
+            { id: 'streak_3', icon: '🔥', title: '三连胜', desc: '连续赢得3场比赛', type: 'streak', value: 3 },
+            { id: 'streak_5', icon: '💥', title: '五连胜', desc: '连续赢得5场比赛', type: 'streak', value: 5 },
+            { id: 'play_hour', icon: '⏱️', title: '球痴', desc: '累计打球1小时', type: 'duration', value: 3600 },
+            { id: 'play_5hours', icon: '⌛', title: '球瘾', desc: '累计打球5小时', type: 'duration', value: 18000 },
+            { id: 'perfect_win', icon: '✨', title: '完美胜利', desc: '一局比赛零封对手', type: 'perfect', value: 1 },
+            { id: 'deuce_master', icon: '🎮', title: '加分赛专家', desc: '经历3次加分赛', type: 'deuce', value: 3 }
         ];
 
         let unlockedAchievements = [];
@@ -6298,7 +6298,7 @@
         let totalDuration = 0;
         let deuceCount = 0;
 
-        // ==================== 閸掓繂顫愰崠?====================
+        // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function() {
             initNavigation();
             initServiceWorker();
@@ -6317,7 +6317,7 @@
         });
 
         /**
-         * 閸掓繂顫愰崠鏍у瀻缂佸嫬濮涢懗?
+         * 初始化分组功能
          */
         function initGrouping() {
             const playersTextarea = document.getElementById('players-list');
@@ -6331,7 +6331,7 @@
         }
 
         /**
-         * 閸掓繂顫愰崠鏍瀭閻劏顓哥粻妤€濮涢懗?
+         * 初始化费用计算功能
          */
         function initExpense() {
             const expensePlayers = document.getElementById('expense-players');
@@ -6345,8 +6345,8 @@
         }
 
         /**
-         * 鐠佸墽鐤嗘稉濠氼暯
-         * @param {string} theme - 娑撳顣介崥宥囆?
+         * 设置主题
+         * @param {string} theme - 主题名称
          */
         function setTheme(theme) {
             const html = document.documentElement;
@@ -6375,7 +6375,7 @@
         }
 
         /**
-         * 閸旂姾娴囨穱婵嗙摠閻ㄥ嫪瀵屾０?
+         * 加载保存的主题
          */
         function loadTheme() {
             const savedTheme = localStorage.getItem('theme');
@@ -6392,7 +6392,7 @@
         }
 
         /**
-         * 閸掓繂顫愰崠鏍ь嚤閼割亝鐖ｇ粵?
+         * 初始化导航标签
          */
         function initNavigation() {
             const navTabs = document.querySelectorAll('.nav-tab');
@@ -6439,7 +6439,7 @@
         }
 
         /**
-         * 閸掓繂顫愰崠鏈rvice Worker
+         * 初始化Service Worker
          */
         function initServiceWorker() {
             if ('serviceWorker' in navigator) {
@@ -6452,27 +6452,27 @@
         }
 
         /**
-         * 閸掓繂顫愰崠鏍у瀻缂佸嫭膩瀵繒娲冮崥顒€娅?
+         * 初始化分组模式监听器
          */
-        // ==================== 鐠佲剝妞傞崳銊ュ閼?====================
+        // ==================== 计时器功能 ====================
         /**
-         * 閸掑洦宕茬拋鈩冩閸ｃ劎濮搁幀?
+         * 切换计时器状态
          */
         function toggleTimer() {
             const timerButton = document.getElementById('timer-button');
             if (timerRunning) {
                 clearInterval(timerInterval);
-                timerButton.innerHTML = '<span class="btn-icon">閳昏绗?/span><span class="btn-text">缂佈呯敾濮ｆ棁绂?/span>';
+                timerButton.innerHTML = '<span class="btn-icon">▶️</span><span class="btn-text">继续比赛</span>';
             } else {
                 timerInterval = setInterval(updateTimer, 1000);
-                timerButton.innerHTML = '<span class="btn-icon">閳撮潻绗?/span><span class="btn-text">閺嗗倸浠犲В鏃囩</span>';
+                timerButton.innerHTML = '<span class="btn-icon">⏸️</span><span class="btn-text">暂停比赛</span>';
             }
             timerRunning = !timerRunning;
             saveMatchState();
         }
 
         /**
-         * 閺囧瓨鏌婄拋鈩冩閸ｃ劍妯夌粈?
+         * 更新计时器显示
          */
         function updateTimer() {
             seconds++;
@@ -6483,20 +6483,20 @@
         }
 
         /**
-         * 闁插秶鐤嗙拋鈩冩閸?
+         * 重置计时器
          */
         function resetTimer() {
             clearInterval(timerInterval);
             seconds = 0;
             timerRunning = false;
             document.getElementById('match-timer').textContent = '00:00';
-            document.getElementById('timer-button').innerHTML = '<span class="btn-icon">閳昏绗?/span><span class="btn-text">瀵偓婵鐦挧?/span>';
+            document.getElementById('timer-button').innerHTML = '<span class="btn-icon">▶️</span><span class="btn-text">开始比赛</span>';
         }
 
-        // ==================== 濮ｆ棁绂屽Ο鈥崇础鐠佸墽鐤?====================
+        // ==================== 比赛模式设置 ====================
         /**
-         * 鐠佸墽鐤嗗В鏃囩濡€崇础
-         * @param {number|string} mode - 濮ｆ棁绂屽Ο鈥崇础閿?1閵?5閵?1閹?custom'閿?
+         * 设置比赛模式
+         * @param {number|string} mode - 比赛模式（21、15、11或'custom'）
          */
         function setGameMode(mode) {
             document.querySelectorAll('.mode-chip').forEach(btn => btn.classList.remove('active'));
@@ -6507,7 +6507,7 @@
                 const customInput = document.getElementById('custom-score');
                 targetScore = customInput ? parseInt(customInput.value) || 21 : 21;
                 if (!customInput) {
-                    const score = prompt('鐠囩柉绶崗銉ф窗閺嶅洤鍨庨弫甯窗', '21');
+                    const score = prompt('请输入目标分数：', '21');
                     if (score) {
                         targetScore = parseInt(score) || 21;
                     }
@@ -6518,15 +6518,15 @@
             saveSettings();
         }
 
-        // ==================== 鐠佹澘鍨庨崝鐔诲厴 ====================
+        // ==================== 记分功能 ====================
         /**
-         * 閺囧瓨鏌婂В鏂垮瀻
-         * @param {string} team - 闂冪喍绱為弽鍥槕閿?a'閹?b'閿?
-         * @param {number} amount - 閸掑棙鏆熼崣妯哄闁?
+         * 更新比分
+         * @param {string} team - 队伍标识（'a'或'b'）
+         * @param {number} amount - 分数变化量
          */
         function updateScore(team, amount) {
             if (!timerRunning) {
-                showNotification('閹绘劗銇?, '鐠囧嘲鍘涢悙鐟板毊"瀵偓婵鐦挧?閹稿鎸冲鈧慨瀣吀閺冭绱?);
+                showNotification('提示', '请先点击"开始比赛"按钮开始计时！');
                 return;
             }
             
@@ -6556,16 +6556,16 @@
         }
 
         /**
-         * 閹俱倝鏀㈡稉濠佺濞嗏€崇繁閸?
+         * 撤销上一次得分
          */
         function undoScore() {
             if (!timerRunning) {
-                showNotification('閹绘劗銇?, '鐠囧嘲鍘涢悙鐟板毊"瀵偓婵鐦挧?閹稿鎸冲鈧慨瀣吀閺冭绱?);
+                showNotification('提示', '请先点击"开始比赛"按钮开始计时！');
                 return;
             }
             
             if (scoreHistory.length === 0) {
-                showNotification('閹绘劗銇?, '濞屸剝婀侀崣顖涙寵闁库偓閻ㄥ嫭鎼锋担?);
+                showNotification('提示', '请输入有效的总金额');
                 return;
             }
             
@@ -6584,7 +6584,7 @@
         }
 
         /**
-         * 濡偓閺屻儲妲搁崥锕傛付鐟曚焦宕叉潏?
+         * 检查是否需要换边
          */
         function checkSideChange() {
             if (!document.getElementById('side-change-alert').checked) return;
@@ -6593,18 +6593,18 @@
             const switchPoint = Math.floor(targetScore / 2) + 1;
             
             if (targetScore === 21 && totalScore === 11) {
-                showNotification('閹广垼绔熼幓鎰板晪', '閸欏本鏌熷妤€鍨庢稊瀣嫲鏉堟儳鍩?1閸掑棴绱濈拠铚傛唉閹广垹婧€閸﹀府绱?);
+                showNotification('换边提醒', '双方得分之和达到11分，请交换场地！');
             } else if (targetScore === 15 && totalScore === 8) {
-                showNotification('閹广垼绔熼幓鎰板晪', '閸欏本鏌熷妤€鍨庢稊瀣嫲鏉堟儳鍩?閸掑棴绱濈拠铚傛唉閹广垹婧€閸﹀府绱?);
+                showNotification('换边提醒', '双方得分之和达到11分，请交换场地！');
             } else if (targetScore === 11 && totalScore === 6) {
-                showNotification('閹广垼绔熼幓鎰板晪', '閸欏本鏌熷妤€鍨庢稊瀣嫲鏉堟儳鍩?閸掑棴绱濈拠铚傛唉閹广垹婧€閸﹀府绱?);
+                showNotification('换边提醒', '双方得分之和达到11分，请交换场地！');
             } else if (gameMode === 'custom' && totalScore === switchPoint) {
-                showNotification('閹广垼绔熼幓鎰板晪', `閸欏本鏌熷妤€鍨庢稊瀣嫲鏉堟儳鍩?{switchPoint}閸掑棴绱濈拠铚傛唉閹广垹婧€閸﹀府绱抈);
+                showNotification('换边提醒', `双方得分之和达到${switchPoint}分，请交换场地！`);
             }
         }
 
         /**
-         * 濡偓閺屻儲婀扮仦鈧弰顖氭儊缂佹挻娼?
+         * 检查本局是否结束
          */
         function checkGameEnd() {
             const deuceMode = document.getElementById('deuce-mode').checked;
@@ -6620,7 +6620,7 @@
                 if ((scoreA >= targetScore || scoreB >= targetScore) && Math.abs(scoreA - scoreB) >= 2) {
                     gameEnded = true;
                 } else if (scoreA >= targetScore && scoreB >= targetScore) {
-                    showNotification('楠炲啿鐪?, '閸欏本鏌熼崥灞炬鏉堟儳鍩岄惄顔界垼閸掑棙鏆熼敍宀冾嚞缂佈呯敾濮ｆ棁绂岄惄鏉戝煂妫板棗鍘?閸掑棴绱?);
+                    showNotification('平局', '双方同时达到目标分数，请继续比赛直到领先2分！');
                 }
             }
             
@@ -6630,25 +6630,25 @@
         }
 
         /**
-         * 缂佹挻娼張顒€鐪?
+         * 结束本局
          */
         function endGame() {
             if (!timerRunning && scoreA === 0 && scoreB === 0) {
-                showNotification('閹绘劗銇?, '鐠囧嘲鍘涢悙鐟板毊"瀵偓婵鐦挧?閹稿鎸冲鈧慨瀣吀閺冭绱?);
+                showNotification('提示', '请先点击"开始比赛"按钮开始计时！');
                 return;
             }
             
             let winner = '';
             if (scoreA > scoreB) {
                 gamesWonA++;
-                winner = document.getElementById('team-a-name').value || '瀹歌鲸鏌?;
+                winner = document.getElementById('team-a-name').value || '己方';
                 document.getElementById('score-a-circle').classList.add('winner');
             } else if (scoreB > scoreA) {
                 gamesWonB++;
-                winner = document.getElementById('team-b-name').value || '鐎佃鏌?;
+                winner = document.getElementById('team-b-name').value || '对方';
                 document.getElementById('score-b-circle').classList.add('winner');
             } else {
-                showNotification('楠炲啿鐪?, '閸欏本鏌熷В鏂垮瀻閻╃鎮撻敍宀冾嚞缂佈呯敾濮ｆ棁绂岄敍?);
+                showNotification('平局', '双方比分相同，请继续比赛！');
                 return;
             }
             
@@ -6661,23 +6661,23 @@
                 if (timerRunning) {
                     clearInterval(timerInterval);
                     timerRunning = false;
-                    document.getElementById('timer-button').innerHTML = '<span class="btn-icon">閳昏绗?/span><span class="btn-text">瀵偓婵鐦挧?/span>';
+                    document.getElementById('timer-button').innerHTML = '<span class="btn-icon">▶️</span><span class="btn-text">开始比赛</span>';
                 }
-                showNotification('濮ｆ棁绂岀紒鎾存将', `${winner} 閼剧柉鍎ㄩ敍涔梟閺堚偓缂佸牊鐦崚? ${gamesWonA} : ${gamesWonB}`);
+                showNotification('比赛结束', `${winner} 获胜！\n最终比分: ${gamesWonA} : ${gamesWonB}`);
                 document.getElementById('result-form').style.display = 'block';
                 playSound('win');
                 setTimeout(() => triggerCelebration(winner), 500);
             } else {
-                showNotification('閺堫剙鐪紒鎾存将', `${winner} 鐠с垹绶辩粭?${currentGame} 鐏炩偓閿涗箺n濮ｆ柨鍨? ${scoreA} - ${scoreB}`);
+                showNotification('本局结束', `${winner} 赢得第 ${currentGame} 局！\n比分: ${scoreA} - ${scoreB}`);
                 playSound('gameEnd');
                 currentGame++;
-                document.getElementById('current-game').textContent = `缁?${currentGame} 鐏炩偓`;
+                document.getElementById('current-game').textContent = `第 ${currentGame} 局`;
                 resetCurrentGame();
             }
         }
 
         /**
-         * 闁插秶鐤嗚ぐ鎾冲鐏炩偓濮ｆ柨鍨?
+         * 重置当前局比分
          */
         function resetCurrentGame() {
             scoreA = 0;
@@ -6692,7 +6692,7 @@
         }
 
         /**
-         * 闁插秶鐤嗛弫鏉戞簚濮ｆ棁绂?
+         * 重置整场比赛
          */
         function resetMatch() {
             const hasProgress = scoreA > 0 || scoreB > 0 || gamesWonA > 0 || gamesWonB > 0 || seconds > 0;
@@ -6700,11 +6700,11 @@
             if (hasProgress) {
                 const currentScore = `${gamesWonA} : ${gamesWonB}`;
                 const gameTime = document.getElementById('match-timer').textContent;
-                const message = `绾喖鐣剧憰渚€鍣哥純顔芥殻閸︾儤鐦挧娑樻偋閿涚剠n\n瑜版挸澧犲В鏂垮瀻閿?{currentScore}\n濮ｆ棁绂岄弮鍫曟毐閿?{gameTime}\n\n濮濄倖鎼锋担婊€绗夐崣顖涙寵闁库偓閿涗梗;
+                const message = `确定要重置整场比赛吗？\n\n当前比分：${currentScore}\n比赛时长：${gameTime}\n\n此操作不可撤销！`;
                 
                 if (!confirm(message)) return;
             } else {
-                if (!confirm('绾喖鐣剧憰渚€鍣哥純顔界槷鐠ф稑鎮ч敍?)) return;
+                if (!confirm('确定要重置比赛吗？')) return;
             }
             
             scoreA = 0;
@@ -6719,7 +6719,7 @@
             document.getElementById('team-b-score').textContent = '0';
             document.getElementById('score-a-circle').classList.remove('winner');
             document.getElementById('score-b-circle').classList.remove('winner');
-            document.getElementById('current-game').textContent = '缁?1 鐏炩偓';
+            document.getElementById('current-game').textContent = '第 1 局';
             document.getElementById('result-form').style.display = 'none';
             
             updateGamesWonDisplay();
@@ -6729,7 +6729,7 @@
         }
 
         /**
-         * 閺囧瓨鏌婄仦鈧崚鍡樻▔缁€?
+         * 更新局分显示
          */
         function updateGamesWonDisplay() {
             const maxGames = 3;
@@ -6749,16 +6749,16 @@
         }
 
         /**
-         * 缂傛牞绶梼鐔剁礊閸氬秶袨
-         * @param {string} team - 闂冪喍绱為弽鍥槕
+         * 编辑队伍名称
+         * @param {string} team - 队伍标识
          */
         /**
-         * 缂傛牞绶梼鐔剁礊閸氬秶袨
-         * @param {string} team - 闂冪喍绱為弽鍥槕 ('a' 閹?'b')
+         * 编辑队伍名称
+         * @param {string} team - 队伍标识 ('a' 或 'b')
          */
         function editTeamName(team) {
             const currentName = team === 'a' ? teamNameA : teamNameB;
-            showInputDialog('鐠囩柉绶崗銉╂Е娴煎秴鎮曠粔?, currentName, function(newName) {
+            showInputDialog('请输入队伍名称', currentName, function(newName) {
                 if (newName && newName.trim()) {
                     if (team === 'a') {
                         teamNameA = newName.trim();
@@ -6772,9 +6772,9 @@
             });
         }
 
-        // ==================== 濮ｆ棁绂岀紒鎾寸亯娣囨繂鐡?====================
+        // ==================== 比赛结果保存 ====================
         /**
-         * 娣囨繂鐡ㄥВ鏃囩缂佹挻鐏?
+         * 保存比赛结果
          */
         function saveMatchResult() {
             const teamANames = document.getElementById('team-a-names').value || teamNameA;
@@ -6802,68 +6802,68 @@
             const hadDeuce = checkHadDeuce();
             updateMatchAchievements(won, perfectWin, hadDeuce);
             
-            showNotification('娣囨繂鐡ㄩ幋鎰', '濮ｆ棁绂岀拋鏉跨秿瀹歌弓绻氱€涙﹫绱?);
+            showNotification('保存成功', '比赛记录已保存！');
             loadHistory();
             initPlayerAbilitySelector();
             resetMatch();
         }
 
         /**
-         * 濡偓閺屻儲妲搁崥锔芥箒闂嗚泛鐨濋懗婊冨焺
+         * 检查是否有零封胜利
          */
         function checkPerfectWin() {
             return (scoreA === 0 && scoreB > 0) || (scoreB === 0 && scoreA > 0);
         }
 
         /**
-         * 濡偓閺屻儲妲搁崥锔剧病閸樺棜绻冮崝鐘插瀻鐠?
+         * 检查是否经历过加分赛
          */
         function checkHadDeuce() {
             return scoreA >= 20 && scoreB >= 20;
         }
 
         /**
-         * 閼惧嘲褰囬崥鍕湰濮ｆ柨鍨?
+         * 获取各局比分
          */
         function getGameScores() {
             return gameScoresHistory.join(', ');
         }
 
         /**
-         * 閸掑棔闊╁В鏃囩缂佹挻鐏?
+         * 分享比赛结果
          */
         function shareResult() {
             let winnerText = '';
             if (gamesWonA > gamesWonB) {
-                winnerText = `棣冨汲 閼剧柉鍎ㄩ弬? ${teamNameA}`;
+                winnerText = `🏆 获胜方: ${teamNameB}`;
             } else if (gamesWonB > gamesWonA) {
-                winnerText = `棣冨汲 閼剧柉鍎ㄩ弬? ${teamNameB}`;
+                winnerText = `🏆 获胜方: ${teamNameB}`;
             } else {
-                winnerText = '棣冨汲 濮ｆ棁绂岄獮鍐茬湰';
+                winnerText = '🏆 比赛平局';
             }
             
-            const resultText = `棣冨緝 缂囪姤鐦洪悶鍐╃槷鐠ф稓绮ㄩ弸娣簄` +
-                `棣冩惍 ${new Date().toLocaleString()}\n` +
-                `棣冩噧 ${teamNameA} vs ${teamNameB}\n` +
-                `棣冩惓 鐏炩偓閸? ${gamesWonA} : ${gamesWonB}\n` +
-                `閳存唻绗?濮ｆ棁绂岄弮鍫曟毐: ${document.getElementById('match-timer').textContent}\n` +
+            const resultText = `🏸 羽毛球比赛结果\n` +
+                `📅 ${new Date().toLocaleString()}\n` +
+                `👥 ${teamNameA} vs ${teamNameB}\n` +
+                `📊 局分: ${gamesWonA} : ${gamesWonB}\n` +
+                `⏱️ 比赛时长: ${document.getElementById('match-timer').textContent}\n` +
                 winnerText;
             
             if (navigator.share) {
                 navigator.share({
-                    title: '缂囪姤鐦洪悶鍐╃槷鐠ф稓绮ㄩ弸?,
+                    title: '羽毛球比赛结果',
                     text: resultText
-                }).catch(err => console.log('閸掑棔闊╅崣鏍ㄧХ'));
+                }).catch(err => console.log('分享取消'));
             } else {
                 navigator.clipboard.writeText(resultText).then(() => {
-                    showNotification('婢跺秴鍩楅幋鎰', '濮ｆ棁绂岀紒鎾寸亯瀹告彃顦查崚璺哄煂閸擃亣鍒涢弶鍖＄磼');
+                    showNotification('复制成功', '比赛结果已复制到剪贴板！');
                 });
             }
         }
 
-        // ==================== 閸樺棗褰剁拋鏉跨秿閸旂喕鍏?====================
+        // ==================== 历史记录功能 ====================
         /**
-         * 閸旂姾娴囬崢鍡楀蕉鐠佹澘缍?
+         * 加载历史记录
          */
         function loadHistory() {
             const matchHistory = JSON.parse(localStorage.getItem('matchHistory') || '[]');
@@ -6872,24 +6872,24 @@
             if (matchHistory.length === 0) {
                 historyList.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">棣冨緝</div>
-                        <p>閺嗗倹妫ゅВ鏃囩鐠佹澘缍?/p>
-                        <p class="empty-state-hint">瀵偓婵绔撮崷鐑樼槷鐠ф稑鎮楁导姘冲殰閸斻劏顔囪ぐ鏇炴躬鏉╂瑩鍣?/p>
+                        <div class="empty-state-icon">🏸</div>
+                        <p>暂无比赛记录</p>
+                        <p class="empty-state-hint">开始一场比赛后会自动记录在这里</p>
                     </div>`;
                 updateStats([]);
                 destroyCharts();
-                document.getElementById('history-count').textContent = '0 閸?;
+                document.getElementById('history-count').textContent = '0 场';
                 return;
             }
             
-            document.getElementById('history-count').textContent = `${matchHistory.length} 閸︾;
+            document.getElementById('history-count').textContent = `${matchHistory.length} 场`;
             
             historyList.innerHTML = matchHistory.slice(0, 20).map((match, index) => {
                 const isWin = match.scoreA > match.scoreB;
                 const resultClass = isWin ? 'win' : (match.scoreA < match.scoreB ? 'lose' : '');
                 const duration = match.duration || 0;
                 const minutes = Math.floor(duration / 60);
-                const durationText = minutes > 0 ? `${minutes}閸掑棝鎸揱 : '';
+                const durationText = minutes > 0 ? `${minutes}分钟` : '';
                 
                 return `
                 <div class="history-card ${resultClass}" onclick="showMatchDetail(${index})">
@@ -6899,8 +6899,8 @@
                     </div>
                     <div class="history-players">${match.teamA} vs ${match.teamB}</div>
                     <div class="history-meta">
-                        ${durationText ? `<span>閳存唻绗?${durationText}</span>` : ''}
-                        <span>${isWin ? '閴?閼虫粌鍩? : (match.scoreA < match.scoreB ? '閴?婢惰精瑙? : '棣冾檪 楠炲啿鐪?)}</span>
+                        ${durationText ? `<span>⏱️ ${durationText}</span>` : ''}
+                        <span>${isWin ? '✅ 胜利' : (match.scoreA < match.scoreB ? '❌ 失败' : '🤝 平局')}</span>
                     </div>
                     ${match.highlights && match.highlights.length > 0 ? `
                         <div class="history-highlight-tags">
@@ -6918,8 +6918,8 @@
         }
 
         /**
-         * 閺勫墽銇氬В鏃囩鐠囷附鍎?
-         * @param {number} index - 濮ｆ棁绂岀槐銏犵穿
+         * 显示比赛详情
+         * @param {number} index - 比赛索引
          */
         function showMatchDetail(index) {
             const matchHistory = JSON.parse(localStorage.getItem('matchHistory') || '[]');
@@ -6936,8 +6936,8 @@
             const detailHtml = `
                 <div class="match-detail-modal">
                     <div class="detail-header">
-                        <h3>棣冩惖 濮ｆ棁绂岀拠锔藉剰</h3>
-                        <button class="detail-close-btn" onclick="closeMatchDetail()">閴?/button>
+                        <h3>📋 比赛详情</h3>
+                        <button class="detail-close-btn" onclick="closeMatchDetail()">✕</button>
                     </div>
                     <div class="detail-content">
                         <div class="detail-teams">
@@ -6953,30 +6953,30 @@
                         </div>
                         <div class="detail-info">
                             <div class="info-item">
-                                <span class="info-label">棣冩惍 閺冦儲婀?/span>
+                                <span class="info-label">📅 日期</span>
                                 <span class="info-value">${new Date(match.date).toLocaleString()}</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">閳存唻绗?閺冨爼鏆?/span>
+                                <span class="info-label">⏱️ 时长</span>
                                 <span class="info-value">${durationText}</span>
                             </div>
                             ${match.gameScores ? `
                             <div class="info-item">
-                                <span class="info-label">棣冩惓 閸氬嫬鐪В鏂垮瀻</span>
+                                <span class="info-label">📊 各局比分</span>
                                 <span class="info-value">${match.gameScores}</span>
                             </div>
                             ` : ''}
                         </div>
                         ${match.highlights && match.highlights.length > 0 ? `
                         <div class="detail-highlights">
-                            <div class="highlights-title">閴?妤傛ê鍘滈弮璺哄煝</div>
+                            <div class="highlights-title">✨ 高光时刻</div>
                             <div class="highlights-tags">
                                 ${match.highlights.map(tag => `<span class="highlight-tag">${tag}</span>`).join('')}
                             </div>
                         </div>
                         ` : ''}
                         <div class="detail-actions">
-                            <button class="btn btn-primary" onclick="shareHistoryMatch(${index})">棣冩憶 閻㈢喐鍨氶崚鍡曢煩閸楋紕澧?/button>
+                            <button class="btn btn-primary" onclick="shareHistoryMatch(${index})">📤 生成分享卡片</button>
                         </div>
                     </div>
                 </div>
@@ -6993,7 +6993,7 @@
         }
 
         /**
-         * 閸忔娊妫村В鏃囩鐠囷附鍎?
+         * 关闭比赛详情
          */
         function closeMatchDetail() {
             const overlay = document.getElementById('match-detail-overlay');
@@ -7001,15 +7001,15 @@
         }
 
         /**
-         * 娴犲骸宸婚崣鑼额唶瑜版洖鍨庢禍顐ｇ槷鐠?
-         * @param {number} index - 濮ｆ棁绂岀拋鏉跨秿缁便垹绱?
+         * 从历史记录分享比赛
+         * @param {number} index - 比赛记录索引
          */
         function shareHistoryMatch(index) {
             const matchHistory = JSON.parse(localStorage.getItem('matchHistory') || '[]');
             const match = matchHistory[index];
             
             if (!match) {
-                showNotification('闁挎瑨顕?, '閺堫亝澹橀崚鐗堢槷鐠ф稖顔囪ぐ?);
+                showNotification('错误', '未找到比赛记录');
                 return;
             }
             
@@ -7034,8 +7034,8 @@
         }
 
         /**
-         * 閺囧瓨鏌婄紒鐔活吀閺佺増宓?
-         * @param {Array} matchHistory - 濮ｆ棁绂岄崢鍡楀蕉鐠佹澘缍?
+         * 更新统计数据
+         * @param {Array} matchHistory - 比赛历史记录
          */
         function updateStats(matchHistory) {
             const totalMatches = matchHistory.length;
@@ -7059,7 +7059,7 @@
         }
 
         /**
-         * 鐎电厧鍤崢鍡楀蕉鐠佹澘缍?
+         * 导出历史记录
          */
         function exportHistory() {
             const matchHistory = JSON.parse(localStorage.getItem('matchHistory') || '[]');
@@ -7069,29 +7069,29 @@
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = `缂囪姤鐦洪悶鍐╃槷鐠ф稖顔囪ぐ鏄?{new Date().toLocaleDateString()}.json`;
+            a.download = `羽毛球比赛记录_${new Date().toLocaleDateString()}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
 
         /**
-         * 濞撳懐鈹栭崢鍡楀蕉鐠佹澘缍?
+         * 清空历史记录
          */
         function clearHistory() {
-            if (!confirm('绾喖鐣剧憰浣圭缁岀儤澧嶉張澶嬬槷鐠ф稖顔囪ぐ鏇炴偋閿涚喐顒濋幙宥勭稊娑撳秴褰查幁銏狀槻閿?)) return;
+            if (!confirm('确定要清空所有比赛记录吗？此操作不可恢复！')) return;
             localStorage.removeItem('matchHistory');
             loadHistory();
-            showNotification('瀹稿弶绔荤粚?, '閹碘偓閺堝鐦挧娑滎唶瑜版洖鍑￠崚鐘绘珟');
+            showNotification('已清空', '所有比赛记录已删除');
         }
 
-        // ==================== 閺呴缚鍏橀崚鍡欑矋閸旂喕鍏?====================
+        // ==================== 智能分组功能 ====================
         /**
-         * 閻㈢喐鍨氶崚鍡欑矋
+         * 生成分组
          */
         function generateGroups() {
             const playersText = document.getElementById('players-list').value;
             if (!playersText.trim()) {
-                showNotification('閹绘劗銇?, '鐠囩柉绶崗銉ュ棘娑撳簼姹夐崨?);
+                showNotification('提示', '没有可撤销的操作');
                 return;
             }
             
@@ -7099,7 +7099,7 @@
             const mode = document.getElementById('group-mode').value;
             
             if (players.length < 4) {
-                showNotification('閹绘劗銇?, '閼峰啿鐨棁鈧憰?娴滅儤澧犻懗钘夊瀻缂?);
+                showNotification('提示', '至少需要4人才能分组');
                 return;
             }
             
@@ -7125,8 +7125,8 @@
         }
 
         /**
-         * 闁瀚ㄩ崚鍡欑矋濡€崇础
-         * @param {string} mode - 閸掑棛绮嶅Ο鈥崇础
+         * 选择分组模式
+         * @param {string} mode - 分组模式
          */
         function selectGroupMode(mode) {
             document.getElementById('group-mode').value = mode;
@@ -7146,7 +7146,7 @@
         }
 
         /**
-         * 閺囧瓨鏌婄€圭偛濮忕粵澶岄獓鏉堟挸鍙嗗?
+         * 更新实力等级输入框
          */
         function updateSkillInputs() {
             const playersText = document.getElementById('players-list').value;
@@ -7162,8 +7162,8 @@
         }
 
         /**
-         * 韫囶偊鈧喐鍧婇崝鐘烩偓澶嬪
-         * @param {string} name - 闁澧滈崥宥呯摟
+         * 快速添加选手
+         * @param {string} name - 选手名字
          */
         function quickAddPlayer(name) {
             const textarea = document.getElementById('players-list');
@@ -7178,7 +7178,7 @@
         }
 
         /**
-         * 閺囧瓨鏌婇柅澶嬪閺佷即鍣洪弰鍓с仛
+         * 更新选手数量显示
          */
         function updatePlayerCount() {
             const playersText = document.getElementById('players-list').value;
@@ -7187,43 +7187,43 @@
         }
 
         /**
-         * 闁插秵鏌婇崚鍡欑矋
+         * 重新分组
          */
         function regenerateGroups() {
             generateGroups();
         }
 
         /**
-         * 鐎电厧鍤崚鍡欑矋缂佹挻鐏?
+         * 导出分组结果
          */
         function exportGroups() {
             const resultsContainer = document.getElementById('group-results');
             const groups = resultsContainer.querySelectorAll('.group-card');
             
-            let text = '棣冨緝 缂囪姤鐦洪悶鍐ㄥ瀻缂佸嫮绮ㄩ弸娣簄';
+            let text = '🏸 羽毛球分组结果\n';
             text += '==================\n\n';
             
             groups.forEach((group, index) => {
                 const players = group.querySelectorAll('.group-player');
-                const playerNames = Array.from(players).map(p => p.textContent.replace(/鐎圭偛濮?\d/, '').trim());
-                text += `缁?{index + 1}缂佸嫸绱?{playerNames.join(' & ')}\n`;
+                const playerNames = Array.from(players).map(p => p.textContent.replace(/实力:\d/, '').trim());
+                text += `第${index + 1}组：${playerNames.join(' & ')}\n`;
             });
             
-            text += `\n閻㈢喐鍨氶弮鍫曟？閿?{new Date().toLocaleString()}`;
+            text += `\n生成时间：${new Date().toLocaleString()}`;
             
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `閸掑棛绮嶇紒鎾寸亯_${new Date().toISOString().slice(0, 10)}.txt`;
+            a.download = `分组结果_${new Date().toISOString().slice(0, 10)}.txt`;
             a.click();
             URL.revokeObjectURL(url);
             
-            showNotification('鐎电厧鍤幋鎰', '閸掑棛绮嶇紒鎾寸亯瀹告彃顕遍崙杞拌礋閺傚洦婀伴弬鍥︽');
+            showNotification('导出成功', '分组结果已导出为文本文件');
         }
 
         /**
-         * 娣囨繂鐡ㄩ崚鍡欑矋閸樺棗褰?
+         * 保存分组历史
          */
         function saveGroupingHistory(players, mode, groups) {
             const history = JSON.parse(localStorage.getItem('groupingHistory') || '[]');
@@ -7231,7 +7231,7 @@
                 date: new Date().toISOString(),
                 players: players,
                 mode: mode,
-                modeName: mode === 'random' ? '闂呭繑婧€閸掑棛绮? : mode === 'balanced' ? '鐎圭偛濮忛獮瀹犮€€' : '鏉烆喗宕茬挧娑樺煑',
+                modeName: mode === 'random' ? '随机分组' : mode === 'balanced' ? '实力平衡' : '轮换赛制',
                 groups: groups
             });
             
@@ -7241,14 +7241,14 @@
         }
 
         /**
-         * 閸旂姾娴囬崚鍡欑矋閸樺棗褰?
+         * 加载分组历史
          */
         function loadGroupingHistory() {
             const history = JSON.parse(localStorage.getItem('groupingHistory') || '[]');
             const container = document.getElementById('grouping-history-list');
             
             if (history.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">閺嗗倹妫ら崚鍡欑矋閸樺棗褰?/div>';
+                container.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无分组历史</div>';
                 return;
             }
             
@@ -7256,7 +7256,7 @@
                 <div class="grouping-history-item">
                     <div class="grouping-history-info">
                         <div class="grouping-history-mode">${item.modeName}</div>
-                        <div class="grouping-history-players">${item.players.join('閵?)}</div>
+                        <div class="grouping-history-players">${item.players.join('、')}</div>
                     </div>
                     <div class="grouping-history-date">${new Date(item.date).toLocaleString()}</div>
                 </div>
@@ -7264,18 +7264,18 @@
         }
 
         /**
-         * 濞撳懐鈹栭崚鍡欑矋閸樺棗褰?
+         * 清空分组历史
          */
         function clearGroupingHistory() {
-            if (!confirm('绾喖鐣剧憰浣圭缁岀儤澧嶉張澶婂瀻缂佸嫬宸婚崣鎻掓偋閿?)) return;
+            if (!confirm('确定要清空所有分组历史吗？')) return;
             localStorage.removeItem('groupingHistory');
             loadGroupingHistory();
-            showNotification('瀹稿弶绔荤粚?, '閸掑棛绮嶉崢鍡楀蕉瀹稿弶绔荤粚?);
+            showNotification('已清空', '分摊历史已清空');
         }
 
         /**
-         * 闂呭繑婧€閸掑棛绮?
-         * @param {Array} players - 閻溾晛顔嶉崚妤勩€?
+         * 随机分组
+         * @param {Array} players - 玩家列表
          */
         function randomGrouping(players) {
             const shuffled = [...players];
@@ -7301,9 +7301,9 @@
         }
 
         /**
-         * 鐎圭偛濮忛獮瀹犮€€閸掑棛绮?
-         * @param {Array} players - 閻溾晛顔嶉崚妤勩€?
-         * @param {Array} skills - 鐎圭偛濮忕粵澶岄獓閸掓銆?
+         * 实力平衡分组
+         * @param {Array} players - 玩家列表
+         * @param {Array} skills - 实力等级列表
          */
         function balancedGrouping(players, skills) {
             if (!skills || skills.length !== players.length) {
@@ -7343,8 +7343,8 @@
         }
 
         /**
-         * 鏉烆喗宕茬挧娑樺煑閸掑棛绮?
-         * @param {Array} players - 閻溾晛顔嶉崚妤勩€?
+         * 轮换赛制分组
+         * @param {Array} players - 玩家列表
          */
         function rotationGrouping(players) {
             const groups = [];
@@ -7360,10 +7360,10 @@
         }
 
         /**
-         * 閺勫墽銇氶崚鍡欑矋缂佹挻鐏?
-         * @param {Array} groups - 閸掑棛绮嶇紒鎾寸亯
-         * @param {string} mode - 閸掑棛绮嶅Ο鈥崇础
-         * @param {Array} skills - 鐎圭偛濮忕粵澶岄獓
+         * 显示分组结果
+         * @param {Array} groups - 分组结果
+         * @param {string} mode - 分组模式
+         * @param {Array} skills - 实力等级
          */
         function displayGroups(groups, mode, skills) {
             const resultsSection = document.getElementById('group-results-section');
@@ -7381,14 +7381,14 @@
                 
                 groupCard.innerHTML = `
                     <div class="group-card-header">
-                        <div class="group-number">缁?{index + 1}缂?/div>
-                        ${mode === 'balanced' ? `<div class="group-skill-badge">缂佺厧鎮庣€圭偛濮? ${totalSkill}</div>` : ''}
+                        <div class="group-number">第${index + 1}组</div>
+                        ${mode === 'balanced' ? `<span class="group-player-skill">实力:${player.skill}</span>` : ''}
                     </div>
                     <div class="group-players">
                         ${group.map(player => `
                             <div class="group-player">
                                 ${player.name}
-                                ${mode === 'balanced' ? `<span class="group-player-skill">鐎圭偛濮?${player.skill}</span>` : ''}
+                                ${mode === 'balanced' ? `<span class="group-player-skill">实力:${player.skill}</span>` : ''}
                             </div>
                         `).join('')}
                     </div>
@@ -7403,15 +7403,15 @@
             statsContainer.innerHTML = `
                 <div class="group-stat-item">
                     <div class="group-stat-value">${totalGroups}</div>
-                    <div class="group-stat-label">閹崵绮嶉弫?/div>
+                    <div class="group-stat-label">总组数</div>
                 </div>
                 <div class="group-stat-item">
                     <div class="group-stat-value">${totalPlayers}</div>
-                    <div class="group-stat-label">閸欏倷绗屾禍鐑樻殶</div>
+                    <div class="group-stat-label">参与人数</div>
                 </div>
                 <div class="group-stat-item">
                     <div class="group-stat-value">${avgGroupSize}</div>
-                    <div class="group-stat-label">楠炲啿娼庡В蹇曠矋娴滅儤鏆?/div>
+                    <div class="group-stat-label">平均每组人数</div>
                 </div>
             `;
             
@@ -7419,7 +7419,7 @@
         }
 
         /**
-         * 濞撳懐鈹栭崚鍡欑矋缂佹挻鐏?
+         * 清空分组结果
          */
         function clearGroups() {
             document.getElementById('players-list').value = '';
@@ -7429,14 +7429,14 @@
             document.getElementById('skill-inputs').innerHTML = '';
         }
 
-        // ==================== 鐠愬湱鏁ょ拋锛勭暬閸旂喕鍏?====================
+        // ==================== 费用计算功能 ====================
         /**
-         * 閻㈢喐鍨氶崣鍌欑瑢娴滃搫鎲抽柅澶嬪濡?
+         * 生成参与人员选择框
          */
-        // ==================== 鐠愬湱鏁ょ拋锛勭暬閸旂喕鍏?====================
+        // ==================== 费用计算功能 ====================
         /**
-         * 闁瀚ㄧ拹鍦暏缁鐎?
-         * @param {string} type - 鐠愬湱鏁ょ猾璇茬€?
+         * 选择费用类型
+         * @param {string} type - 费用类型
          */
         function selectExpenseType(type) {
             document.getElementById('expense-type').value = type;
@@ -7447,8 +7447,8 @@
         }
 
         /**
-         * 闁瀚ㄩ崚鍡樻啞濡€崇础
-         * @param {string} mode - 閸掑棙鎲″Ο鈥崇础
+         * 选择分摊模式
+         * @param {string} mode - 分摊模式
          */
         function selectSplitMode(mode) {
             document.getElementById('split-mode').value = mode;
@@ -7467,15 +7467,15 @@
         }
 
         /**
-         * 鐠佸墽鐤嗚箛顐︹偓鐔煎櫨妫?
-         * @param {number} amount - 闁叉垿顤?
+         * 设置快速金额
+         * @param {number} amount - 金额
          */
         function setQuickAmount(amount) {
             document.getElementById('total-amount').value = amount;
         }
 
         /**
-         * 閺囧瓨鏌婇崣鍌欑瑢娴滅儤鏆熼弰鍓с仛
+         * 更新参与人数显示
          */
         function updateParticipantCount() {
             const playersText = document.getElementById('expense-players').value;
@@ -7484,7 +7484,7 @@
         }
 
         /**
-         * 閺囧瓨鏌婂В鏂剧伐鏉堟挸鍙嗗?
+         * 更新比例输入框
          */
         function updateRatioInputs() {
             const playersText = document.getElementById('expense-players').value;
@@ -7500,7 +7500,7 @@
         }
 
         /**
-         * 鐠侊紕鐣荤拹鍦暏閸掑棙鎲?
+         * 计算费用分摊
          */
         function calculateExpense() {
             const expenseType = document.getElementById('expense-type').value;
@@ -7509,14 +7509,14 @@
             const splitMode = document.getElementById('split-mode').value;
             
             if (isNaN(totalAmount) || totalAmount <= 0) {
-                showNotification('閹绘劗銇?, '鐠囩柉绶崗銉︽箒閺佸牏娈戦幀濠氬櫨妫?);
+                showNotification('提示', '至少需要4人才能分组');
                 return;
             }
             
             const participants = playersText.split('\n').filter(p => p.trim() !== '').map(p => p.trim());
             
             if (participants.length === 0) {
-                showNotification('閹绘劗銇?, '鐠囩柉绶崗銉ュ棘娑撳簼姹夐崨?);
+                showNotification('提示', '没有可撤销的操作');
                 return;
             }
             
@@ -7529,27 +7529,27 @@
                 
                 summaryHtml = `
                     <div class="summary-row">
-                        <span class="summary-label">鐠愬湱鏁ょ猾璇茬€?/span>
+                        <span class="summary-label">费用类型</span>
                         <span class="summary-value">${expenseType}</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">閹鍣炬０?/span>
-                        <span class="summary-value summary-total">妤?{totalAmount.toFixed(2)}</span>
+                        <span class="summary-label">总金额</span>
+                        <span class="summary-value summary-total">¥${totalAmount.toFixed(2)}</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">閸欏倷绗屾禍鐑樻殶</span>
-                        <span class="summary-value">${participants.length}娴?/span>
+                        <span class="summary-label">参与人数</span>
+                        <span class="summary-value">${participants.length}人</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">娴滃搫娼庣拹鍦暏</span>
-                        <span class="summary-value summary-total">妤?{perPerson.toFixed(2)}</span>
+                        <span class="summary-label">人均费用</span>
+                        <span class="summary-value summary-total">¥${perPerson.toFixed(2)}</span>
                     </div>
                 `;
                 
                 detailsHtml = participants.map(p => `
                     <div class="expense-detail-item">
                         <span class="detail-name">${p}</span>
-                        <span class="detail-amount">妤?{perPerson.toFixed(2)}</span>
+                        <span class="detail-amount">¥${perPerson.toFixed(2)}</span>
                     </div>
                 `).join('');
                 
@@ -7566,23 +7566,23 @@
                 
                 summaryHtml = `
                     <div class="summary-row">
-                        <span class="summary-label">鐠愬湱鏁ょ猾璇茬€?/span>
+                        <span class="summary-label">费用类型</span>
                         <span class="summary-value">${expenseType}</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">閹鍣炬０?/span>
-                        <span class="summary-value summary-total">妤?{totalAmount.toFixed(2)}</span>
+                        <span class="summary-label">总金额</span>
+                        <span class="summary-value summary-total">¥${totalAmount.toFixed(2)}</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">閸掑棙鎲″В鏂剧伐</span>
+                        <span class="summary-label">分摊比例</span>
                         <span class="summary-value">${ratios.join(' : ')}</span>
                     </div>
                 `;
                 
                 detailsHtml = participants.map((p, i) => `
                     <div class="expense-detail-item">
-                        <span class="detail-name">${p} (${ratios[i]}娴?</span>
-                        <span class="detail-amount">妤?{amounts[i].toFixed(2)}</span>
+                        <span class="detail-name">${p} (${ratios[i]}份)</span>
+                        <span class="detail-amount">¥${amounts[i].toFixed(2)}</span>
                     </div>
                 `).join('');
                 
@@ -7593,31 +7593,31 @@
                 
                 summaryHtml = `
                     <div class="summary-row">
-                        <span class="summary-label">鐠愬湱鏁ょ猾璇茬€?/span>
+                        <span class="summary-label">费用类型</span>
                         <span class="summary-value">${expenseType}</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">閹鍣炬０?/span>
-                        <span class="summary-value summary-total">妤?{totalAmount.toFixed(2)}</span>
+                        <span class="summary-label">总金额</span>
+                        <span class="summary-value summary-total">¥${totalAmount.toFixed(2)}</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">濮ｆ棁绂岄弮鍫曟毐</span>
-                        <span class="summary-value">${matchDuration}閸掑棝鎸?/span>
+                        <span class="summary-label">比赛时长</span>
+                        <span class="summary-value">${matchDuration}分钟</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">閺冭泛娼庣拹鍦暏</span>
-                        <span class="summary-value">妤?{hourlyRate.toFixed(2)}/鐏忓繑妞?/span>
+                        <span class="summary-label">时均费用</span>
+                        <span class="summary-value">¥${hourlyRate.toFixed(2)}/小时</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">娴滃搫娼庣拹鍦暏</span>
-                        <span class="summary-value summary-total">妤?{perPerson.toFixed(2)}</span>
+                        <span class="summary-label">人均费用</span>
+                        <span class="summary-value summary-total">¥${perPerson.toFixed(2)}</span>
                     </div>
                 `;
                 
                 detailsHtml = participants.map(p => `
                     <div class="expense-detail-item">
                         <span class="detail-name">${p}</span>
-                        <span class="detail-amount">妤?{perPerson.toFixed(2)}</span>
+                        <span class="detail-amount">¥${perPerson.toFixed(2)}</span>
                     </div>
                 `).join('');
             }
@@ -7630,7 +7630,7 @@
         }
 
         /**
-         * 娣囨繂鐡ㄧ拹鍦暏閸樺棗褰?
+         * 保存费用历史
          */
         function saveExpenseHistory(type, total, participants, splitMode, ratios) {
             const history = JSON.parse(localStorage.getItem('expenseHistory') || '[]');
@@ -7649,14 +7649,14 @@
         }
 
         /**
-         * 閸旂姾娴囩拹鍦暏閸樺棗褰?
+         * 加载费用历史
          */
         function loadExpenseHistory() {
             const history = JSON.parse(localStorage.getItem('expenseHistory') || '[]');
             const container = document.getElementById('expense-history-list');
             
             if (history.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">閺嗗倹妫ら崚鍡樻啞閸樺棗褰?/div>';
+                container.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无分摊历史</div>';
                 return;
             }
             
@@ -7664,7 +7664,7 @@
                 <div class="expense-history-item" onclick="showExpenseDetail(${index})">
                     <div class="expense-history-info">
                         <div class="expense-history-type">${item.type}</div>
-                        <div class="expense-history-amount">妤?{item.total.toFixed(2)} 璺?${item.participants.length}娴滃搫寮稉?/div>
+                        <div class="expense-history-amount">¥${item.total.toFixed(2)} · ${item.participants.length}人参与</div>
                     </div>
                     <div class="expense-history-date">${new Date(item.date).toLocaleString()}</div>
                 </div>
@@ -7672,19 +7672,19 @@
         }
 
         /**
-         * 閺勫墽銇氱拹鍦暏鐠囷附鍎?
-         * @param {number} index - 閸樺棗褰剁拋鏉跨秿缁便垹绱?
+         * 显示费用详情
+         * @param {number} index - 历史记录索引
          */
         function showExpenseDetail(index) {
             const history = JSON.parse(localStorage.getItem('expenseHistory') || '[]');
             const item = history[index];
             
             if (!item) {
-                showNotification('闁挎瑨顕?, '閺堫亝澹橀崚鎷岊嚉鐠佹澘缍?);
+                showNotification('错误', '未找到比赛记录');
                 return;
             }
             
-            const splitModeName = item.splitMode === 'equal' ? '楠炲啿娼庨崚鍡樻啞' : item.splitMode === 'custom' ? '閼奉亜鐣炬稊澶嬬槷娓? : '閹稿妞傞梹?;
+            const splitModeName = item.splitMode === 'equal' ? '平均分摊' : item.splitMode === 'custom' ? '自定义比例' : '按时长';
             
             let perPerson = 0;
             let amounts = [];
@@ -7702,30 +7702,30 @@
             
             const detailsHtml = item.participants.map((p, i) => `
                 <div class="expense-detail-item">
-                    <span class="detail-name">${p}${item.ratios && item.ratios[i] ? ` (${item.ratios[i]}娴?` : ''}</span>
-                    <span class="detail-amount">妤?{amounts[i].toFixed(2)}</span>
+                    <span class="detail-name">${p}${item.ratios && item.ratios[i] ? ` (${item.ratios[i]}份)` : ''}</span>
+                    <span class="detail-amount">¥${amounts[i].toFixed(2)}</span>
                 </div>
             `).join('');
             
             const summaryHtml = `
                 <div class="summary-row">
-                    <span class="summary-label">鐠愬湱鏁ょ猾璇茬€?/span>
+                    <span class="summary-label">费用类型</span>
                     <span class="summary-value">${item.type}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">閹鍣炬０?/span>
-                    <span class="summary-value summary-total">妤?{item.total.toFixed(2)}</span>
+                    <span class="summary-label">总金额</span>
+                    <span class="summary-value summary-total">¥${item.total.toFixed(2)}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">閸掑棙鎲″Ο鈥崇础</span>
+                    <span class="summary-label">分摊模式</span>
                     <span class="summary-value">${splitModeName}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">閸欏倷绗屾禍鐑樻殶</span>
-                    <span class="summary-value">${item.participants.length}娴?/span>
+                    <span class="summary-label">参与人数</span>
+                    <span class="summary-value">${item.participants.length}人</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">閺冨爼妫?/span>
+                    <span class="summary-label">时间</span>
                     <span class="summary-value">${new Date(item.date).toLocaleString()}</span>
                 </div>
             `;
@@ -7736,14 +7736,14 @@
         }
 
         /**
-         * 閸忔娊妫寸拹鍦暏鐠囷附鍎忓Ο鈩冣偓浣诡攱
+         * 关闭费用详情模态框
          */
         function closeExpenseDetailModal() {
             document.getElementById('expense-detail-modal').classList.remove('show');
         }
 
         /**
-         * 濞撳懐鈹栫拹鍦暏鐞涖劌宕?
+         * 清空费用表单
          */
         function clearExpenseForm() {
             document.getElementById('total-amount').value = '';
@@ -7754,60 +7754,60 @@
         }
 
         /**
-         * 濞撳懐鈹栫拹鍦暏閸樺棗褰?
+         * 清空费用历史
          */
         function clearExpenseHistory() {
-            if (!confirm('绾喖鐣剧憰浣圭缁岀儤澧嶉張澶婂瀻閹藉﹤宸婚崣鎻掓偋閿?)) return;
+            if (!confirm('确定要清空所有分摊历史吗？')) return;
             localStorage.removeItem('expenseHistory');
             loadExpenseHistory();
-            showNotification('瀹稿弶绔荤粚?, '閸掑棙鎲￠崢鍡楀蕉瀹稿弶绔荤粚?);
+            showNotification('已清空', '分摊历史已清空');
         }
 
         /**
-         * 婢跺秴鍩楃拹鍦暏缂佹挻鐏?
+         * 复制费用结果
          */
         function copyExpenseResult() {
             const summary = document.getElementById('expense-summary').innerText;
             const details = document.getElementById('expense-details').innerText;
-            const text = `鐠愬湱鏁ら崚鍡樻啞缂佹挻鐏塡n${summary}\n\n${details}`;
+            const text = `费用分摊结果\n${summary}\n\n${details}`;
             
             navigator.clipboard.writeText(text).then(() => {
-                showNotification('婢跺秴鍩楅幋鎰', '閸掑棙鎲＄紒鎾寸亯瀹告彃顦查崚璺哄煂閸擃亣鍒涢弶?);
+                showNotification('复制成功', '分摊结果已复制到剪贴板');
             }).catch(() => {
-                showNotification('婢跺秴鍩楁径杈Е', '鐠囬攱澧滈崝銊┾偓澶嬪婢跺秴鍩?);
+                showNotification('复制失败', '请手动选择复制');
             });
         }
 
         /**
-         * 鐎电厧鍤拹鍦暏鐠佹澘缍?
+         * 导出费用记录
          */
         function exportExpense() {
             const expenseHistory = JSON.parse(localStorage.getItem('expenseHistory') || '[]');
             
-            let text = '棣冩尩 鐠愬湱鏁ら崚鍡樻啞鐠佹澘缍峔n';
+            let text = '💰 费用分摊记录\n';
             text += '==================\n\n';
             
             expenseHistory.forEach((item, index) => {
-                text += `閵?{index + 1}閵?{item.type}\n`;
-                text += `闁叉垿顤傞敍姣?{item.total.toFixed(2)}\n`;
-                text += `閸欏倷绗屾禍鐚寸窗${item.participants.join('閵?)}\n`;
-                text += `閺冨爼妫块敍?{new Date(item.date).toLocaleString()}\n\n`;
+                text += `【${index + 1}】${item.type}\n`;
+                text += `金额：¥${item.total.toFixed(2)}\n`;
+                text += `参与人：${item.participants.join('、')}\n`;
+                text += `时间：${new Date(item.date).toLocaleString()}\n\n`;
             });
             
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `鐠愬湱鏁ら崚鍡樻啞鐠佹澘缍峗${new Date().toISOString().slice(0, 10)}.txt`;
+            a.download = `费用分摊记录_${new Date().toISOString().slice(0, 10)}.txt`;
             a.click();
             URL.revokeObjectURL(url);
             
-            showNotification('鐎电厧鍤幋鎰', '鐠愬湱鏁ょ拋鏉跨秿瀹告彃顕遍崙?);
+            showNotification('导出成功', '费用记录已导出');
         }
 
-        // ==================== 鐠佸墽鐤嗘稉搴㈡殶閹诡喚顓搁悶?====================
+        // ==================== 设置与数据管理 ====================
         /**
-         * 娣囨繂鐡ㄧ拋鍓х枂
+         * 保存设置
          */
         function saveSettings() {
             const settings = {
@@ -7823,7 +7823,7 @@
         }
 
         /**
-         * 閸旂姾娴囩拋鍓х枂
+         * 加载设置
          */
         function loadSettings() {
             const settings = JSON.parse(localStorage.getItem('settings') || '{}');
@@ -7848,7 +7848,7 @@
         }
 
         /**
-         * 娣囨繂鐡ㄥВ鏃囩閻樿埖鈧?
+         * 保存比赛状态
          */
         function saveMatchState() {
             const state = {
@@ -7859,7 +7859,7 @@
         }
 
         /**
-         * 閸旂姾娴囧В鏃囩閻樿埖鈧?
+         * 加载比赛状态
          */
         function loadMatchState() {
             const state = JSON.parse(localStorage.getItem('matchState') || '{}');
@@ -7870,8 +7870,8 @@
                 gamesWonB = state.gamesWonB || 0;
                 currentGame = state.currentGame || 1;
                 seconds = state.seconds || 0;
-                teamNameA = state.teamNameA || '瀹歌鲸鏌?;
-                teamNameB = state.teamNameB || '鐎佃鏌?;
+                teamNameA = state.teamNameA || '己方';
+                teamNameB = state.teamNameB || '对方';
                 scoreHistory = state.scoreHistory || [];
                 gameScoresHistory = state.gameScoresHistory || [];
                 
@@ -7879,7 +7879,7 @@
                 document.getElementById('team-b-score').textContent = scoreB;
                 document.getElementById('team-a-name').textContent = teamNameA;
                 document.getElementById('team-b-name').textContent = teamNameB;
-                document.getElementById('current-game').textContent = `缁?${currentGame} 鐏炩偓`;
+                document.getElementById('current-game').textContent = `第 ${currentGame} 局`;
                 document.getElementById('games-score').textContent = `${gamesWonA} : ${gamesWonB}`;
                 
                 const minutes = Math.floor(seconds / 60);
@@ -7890,14 +7890,14 @@
         }
 
         /**
-         * 濞撳懘娅庡В鏃囩閻樿埖鈧?
+         * 清除比赛状态
          */
         function clearMatchState() {
             localStorage.removeItem('matchState');
         }
 
         /**
-         * 婢跺洣鍞ら弫鐗堝祦
+         * 备份数据
          */
         function backupData() {
             const data = {
@@ -7913,22 +7913,22 @@
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = `缂囪姤鐦洪悶鍐吀閸掑棙婢樻径鍥﹀敜_${new Date().toLocaleDateString()}.json`;
+            a.download = `羽毛球计分板备份_${new Date().toLocaleDateString()}.json`;
             a.click();
             URL.revokeObjectURL(url);
             
-            showNotification('婢跺洣鍞ら幋鎰', '閺佺増宓佸鎻掝嚤閸戣桨璐烰SON閺傚洣娆?);
+            showNotification('备份成功', '数据已导出为JSON文件');
         }
 
         /**
-         * 閹垹顦查弫鐗堝祦
+         * 恢复数据
          */
         function restoreData() {
             document.getElementById('restore-file').click();
         }
 
         /**
-         * 婢跺嫮鎮婇幁銏狀槻閺傚洣娆?
+         * 处理恢复文件
          */
         function handleRestoreFile(event) {
             const file = event.target.files[0];
@@ -7951,31 +7951,31 @@
                     
                     loadSettings();
                     loadHistory();
-                    showNotification('閹垹顦查幋鎰', '閺佺増宓佸鍙夊灇閸旂喐浠径宥忕磼');
+                    showNotification('恢复成功', '数据已成功恢复！');
                 } catch (err) {
-                    showNotification('閹垹顦叉径杈Е', '閺傚洣娆㈤弽鐓庣础娑撳秵顒滅涵?);
+                    showNotification('恢复失败', '文件格式不正确');
                 }
             };
             reader.readAsText(file);
         }
 
         /**
-         * 濞撳懘娅庨幍鈧張澶嬫殶閹?
+         * 清除所有数据
          */
         function clearAllData() {
-            if (!confirm('绾喖鐣剧憰浣圭闂勩倖澧嶉張澶嬫殶閹诡喖鎮ч敍鐔割劃閹垮秳缍旀稉宥呭讲閹垹顦查敍?)) return;
+            if (!confirm('确定要清除所有数据吗？此操作不可恢复！')) return;
             
             localStorage.clear();
             loadSettings();
             loadHistory();
             resetMatch();
-            showNotification('瀹稿弶绔荤粚?, '閹碘偓閺堝鏆熼幑顔煎嚒閸掔娀娅?);
+            showNotification('已清空', '分摊历史已清空');
         }
 
-        // ==================== 婢逛即鐓舵稉搴ㄦ缚閸?====================
+        // ==================== 声音与震动 ====================
         /**
-         * 閹绢厽鏂侀棅铏櫏
-         * @param {string} type - 闂婅櫕鏅ョ猾璇茬€?
+         * 播放音效
+         * @param {string} type - 音效类型
          */
         function playSound(type) {
             if (!document.getElementById('sound-enabled').checked) return;
@@ -8006,8 +8006,8 @@
         }
 
         /**
-         * 闂囧洤濮╅崣宥夘洯
-         * @param {Array} pattern - 闂囧洤濮╁Ο鈥崇础
+         * 震动反馈
+         * @param {Array} pattern - 震动模式
          */
         function vibrate(pattern) {
             if (!document.getElementById('vibration-enabled').checked) return;
@@ -8016,11 +8016,11 @@
             }
         }
 
-        // ==================== 闁氨鐓￠崝鐔诲厴 ====================
+        // ==================== 通知功能 ====================
         /**
-         * 閺勫墽銇氶柅姘辩叀
-         * @param {string} title - 閺嶅洭顣?
-         * @param {string} message - 濞戝牊浼呴崘鍛啇
+         * 显示通知
+         * @param {string} title - 标题
+         * @param {string} message - 消息内容
          */
         function showNotification(title, message) {
             document.getElementById('notification-title').textContent = title;
@@ -8029,20 +8029,20 @@
         }
 
         /**
-         * 闂呮劘妫岄柅姘辩叀
+         * 隐藏通知
          */
         function hideNotification() {
             document.getElementById('notification').classList.remove('show');
         }
 
-        // ==================== 鏉堟挸鍙嗙€电鐦藉?====================
+        // ==================== 输入对话框 ====================
         let inputDialogCallback = null;
 
         /**
-         * 閺勫墽銇氭潏鎾冲弳鐎电鐦藉?
-         * @param {string} title - 鐎电鐦藉鍡樼垼妫?
-         * @param {string} defaultValue - 鏉堟挸鍙嗗鍡涚帛鐠併倕鈧?
-         * @param {function} callback - 閸ョ偠鐨熼崙鑺ユ殶閿涘苯寮弫棰佽礋閻劍鍩涙潏鎾冲弳閻ㄥ嫬鈧》绱欓崣鏍ㄧХ閺冩湹璐焠ull閿?
+         * 显示输入对话框
+         * @param {string} title - 对话框标题
+         * @param {string} defaultValue - 输入框默认值
+         * @param {function} callback - 回调函数，参数为用户输入的值（取消时为null）
          */
         function showInputDialog(title, defaultValue, callback) {
             document.getElementById('input-dialog-title').textContent = title;
@@ -8054,8 +8054,8 @@
         }
 
         /**
-         * 闂呮劘妫屾潏鎾冲弳鐎电鐦藉?
-         * @param {boolean} confirmed - 閺勵垰鎯佺涵顔款吇
+         * 隐藏输入对话框
+         * @param {boolean} confirmed - 是否确认
          */
         function hideInputDialog(confirmed) {
             document.getElementById('input-dialog').classList.remove('show');
@@ -8066,9 +8066,9 @@
             }
         }
 
-        // ==================== 婢垛晜鐨甸崝鐔诲厴 ====================
+        // ==================== 天气功能 ====================
         /**
-         * 閸掓繂顫愰崠鏍с亯濮?
+         * 初始化天气
          */
         function initWeather() {
             const API_KEY = "82844554Ie9i812G";
@@ -8084,34 +8084,34 @@
                             .then(data => {
                                 if (data.code === 200) {
                                     weatherContainer.querySelector('.location').textContent = `${data.city} ${data.district}`;
-                                    weatherContainer.querySelector('.temperature').textContent = `${data.temp} 鎺矯`;
+                                    weatherContainer.querySelector('.temperature').textContent = `${data.temp} °C`;
                                     weatherContainer.querySelector('.condition').textContent = data.wea;
                                     weatherContainer.querySelector('.details').innerHTML = 
-                                        `<span>濠€鍨: ${data.humidity}%</span><span>妞嬪骸濮? ${data.win_speed}</span>`;
+                                        `<span>湿度: ${data.humidity}%</span><span>风力: ${data.win_speed}</span>`;
                                     weatherContainer.classList.add('loaded');
                                 }
                             })
                             .catch(() => {
-                                weatherContainer.querySelector('.location').textContent = '婢垛晜鐨甸懢宄板絿婢惰精瑙?;
+                                weatherContainer.querySelector('.location').textContent = '天气获取失败';
                             });
                     },
                     () => {
-                        weatherContainer.querySelector('.location').textContent = '娴ｅ秶鐤嗛弶鍐閺堫亜绱戦崥?;
+                        weatherContainer.querySelector('.location').textContent = '位置权限未开启';
                     }
                 );
             }
         }
 
-        // ==================== 妤傛ê鍘滈弮璺哄煝鐠佹澘缍嶇化鑽ょ埠 ====================
+        // ==================== 高光时刻记录系统 ====================
         let highlightMoments = [];
         let wasLeadingTeamA = null;
         let maxLeadA = 0;
         let maxLeadB = 0;
 
         /**
-         * 鐠佹澘缍嶆妯哄帨閺冭泛鍩?
-         * @param {string} type - 妤傛ê鍘滅猾璇茬€?
-         * @param {string} message - 妤傛ê鍘滃☉鍫熶紖
+         * 记录高光时刻
+         * @param {string} type - 高光类型
+         * @param {string} message - 高光消息
          */
         function recordHighlight(type, message) {
             highlightMoments.push({
@@ -8125,15 +8125,15 @@
         }
 
         /**
-         * 濡偓閺屻儱鑻熺拋鏉跨秿妤傛ê鍘滈弮璺哄煝
+         * 检查并记录高光时刻
          */
         function checkHighlights() {
             const deuceMode = document.getElementById('deuce-mode').checked;
 
             if (deuceMode && scoreA >= 20 && scoreB >= 20) {
                 if (highlightMoments.filter(h => h.type === 'deuce' && h.currentGame === currentGame).length === 0) {
-                    recordHighlight('deuce', '鏉╂稑鍙嗛崝鐘插瀻鐠ф冻绱?);
-                    showHighlightNotification('棣冨箖', '閸旂姴鍨庣挧娑崇磼', '閸欏本鏌熷В鏂垮瀻20楠炵绱濇潻娑樺弳閸旂姴鍨庣挧娑崇磼');
+                    recordHighlight('deuce', '进入加分赛！');
+                    showHighlightNotification('🎮', '加分赛！', '双方比分20平，进入加分赛！');
                 }
             }
 
@@ -8143,8 +8143,8 @@
                 );
                 if (!existingMatchPoint) {
                     const approachingTeam = scoreA >= targetScore - 1 ? teamNameA : teamNameB;
-                    recordHighlight('matchpoint', `${approachingTeam} 鐠ф稓鍋ｉ敍涔?;
-                    showHighlightNotification('閳?, '鐠ф稓鍋ｉ敍?, `${approachingTeam} 閹峰灝鍩岀挧娑氬仯閿涗梗);
+                    recordHighlight('matchpoint', `${approachingTeam} 赛点！`);
+                    showHighlightNotification('⚡', '赛点！', `${approachingTeam} 拿到赛点！`);
                 }
             }
 
@@ -8153,12 +8153,12 @@
                 if (wasLeadingTeamA === null) {
                     wasLeadingTeamA = currentLead > 0;
                 } else if (wasLeadingTeamA && currentLead < -5) {
-                    recordHighlight('comeback', `${teamNameB} 婢堆団偓鍡氭祮閿涗梗);
-                    showHighlightNotification('棣冩暉', '婢堆団偓鍡氭祮閿?, `${teamNameB} 閽€钘夋倵5閸掑棔浜掓稉濠傛倵閸欏秷绉撮敍涔?;
+                    recordHighlight('comeback', `${teamNameB} 大逆转！`);
+                    showHighlightNotification('🔥', '大逆转！', `${teamNameA} 落后5分以上后反超！`);
                     wasLeadingTeamA = false;
                 } else if (!wasLeadingTeamA && currentLead > 5) {
-                    recordHighlight('comeback', `${teamNameA} 婢堆団偓鍡氭祮閿涗梗);
-                    showHighlightNotification('棣冩暉', '婢堆団偓鍡氭祮閿?, `${teamNameA} 閽€钘夋倵5閸掑棔浜掓稉濠傛倵閸欏秷绉撮敍涔?;
+                    recordHighlight('comeback', `${teamNameA} 大逆转！`);
+                    showHighlightNotification('🔥', '大逆转！', `${teamNameA} 落后5分以上后反超！`);
                     wasLeadingTeamA = true;
                 }
             }
@@ -8168,10 +8168,10 @@
         }
 
         /**
-         * 閺勫墽銇氭妯哄帨閺冭泛鍩㈤柅姘辩叀
-         * @param {string} icon - 閸ョ偓鐖?
-         * @param {string} title - 閺嶅洭顣?
-         * @param {string} message - 濞戝牊浼?
+         * 显示高光时刻通知
+         * @param {string} icon - 图标
+         * @param {string} title - 标题
+         * @param {string} message - 消息内容
          */
         function showHighlightNotification(icon, title, message) {
             const existingBadge = document.querySelector('.highlight-badge');
@@ -8199,7 +8199,7 @@
         }
 
         /**
-         * 闁插秶鐤嗘妯哄帨閺冭泛鍩㈤弫鐗堝祦
+         * 重置高光时刻数据
          */
         function resetHighlights() {
             highlightMoments = [];
@@ -8209,31 +8209,31 @@
         }
 
         /**
-         * 娣囨繂鐡ㄦ妯哄帨閺冭泛鍩㈤崚鐗堢槷鐠ф稖顔囪ぐ?
+         * 保存高光时刻到比赛记录
          */
         function getHighlightsSummary() {
             const summary = [];
             
             if (highlightMoments.filter(h => h.type === 'deuce').length > 0) {
-                summary.push('棣冨箖 閸旂姴鍨庣挧?);
+                summary.push('🎮 加分赛');
             }
             if (highlightMoments.filter(h => h.type === 'comeback').length > 0) {
-                summary.push('棣冩暉 婢堆団偓鍡氭祮');
+                summary.push('🔥 大逆转');
             }
             if (scoreA === 0 || scoreB === 0) {
-                summary.push('閴?闂嗚泛鐨濋懗婊冨焺');
+                summary.push('✨ 零封胜利');
             }
             
             return summary;
         }
 
-        // ==================== 鎼村棛顨㈤崝銊ф暰缁崵绮?====================
+        // ==================== 庆祝动画系统 ====================
         let currentShareTemplate = 1;
         let shareCardData = {};
 
         /**
-         * 鐟欙箑褰傛惔鍡欘殺閸斻劎鏁?
-         * @param {string} winnerName - 閼剧柉鍎ㄩ懓鍛倳缁?
+         * 触发庆祝动画
+         * @param {string} winnerName - 获胜者名称
          */
         function triggerCelebration(winnerName) {
             createConfetti();
@@ -8242,7 +8242,7 @@
         }
 
         /**
-         * 閸掓稑缂撹ぐ鈺佺敨閸斻劎鏁?
+         * 创建彩带动画
          */
         function createConfetti() {
             const container = document.getElementById('confetti-container');
@@ -8267,7 +8267,7 @@
         }
 
         /**
-         * 閸掓稑缂撻悜鐔诲С閸斻劎鏁?
+         * 创建烟花动画
          */
         function createFireworks() {
             const container = document.getElementById('firework-container');
@@ -8307,12 +8307,12 @@
         }
 
         /**
-         * 閺勫墽銇氶懗婊冨焺濡亜绠?
-         * @param {string} winnerName - 閼剧柉鍎ㄩ懓鍛倳缁?
+         * 显示胜利横幅
+         * @param {string} winnerName - 获胜者名称
          */
         function showVictoryBanner(winnerName) {
             const banner = document.getElementById('victory-banner');
-            banner.querySelector('h2').textContent = winnerName + ' 閼剧柉鍎?';
+            banner.querySelector('h2').textContent = winnerName + ' 获胜!';
             banner.style.display = 'block';
             
             setTimeout(() => {
@@ -8320,9 +8320,9 @@
             }, 3000);
         }
 
-        // ==================== 閸掑棔闊╅崡锛勫缁崵绮?====================
+        // ==================== 分享卡片系统 ====================
         /**
-         * 閹垫挸绱戦崚鍡曢煩閸楋紕澧栧Ο鈩冣偓浣诡攱
+         * 打开分享卡片模态框
          */
         function openShareCardModal() {
             shareCardData = {
@@ -8340,15 +8340,15 @@
         }
 
         /**
-         * 閸忔娊妫撮崚鍡曢煩閸楋紕澧栧Ο鈩冣偓浣诡攱
+         * 关闭分享卡片模态框
          */
         function closeShareCardModal() {
             document.getElementById('share-card-modal').classList.remove('show');
         }
 
         /**
-         * 闁瀚ㄩ崚鍡曢煩閸楋紕澧栧Ο鈩冩緲
-         * @param {number} template - 濡剝婢樼紓鏍у娇
+         * 选择分享卡片模板
+         * @param {number} template - 模板编号
          */
         function selectShareTemplate(template) {
             currentShareTemplate = template;
@@ -8358,7 +8358,7 @@
         }
 
         /**
-         * 濞撳弶鐓嬮崚鍡曢煩閸楋紕澧?
+         * 渲染分享卡片
          */
         function renderShareCard() {
             const preview = document.getElementById('share-card-preview');
@@ -8373,8 +8373,8 @@
                 html = `
                     <div class="share-card-template-1">
                         <div class="share-card-header">
-                            <div class="share-card-logo">棣冨緝 缂囪姤鐦洪悶鍐╃€柅鐔活唶閸掑棙婢?/div>
-                            <div class="share-card-subtitle">缁儳鍍电€电懓鍠?/div>
+                            <div class="share-card-logo">🏸 羽毛球极速记分板</div>
+                            <div class="share-card-subtitle">精彩对决</div>
                         </div>
                         <div class="share-card-score">
                             <div class="share-card-team-names">
@@ -8389,8 +8389,8 @@
                             </div>
                         </div>
                         <div class="share-card-footer">
-                            <div class="share-card-date">棣冩惍 ${shareCardData.date}</div>
-                            <div class="share-card-duration">閳存唻绗?濮ｆ棁绂岄弮鍫曟毐 ${shareCardData.duration}</div>
+                            <div class="share-card-date">📅 ${shareCardData.date}</div>
+                            <div class="share-card-duration">⏱️ 比赛时长 ${shareCardData.duration}</div>
                             ${highlightsHtml}
                         </div>
                     </div>
@@ -8399,8 +8399,8 @@
                 html = `
                     <div class="share-card-template-1" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                         <div class="share-card-header">
-                            <div class="share-card-logo">棣冩暉 濠碘偓閹懎顕崘?/div>
-                            <div class="share-card-subtitle">缂囪姤鐦洪悶鍐╃槷鐠?/div>
+                            <div class="share-card-logo">🔥 激情对决</div>
+                            <div class="share-card-subtitle">羽毛球比赛</div>
                         </div>
                         <div class="share-card-score">
                             <div class="share-card-team-names">
@@ -8415,8 +8415,8 @@
                             </div>
                         </div>
                         <div class="share-card-footer">
-                            <div class="share-card-date">棣冨汲 ${winner === 'A' ? shareCardData.teamA : shareCardData.teamB} 閼剧柉鍎?</div>
-                            <div class="share-card-duration">閳存唻绗?${shareCardData.duration}</div>
+                            <div class="share-card-date">🏆 ${winner === 'A' ? shareCardData.teamA : shareCardData.teamB} 获胜!</div>
+                            <div class="share-card-duration">⏱️ 比赛时长 ${shareCardData.duration}</div>
                             ${highlightsHtml}
                         </div>
                     </div>
@@ -8425,8 +8425,8 @@
                 html = `
                     <div class="share-card-template-1" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                         <div class="share-card-header">
-                            <div class="share-card-logo">棣冨箖 韫囶偂绠扮紘鑺ョ樅閻?/div>
-                            <div class="share-card-subtitle">缁儳鍍甸惉顒勬？</div>
+                            <div class="share-card-logo">🎮 快乐羽毛球</div>
+                            <div class="share-card-subtitle">精彩瞬间</div>
                         </div>
                         <div class="share-card-score">
                             <div class="share-card-team-names">
@@ -8441,8 +8441,8 @@
                             </div>
                         </div>
                         <div class="share-card-footer">
-                            <div class="share-card-date">棣冩尛 缂佈呯敾閸旂姵琛?</div>
-                            <div class="share-card-duration">${shareCardData.date} 璺?${shareCardData.duration}</div>
+                            <div class="share-card-date">💪 继续加油!</div>
+                            <div class="share-card-duration">${shareCardData.date} · ${shareCardData.duration}</div>
                             ${highlightsHtml}
                         </div>
                     </div>
@@ -8453,13 +8453,13 @@
         }
 
         /**
-         * 娑撳娴囬崚鍡曢煩閸楋紕澧栨稉鍝勬禈閻?
+         * 下载分享卡片为图片
          */
         async function downloadShareCard() {
             const preview = document.getElementById('share-card-preview');
             const btn = event.target;
             const originalText = btn.textContent;
-            btn.textContent = '閻㈢喐鍨氭稉?..';
+            btn.textContent = '生成中...';
             btn.disabled = true;
             
             try {
@@ -8472,23 +8472,23 @@
                 
                 const link = document.createElement('a');
                 const timestamp = new Date().toISOString().slice(0, 10);
-                link.download = `缂囪姤鐦洪悶鍐╃槷鐠ф矕${shareCardData.teamA}vs${shareCardData.teamB}_${timestamp}.png`;
+                link.download = `羽毛球比赛_${shareCardData.teamA}vs${shareCardData.teamB}_${timestamp}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 
-                showNotification('娣囨繂鐡ㄩ幋鎰', '閸掑棔闊╅崡锛勫瀹歌弓绻氱€涙ê鍩岄張顒€婀撮敍?);
+                showNotification('保存成功', '分享卡片已保存到本地！');
             } catch (error) {
-                console.error('娣囨繂鐡ㄦ径杈Е:', error);
-                showNotification('娣囨繂鐡ㄦ径杈Е', '鐠囪渹濞囬悽銊﹀焻閸ユ儳濮涢懗鑺ュ閸斻劋绻氱€?);
+                console.error('保存失败:', error);
+                showNotification('保存失败', '请使用截图功能手动保存');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
         }
 
-        // ==================== 閹存劕姘ㄧ化鑽ょ埠閸旂喕鍏?====================
+        // ==================== 成就系统功能 ====================
         /**
-         * 閸掓繂顫愰崠鏍ㄥ灇鐏忚京閮寸紒?
+         * 初始化成就系统
          */
         function initAchievements() {
             renderAchievements();
@@ -8496,7 +8496,7 @@
         }
 
         /**
-         * 閸旂姾娴囬幋鎰皑閺佺増宓?
+         * 加载成就数据
          */
         function loadAchievements() {
             const saved = localStorage.getItem('unlockedAchievements');
@@ -8516,7 +8516,7 @@
         }
 
         /**
-         * 娣囨繂鐡ㄩ幋鎰皑閺佺増宓?
+         * 保存成就数据
          */
         function saveAchievements() {
             localStorage.setItem('unlockedAchievements', JSON.stringify(unlockedAchievements));
@@ -8530,7 +8530,7 @@
         }
 
         /**
-         * 濞撳弶鐓嬮幋鎰皑閸掓銆?
+         * 渲染成就列表
          */
         function renderAchievements() {
             const matchContainer = document.getElementById('match-achievements');
@@ -8552,14 +8552,14 @@
         }
 
         /**
-         * 濞撳弶鐓嬮幋鎰皑閸楋紕澧?
+         * 渲染成就卡片
          */
         function renderAchievementCards(achievements) {
             return achievements.map(achievement => {
                 const unlocked = unlockedAchievements.includes(achievement.id);
                 return `
                     <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
-                        <div class="achievement-card-icon">${unlocked ? achievement.icon : '棣冩晙'}</div>
+                        <div class="achievement-card-icon">${unlocked ? achievement.icon : '🔒'}</div>
                         <div class="achievement-card-title">${achievement.title}</div>
                         <div class="achievement-card-desc">${achievement.desc}</div>
                     </div>
@@ -8568,7 +8568,7 @@
         }
 
         /**
-         * 閺囧瓨鏌婇幋鎰皑缂佺喕顓搁幗妯款洣
+         * 更新成就统计摘要
          */
         function updateAchievementsSummary() {
             const unlockedCount = unlockedAchievements.length;
@@ -8592,9 +8592,9 @@
         }
 
         /**
-         * 濡偓閺屻儱鑻熺憴锝夋敚閹存劕姘?
-         * @param {string} type - 閹存劕姘ㄧ猾璇茬€?
-         * @param {any} value - 瑜版挸澧犻崐?
+         * 检查并解锁成就
+         * @param {string} type - 成就类型
+         * @param {any} value - 当前值
          */
         function checkAndUnlockAchievements(type, value) {
             achievementsList.forEach(achievement => {
@@ -8607,8 +8607,8 @@
         }
 
         /**
-         * 鐟欙綁鏀ｉ幋鎰皑
-         * @param {object} achievement - 閹存劕姘ㄧ€电钖?
+         * 解锁成就
+         * @param {object} achievement - 成就对象
          */
         function unlockAchievement(achievement) {
             if (unlockedAchievements.includes(achievement.id)) return;
@@ -8622,8 +8622,8 @@
         }
 
         /**
-         * 閺勫墽銇氶幋鎰皑鐟欙綁鏀ｅ鐣岀彿
-         * @param {object} achievement - 閹存劕姘ㄧ€电钖?
+         * 显示成就解锁徽章
+         * @param {object} achievement - 成就对象
          */
         function showAchievementBadge(achievement) {
             const badge = document.getElementById('achievement-badge');
@@ -8640,10 +8640,10 @@
         }
 
         /**
-         * 閺囧瓨鏌婂В鏃囩閹存劕姘ㄧ紒鐔活吀
-         * @param {boolean} won - 閺勵垰鎯侀懢鐤劏
-         * @param {boolean} perfectWin - 閺勵垰鎯侀梿璺虹殱
-         * @param {boolean} hadDeuce - 閺勵垰鎯佺紒蹇撳坊閸旂姴鍨庣挧?
+         * 更新比赛成就统计
+         * @param {boolean} won - 是否获胜
+         * @param {boolean} perfectWin - 是否零封
+         * @param {boolean} hadDeuce - 是否经历加分赛
          */
         function updateMatchAchievements(won, perfectWin, hadDeuce) {
             totalMatches++;
@@ -8676,14 +8676,14 @@
             }
         }
 
-        // ==================== 缂佺喕顓搁崶鎹愩€冪化鑽ょ埠 ====================
+        // ==================== 统计图表系统 ====================
         let monthlyChart = null;
         let winLossChart = null;
         let winRateTrendChart = null;
         let durationChart = null;
 
         /**
-         * 閸掓繂顫愰崠鏍ㄥ閺堝娴樼悰?
+         * 初始化所有图表
          */
         function initCharts() {
             const matchHistory = JSON.parse(localStorage.getItem('matchHistory') || '[]');
@@ -8696,8 +8696,8 @@
         }
 
         /**
-         * 閸掓稑缂撻張鍫濆濮ｆ棁绂岀搾瀣◢閸?
-         * @param {Array} matchHistory - 濮ｆ棁绂岄崢鍡楀蕉鐠佹澘缍?
+         * 创建月度比赛趋势图
+         * @param {Array} matchHistory - 比赛历史记录
          */
         function createMonthlyChart(matchHistory) {
             const ctx = document.getElementById('monthlyChart');
@@ -8722,7 +8722,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '濮ｆ棁绂岄崷鐑樻殶',
+                        label: '比赛场数',
                         data: data,
                         borderColor: '#6839E8',
                         backgroundColor: 'rgba(104, 57, 232, 0.1)',
@@ -8755,8 +8755,8 @@
         }
 
         /**
-         * 閸掓稑缂撻懗婊嗙閸掑棗绔锋鐓庢禈
-         * @param {Array} matchHistory - 濮ｆ棁绂岄崢鍡楀蕉鐠佹澘缍?
+         * 创建胜负分布饼图
+         * @param {Array} matchHistory - 比赛历史记录
          */
         function createWinLossChart(matchHistory) {
             const ctx = document.getElementById('winLossChart');
@@ -8780,7 +8780,7 @@
             winLossChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['閼虫粌鍩?, '婢惰精瑙?],
+                    labels: ['胜利', '失败'],
                     datasets: [{
                         data: [wins, losses],
                         backgroundColor: [
@@ -8807,8 +8807,8 @@
         }
 
         /**
-         * 閸掓稑缂撻懗婊呭芳閸欐ê瀵茬搾瀣◢閸?
-         * @param {Array} matchHistory - 濮ｆ棁绂岄崢鍡楀蕉鐠佹澘缍?
+         * 创建胜率变化趋势图
+         * @param {Array} matchHistory - 比赛历史记录
          */
         function createWinRateTrendChart(matchHistory) {
             const ctx = document.getElementById('winRateTrendChart');
@@ -8840,7 +8840,7 @@
                 data: {
                     labels: recentLabels,
                     datasets: [{
-                        label: '閼虫粎宸?(%)',
+                        label: '胜率 (%)',
                         data: recentWinRates,
                         backgroundColor: 'rgba(39, 240, 92, 0.6)',
                         borderColor: '#27F05C',
@@ -8871,8 +8871,8 @@
         }
 
         /**
-         * 閸掓稑缂撳В鏃囩閺冨爼鏆遍崚鍡楃閸?
-         * @param {Array} matchHistory - 濮ｆ棁绂岄崢鍡楀蕉鐠佹澘缍?
+         * 创建比赛时长分布图
+         * @param {Array} matchHistory - 比赛历史记录
          */
         function createDurationChart(matchHistory) {
             const ctx = document.getElementById('durationChart');
@@ -8883,25 +8883,25 @@
             }
 
             const durationRanges = {
-                '0-10閸掑棝鎸?: 0,
-                '10-20閸掑棝鎸?: 0,
-                '20-30閸掑棝鎸?: 0,
-                '30-40閸掑棝鎸?: 0,
-                '40閸掑棝鎸撴禒銉ょ瑐': 0
+                '0-10分钟': 0,
+                '10-20分钟': 0,
+                '20-30分钟': 0,
+                '30-40分钟': 0,
+                '40分钟以上': 0
             };
 
             matchHistory.forEach(match => {
                 const minutes = (match.duration || 0) / 60;
                 if (minutes < 10) {
-                    durationRanges['0-10閸掑棝鎸?]++;
+                    durationRanges['0-10分钟']++;
                 } else if (minutes < 20) {
-                    durationRanges['10-20閸掑棝鎸?]++;
+                    durationRanges['10-20分钟']++;
                 } else if (minutes < 30) {
-                    durationRanges['20-30閸掑棝鎸?]++;
+                    durationRanges['20-30分钟']++;
                 } else if (minutes < 40) {
-                    durationRanges['30-40閸掑棝鎸?]++;
+                    durationRanges['30-40分钟']++;
                 } else {
-                    durationRanges['40閸掑棝鎸撴禒銉ょ瑐']++;
+                    durationRanges['40分钟以上']++;
                 }
             });
 
@@ -8936,7 +8936,7 @@
         }
 
         /**
-         * 闁库偓濮ｄ焦澧嶉張澶婃禈鐞?
+         * 销毁所有图表
          */
         function destroyCharts() {
             if (monthlyChart) {
@@ -8957,16 +8957,16 @@
             }
         }
 
-        // ==================== 閹烘帟顢戝婊呴兇缂?====================
+        // ==================== 排行榜系统 ====================
         let currentLeaderboardType = 'wins';
 
-        // ==================== 婢舵潙鍎氱化鑽ょ埠 ====================
-        const avatarEmojis = ['棣冩', '棣冩', '棣冦亯', '棣冦偝', '棣冩Ь', '棣冾樄', '棣冩Й', '棣冩Ш', '棣冾樇', '棣冩', '棣冾檯', '棣冦偢', '棣兾?, '棣冾潪', '棣冾潠閳ュ稅鐓?, '棣冩噯閳ュ稅鐓?, '棣冩噰閳ュ稅鐓?, '棣冾潠閳ュ稅鐓?, '棣冾洴', '棣冩儛', '棣冩儣', '棣冩儯', '棣冾洨', '棣冩儝', '棣冩儙', '棣冾洣', '棣冩儮', '棣冩儍', '棣冾渹', '棣冾洴', '棣冩儚', '棣冩儧'];
-        let selectedAvatar = '棣冩';
+        // ==================== 头像系统 ====================
+        const avatarEmojis = ['😀', '😎', '🤩', '🥳', '😴', '🤔', '😤', '😱', '🤗', '😇', '🤠', '🥸', '🦸', '🧙', '🧑‍🎤', '👨‍🎨', '👩‍🎓', '🧑‍🍳', '🦊', '🐱', '🐶', '🐼', '🦄', '🐲', '🐯', '🦁', '🐻', '🐨', '🦝', '🦊', '🐰', '🐸'];
+        let selectedAvatar = '😀';
         let playerAvatars = {};
 
         /**
-         * 閸掓繂顫愰崠鏍с仈閸嶅繒閮寸紒?
+         * 初始化头像系统
          */
         function initAvatars() {
             loadAvatars();
@@ -8974,7 +8974,7 @@
         }
 
         /**
-         * 閸旂姾娴囨径鏉戝剼閺佺増宓?
+         * 加载头像数据
          */
         function loadAvatars() {
             const saved = localStorage.getItem('playerAvatars');
@@ -8984,14 +8984,14 @@
         }
 
         /**
-         * 娣囨繂鐡ㄦ径鏉戝剼閺佺増宓?
+         * 保存头像数据
          */
         function saveAvatars() {
             localStorage.setItem('playerAvatars', JSON.stringify(playerAvatars));
         }
 
         /**
-         * 濞撳弶鐓嬬拋鍓х枂妞ょ敻娼伴惃鍕仈閸嶅繐绨?
+         * 渲染设置页面的头像库
          */
         function renderAvatarLibrary() {
             const library = document.getElementById('avatar-library');
@@ -9003,11 +9003,11 @@
                 </div>
             `).join('');
 
-            library.innerHTML = html || `<div style="grid-column: 1/-1; text-align: center; opacity: 0.6; padding: 20px;">鏉╂ɑ鐥呴張澶庮啎缂冾喖銇旈崓蹇ョ礉閻愮懓鍤?缁狅紕鎮婇柅澶嬪婢舵潙鍎?瀵偓婵顔曠純顕嗙磼</div>`;
+            library.innerHTML = html || `<div style="grid-column: 1/-1; text-align: center; opacity: 0.6; padding: 20px;">还没有设置头像，点击"管理选手头像"开始设置！</div>`;
         }
 
         /**
-         * 閹垫挸绱戞径鏉戝剼缁狅紕鎮婂Ο鈩冣偓浣诡攱
+         * 打开头像管理模态框
          */
         function openAvatarManager() {
             const modal = document.getElementById('avatar-manager-modal');
@@ -9025,16 +9025,16 @@
         }
 
         /**
-         * 閸忔娊妫存径鏉戝剼缁狅紕鎮婂Ο鈩冣偓浣诡攱
+         * 关闭头像管理模态框
          */
         function closeAvatarManager() {
             document.getElementById('avatar-manager-modal').classList.remove('show');
         }
 
         /**
-         * 闁瀚ㄦ径鏉戝剼
-         * @param {string} avatar - 婢舵潙鍎歟moji
-         * @param {HTMLElement} element - 婢舵潙鍎氶崗鍐
+         * 选择头像
+         * @param {string} avatar - 头像emoji
+         * @param {HTMLElement} element - 头像元素
          */
         function selectAvatar(avatar, element) {
             selectedAvatar = avatar;
@@ -9043,14 +9043,14 @@
         }
 
         /**
-         * 娣囨繂鐡ㄩ柅澶嬪婢舵潙鍎?
+         * 保存选手头像
          */
         function savePlayerAvatar() {
             const nameInput = document.getElementById('avatar-player-name');
             const playerName = nameInput.value.trim();
             
             if (!playerName) {
-                showNotification('閹绘劗銇?, '鐠囩柉绶崗銉┾偓澶嬪閸氬秶袨閿?);
+                showNotification('提示', '请输入有效的总金额');
                 return;
             }
             
@@ -9058,21 +9058,21 @@
             saveAvatars();
             renderAvatarLibrary();
             closeAvatarManager();
-            showNotification('娣囨繂鐡ㄩ幋鎰', `${playerName} 閻ㄥ嫬銇旈崓蹇撳嚒鐠佸墽鐤嗛敍涔?;
+            showNotification('保存成功', `${playerName} 的头像已设置！`);
         }
 
         /**
-         * 閼惧嘲褰囬柅澶嬪婢舵潙鍎?
-         * @param {string} playerName - 闁澧滈崥宥囆?
-         * @returns {string} 婢舵潙鍎歟moji
+         * 获取选手头像
+         * @param {string} playerName - 选手名称
+         * @returns {string} 头像emoji
          */
         function getPlayerAvatar(playerName) {
-            return playerAvatars[playerName] || '棣冨緝';
+            return playerAvatars[playerName] || '🏸';
         }
 
-        // ==================== 闁澧滈懗钘夊鐠囧嫪鍙婄化鑽ょ埠 ====================
+        // ==================== 选手能力评估系统 ====================
         /**
-         * 閸掓繂顫愰崠鏍偓澶嬪闁瀚ㄩ崳?
+         * 初始化选手选择器
          */
         function initPlayerAbilitySelector() {
             const matchHistory = JSON.parse(localStorage.getItem('matchHistory') || '[]');
@@ -9083,8 +9083,8 @@
             const playerStats = {};
             
             matchHistory.forEach(match => {
-                const playersA = match.teamA.split(/[\/閵嗕箽/).map(p => p.trim());
-                const playersB = match.teamB.split(/[\/閵嗕箽/).map(p => p.trim());
+                const playersA = match.teamA.split(/[\/、]/).map(p => p.trim());
+                const playersB = match.teamB.split(/[\/、]/).map(p => p.trim());
                 
                 playersA.forEach(player => {
                     if (!playerStats[player]) {
@@ -9106,12 +9106,12 @@
             });
 
             const players = Object.keys(playerStats);
-            select.innerHTML = `<option value="">闁瀚ㄩ柅澶嬪...</option>` + 
+            select.innerHTML = `<option value="">选择选手...</option>` + 
                 players.map(p => `<option value="${p}">${p}</option>`).join('');
         }
 
         /**
-         * 濞撳弶鐓嬮柅澶嬪閼宠棄濮忛崚鍡樼€?
+         * 渲染选手能力分析
          */
         function renderPlayerAbility() {
             const select = document.getElementById('ability-player-select');
@@ -9145,8 +9145,8 @@
             let totalScoreAgainst = 0;
 
             matchHistory.forEach(match => {
-                const playersA = match.teamA.split(/[\/閵嗕箽/).map(p => p.trim());
-                const playersB = match.teamB.split(/[\/閵嗕箽/).map(p => p.trim());
+                const playersA = match.teamA.split(/[\/、]/).map(p => p.trim());
+                const playersB = match.teamB.split(/[\/、]/).map(p => p.trim());
                 
                 if (playersA.includes(playerName) || playersB.includes(playerName)) {
                     matches++;
@@ -9201,43 +9201,43 @@
             statsGrid.innerHTML = `
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${matches}</div>
-                    <div class="ability-stat-label">棣冨箚 閹婧€濞?/div>
+                    <div class="ability-stat-label">🎯 总场次</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${wins}</div>
-                    <div class="ability-stat-label">棣冨汲 閼虫粌婧€</div>
+                    <div class="ability-stat-label">🏆 胜场</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${losses}</div>
-                    <div class="ability-stat-label">棣冩寖 鐠愮喎婧€</div>
+                    <div class="ability-stat-label">💔 负场</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${winRate}%</div>
-                    <div class="ability-stat-label">棣冩惐 閼虫粎宸?/div>
+                    <div class="ability-stat-label">📈 胜率</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${totalHours}h</div>
-                    <div class="ability-stat-label">閳存唻绗?閹粯妞傞梹?/div>
+                    <div class="ability-stat-label">⏱️ 总时长</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${avgDuration}m</div>
-                    <div class="ability-stat-label">閳?閸﹀搫娼庨弮鍫曟毐</div>
+                    <div class="ability-stat-label">⏰ 场均时长</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${maxWinStreak}</div>
-                    <div class="ability-stat-label">棣冩暉 閺堚偓闂€鑳箾閼?/div>
+                    <div class="ability-stat-label">🔥 最长连胜</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${maxLoseStreak}</div>
-                    <div class="ability-stat-label">閴傚嫸绗?閺堚偓闂€鑳箾鐠?/div>
+                    <div class="ability-stat-label">❄️ 最长连败</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${avgScoreFor}</div>
-                    <div class="ability-stat-label">閳挎棑绗?閸﹀搫娼庡妤€鍨?/div>
+                    <div class="ability-stat-label">⚔️ 场均得分</div>
                 </div>
                 <div class="ability-stat-card">
                     <div class="ability-stat-value">${avgScoreAgainst}</div>
-                    <div class="ability-stat-label">棣冩礉閿?閸﹀搫娼庢径鍗炲瀻</div>
+                    <div class="ability-stat-label">🛡️ 场均失分</div>
                 </div>
             `;
 
@@ -9248,19 +9248,19 @@
             rankCards.innerHTML = `
                 <div class="rank-card ${ranks.wins <= 1 ? 'top-1' : ranks.wins <= 3 ? 'top-3' : ranks.wins <= 5 ? 'top-5' : ''}">
                     <div class="rank-value">#${ranks.wins}</div>
-                    <div class="rank-label">閼虫粌婧€閹烘帒鎮?/div>
+                    <div class="rank-label">胜场排名</div>
                 </div>
                 <div class="rank-card ${ranks.matches <= 1 ? 'top-1' : ranks.matches <= 3 ? 'top-3' : ranks.matches <= 5 ? 'top-5' : ''}">
                     <div class="rank-value">#${ranks.matches}</div>
-                    <div class="rank-label">閸欏倽绂岄幒鎺戞倳</div>
+                    <div class="rank-label">参赛排名</div>
                 </div>
                 <div class="rank-card ${ranks.winRate <= 1 ? 'top-1' : ranks.winRate <= 3 ? 'top-3' : ranks.winRate <= 5 ? 'top-5' : ''}">
                     <div class="rank-value">#${ranks.winRate}</div>
-                    <div class="rank-label">閼虫粎宸奸幒鎺戞倳</div>
+                    <div class="rank-label">胜率排名</div>
                 </div>
                 <div class="rank-card ${ranks.duration <= 1 ? 'top-1' : ranks.duration <= 3 ? 'top-3' : ranks.duration <= 5 ? 'top-5' : ''}">
                     <div class="rank-value">#${ranks.duration}</div>
-                    <div class="rank-label">閺冨爼鏆遍幒鎺戞倳</div>
+                    <div class="rank-label">时长排名</div>
                 </div>
             `;
 
@@ -9274,12 +9274,12 @@
                             <div style="font-size: 0.85rem; color: #0133A4; opacity: 0.7;">vs ${m.opponent}</div>
                         </div>
                         <div class="recent-match-result ${m.won ? 'win' : 'lose'}">
-                            ${m.won ? '閼? : '鐠?} ${m.score}
+                            ${m.won ? '胜' : '负'} ${m.score}
                         </div>
                     </div>
                 `).join('');
             } else {
-                recentContainer.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">閺嗗倹妫ゅВ鏃囩鐠佹澘缍?/div>';
+                recentContainer.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无比赛记录</div>';
             }
 
             const tags = generateRealTags(wins, matches, winRate, totalDuration, maxWinStreak);
@@ -9289,7 +9289,7 @@
                     `<span class="ability-tag">${tag}</span>`
                 ).join('');
             } else {
-                tagsContainer.innerHTML = '<span class="ability-tag">棣冨緝 缂囪姤鐦洪悶鍐煃婵傚€熲偓?/span>';
+                tagsContainer.innerHTML = '<span class="ability-tag">🏸 羽毛球爱好者</span>';
             }
         }
 
@@ -9297,8 +9297,8 @@
             const playerStats = {};
             
             matchHistory.forEach(match => {
-                const playersA = match.teamA.split(/[\/閵嗕箽/).map(p => p.trim());
-                const playersB = match.teamB.split(/[\/閵嗕箽/).map(p => p.trim());
+                const playersA = match.teamA.split(/[\/、]/).map(p => p.trim());
+                const playersB = match.teamB.split(/[\/、]/).map(p => p.trim());
                 const aWon = match.scoreA > match.scoreB;
                 
                 [...playersA, ...playersB].forEach(player => {
@@ -9339,22 +9339,22 @@
         function generateRealTags(wins, matches, winRate, totalDuration, maxWinStreak) {
             const tags = [];
             
-            if (winRate >= 70 && matches >= 5) tags.push('棣冨汲 鐢瓕鍎ㄧ亸鍡楀晽');
-            if (winRate >= 50 && winRate < 70 && matches >= 5) tags.push('棣冩惐 缁嬪啿鐣鹃柅澶嬪');
-            if (matches >= 20) tags.push('棣冨箚 閻炲啫婧€閼颁礁鐨?);
-            if (matches >= 50) tags.push('棣冩尛 鐠у嫭绻侀悳鈺侇啀');
-            if (totalDuration >= 36000) tags.push('閳存唻绗?鏉╂劕濮╂潏鍙ユ眽');
-            if (maxWinStreak >= 5) tags.push('棣冩暉 鏉╃偠鍎ㄩ悳瀣偓?);
-            if (maxWinStreak >= 3) tags.push('閴?閸斿じ绗夐崣顖涘皡');
-            if (winRate >= 80 && matches >= 10) tags.push('棣冩啱 缂囪棄娼ф妯诲');
-            if (matches >= 5 && matches < 10) tags.push('棣冨啊 閺傛壆顫呴柅澶嬪');
+            if (winRate >= 70 && matches >= 5) tags.push('🏆 常胜将军');
+            if (winRate >= 50 && winRate < 70 && matches >= 5) tags.push('📈 稳定选手');
+            if (matches >= 20) tags.push('🎯 球场老将');
+            if (matches >= 50) tags.push('💪 资深玩家');
+            if (totalDuration >= 36000) tags.push('⏱️ 运动达人');
+            if (maxWinStreak >= 5) tags.push('🔥 连胜王者');
+            if (maxWinStreak >= 3) tags.push('✨ 势不可挡');
+            if (winRate >= 80 && matches >= 10) tags.push('👑 羽坛高手');
+            if (matches >= 5 && matches < 10) tags.push('🌱 新秀选手');
             
             return tags;
         }
 
         /**
-         * 閸掑洦宕查幒鎺曨攽濮掓粎琚崹?
-         * @param {string} type - 閹烘帟顢戝婊呰閸?
+         * 切换排行榜类型
+         * @param {string} type - 排行榜类型
          */
         function switchLeaderboard(type) {
             currentLeaderboardType = type;
@@ -9368,7 +9368,7 @@
         }
 
         /**
-         * 濞撳弶鐓嬮幒鎺曨攽濮?
+         * 渲染排行榜
          */
         function renderLeaderboard() {
             const matchHistory = JSON.parse(localStorage.getItem('matchHistory') || '[]');
@@ -9379,9 +9379,9 @@
                 topThreeSection.innerHTML = '';
                 leaderboardList.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">棣冨緝</div>
-                        <p>閺嗗倹妫ら弫鐗堝祦</p>
-                        <p class="empty-state-hint">瀵偓婵鐦挧娑樻倵娴兼俺鍤滈崝銊ф晸閹存劖甯撶悰灞绢渷</p>
+                        <div class="empty-state-icon">🏸</div>
+                        <p>暂无数据</p>
+                        <p class="empty-state-hint">开始比赛后会自动生成排行榜</p>
                     </div>`;
                 return;
             }
@@ -9389,8 +9389,8 @@
             const playerStats = {};
             
             matchHistory.forEach(match => {
-                const playersA = match.teamA.split(/[\/閵嗕箽/).map(p => p.trim());
-                const playersB = match.teamB.split(/[\/閵嗕箽/).map(p => p.trim());
+                const playersA = match.teamA.split(/[\/、]/).map(p => p.trim());
+                const playersB = match.teamB.split(/[\/、]/).map(p => p.trim());
                 
                 const aWon = match.scoreA > match.scoreB;
                 
@@ -9446,29 +9446,29 @@
                     if (top3[idx]) {
                         const player = top3[idx];
                         const cardClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : 'bronze';
-                        const medal = idx === 0 ? '棣冾殞' : idx === 1 ? '棣冾殟' : '棣冾殠';
+                        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
                         
                         let displayValue = '';
                         let statsText = '';
                         
                         switch (currentLeaderboardType) {
                             case 'wins':
-                                displayValue = player.wins + '閼?;
-                                statsText = `${player.matches}閸?璺?${Math.round(player.winRate)}%`;
+                                displayValue = player.wins + '胜';
+                                statsText = `${player.matches}场 · ${Math.round(player.winRate)}%`;
                                 break;
                             case 'matches':
-                                displayValue = player.matches + '閸?;
-                                statsText = `${player.wins}閼?璺?${Math.round(player.winRate)}%`;
+                                displayValue = player.matches + '场';
+                                statsText = `${player.wins}胜 · ${Math.round(player.winRate)}%`;
                                 break;
                             case 'winrate':
                                 displayValue = Math.round(player.winRate) + '%';
-                                statsText = `${player.wins}閼?${player.matches}閸︾;
+                                statsText = `${player.wins}胜/${player.matches}场`;
                                 break;
                             case 'duration':
                                 const hours = Math.floor(player.duration / 3600);
                                 const minutes = Math.floor((player.duration % 3600) / 60);
-                                displayValue = hours > 0 ? `${hours}h${minutes}m` : `${minutes}閸掑棝鎸揱;
-                                statsText = `${player.matches}閸?璺?${player.wins}閼虫竴;
+                                displayValue = hours > 0 ? `${hours}h${minutes}m` : `${minutes}分钟`;
+                                statsText = `${player.matches}场 · ${player.wins}胜`;
                                 break;
                         }
                         
@@ -9495,22 +9495,22 @@
                     
                     switch (currentLeaderboardType) {
                         case 'wins':
-                            displayValue = player.wins + '閼?;
-                            statsText = `${player.matches}閸?璺?${Math.round(player.winRate)}%`;
+                            displayValue = player.wins + '胜';
+                            statsText = `${player.matches}场 · ${Math.round(player.winRate)}%`;
                             break;
                         case 'matches':
-                            displayValue = player.matches + '閸?;
-                            statsText = `${player.wins}閼?璺?${Math.round(player.winRate)}%`;
+                            displayValue = player.matches + '场';
+                            statsText = `${player.wins}胜 · ${Math.round(player.winRate)}%`;
                             break;
                         case 'winrate':
                             displayValue = Math.round(player.winRate) + '%';
-                            statsText = `${player.wins}閼?${player.matches}閸︾;
+                            statsText = `${player.wins}胜/${player.matches}场`;
                             break;
                         case 'duration':
                             const hours = Math.floor(player.duration / 3600);
                             const minutes = Math.floor((player.duration % 3600) / 60);
-                            displayValue = hours > 0 ? `${hours}h${minutes}m` : `${minutes}閸掑棝鎸揱;
-                            statsText = `${player.matches}閸?璺?${player.wins}閼虫竴;
+                            displayValue = hours > 0 ? `${hours}h${minutes}m` : `${minutes}分钟`;
+                            statsText = `${player.matches}场 · ${player.wins}胜`;
                             break;
                     }
 
@@ -9532,11 +9532,11 @@
                     `;
                 }).join('');
             } else {
-                leaderboardList.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">閺嗗倹妫ら弴鏉戭樋閺佺増宓?/div>';
+                leaderboardList.innerHTML = '<div style="text-align: center; color: #6839E8; opacity: 0.6; padding: 20px;">暂无更多数据</div>';
             }
         }
 
-        /* ==================== 閺傜増澧滃鏇烆嚤閸旂喕鍏?==================== */
+        /* ==================== 新手引导功能 ==================== */
         function initOnboarding() {
             const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
             if (!hasSeenOnboarding) {
@@ -9552,40 +9552,40 @@
                 <div class="onboarding-modal">
                     <div class="onboarding-slides" id="onboarding-slides">
                         <div class="onboarding-slide active">
-                            <div class="slide-icon">棣冨緝</div>
-                            <h2 class="slide-title">濞嗐垼绻嬫担璺ㄦ暏缂囪姤鐦洪悶鍐╃€柅鐔活吀閸掑棙婢?/h2>
-                            <p class="slide-desc">娑撴挷绗熼妴浣虹暆濞蹭降鈧焦鐎柅鐔烘畱缂囪姤鐦洪悶鍐╃槷鐠ф稖顓搁崚鍡椾紣閸?/p>
+                            <div class="slide-icon">🏸</div>
+                            <h2 class="slide-title">欢迎使用羽毛球极速计分板</h2>
+                            <p class="slide-desc">专业、简洁、极速的羽毛球比赛计分工具</p>
                         </div>
                         <div class="onboarding-slide">
-                            <div class="slide-icon">閳?/div>
-                            <h2 class="slide-title">韫囶偊鈧喕顓搁崚?/h2>
-                            <p class="slide-desc">閻愮懓鍤径褍娓鹃崷鍫熷灗+閹稿鎸抽崡鍐插讲閸旂姴鍨庨敍灞炬暜閹镐焦鎸欓柨鈧幙宥勭稊</p>
+                            <div class="slide-icon">⚡</div>
+                            <h2 class="slide-title">快速计分</h2>
+                            <p class="slide-desc">点击大圆圈或+按钮即可加分，支持撤销操作</p>
                         </div>
                         <div class="onboarding-slide">
-                            <div class="slide-icon">棣冩噧</div>
-                            <h2 class="slide-title">閺呴缚鍏橀崚鍡欑矋</h2>
-                            <p class="slide-desc">鏉堟挸鍙嗛柅澶嬪閸氬秴宕熼敍宀冨殰閸斻劎鏁撻幋鎰彆楠炲磭娈戠€佃鍨崚鍡欑矋</p>
+                            <div class="slide-icon">👥</div>
+                            <h2 class="slide-title">智能分组</h2>
+                            <p class="slide-desc">输入选手名单，自动生成公平的对战分组</p>
                         </div>
                         <div class="onboarding-slide">
-                            <div class="slide-icon">棣冩尩</div>
-                            <h2 class="slide-title">鐠愬湱鏁ら崚鍡樻啞</h2>
-                            <p class="slide-desc">閺€顖涘瘮婢舵氨顫掗崚鍡樻啞濡€崇础閿涘矁鍤滈崝銊吀缁犳鐦℃禍鍝勭安娴犳﹢鍣炬０?/p>
+                            <div class="slide-icon">💰</div>
+                            <h2 class="slide-title">费用分摊</h2>
+                            <p class="slide-desc">支持多种分摊模式，自动计算每人应付金额</p>
                         </div>
                         <div class="onboarding-slide">
-                            <div class="slide-icon">棣冩惓</div>
-                            <h2 class="slide-title">閺佺増宓佺紒鐔活吀</h2>
-                            <p class="slide-desc">閼奉亜濮╃拋鏉跨秿濮ｆ棁绂岄崢鍡楀蕉閿涘瞼鏁撻幋鎰笓鐞涘本顪侀崪灞惧灇鐏?/p>
+                            <div class="slide-icon">📊</div>
+                            <h2 class="slide-title">数据统计</h2>
+                            <p class="slide-desc">自动记录比赛历史，生成排行榜和成就</p>
                         </div>
                         <div class="onboarding-slide">
-                            <div class="slide-icon">棣冨竴</div>
-                            <h2 class="slide-title">瀵偓婵缍嬫?/h2>
-                            <p class="slide-desc">閻愮懓鍤稉瀣煙閹稿鎸抽敍灞界磻閸氼垯缍橀惃鍕獦濮ｆ稓鎮嗙拋鈥冲瀻娑斿姊?/p>
+                            <div class="slide-icon">🎉</div>
+                            <h2 class="slide-title">开始体验</h2>
+                            <p class="slide-desc">点击下方按钮，开启你的羽毛球计分之旅</p>
                         </div>
                     </div>
                     <div class="onboarding-dots" id="onboarding-dots"></div>
                     <div class="onboarding-actions">
-                        <button class="btn-skip" onclick="skipOnboarding()">鐠哄疇绻?/button>
-                        <button class="btn-next" id="btn-next" onclick="nextSlide()">娑撳绔村?/button>
+                        <button class="btn-skip" onclick="skipOnboarding()">跳过</button>
+                        <button class="btn-next" id="btn-next" onclick="nextSlide()">下一步</button>
                     </div>
                 </div>
             `;
@@ -9625,7 +9625,7 @@
             });
             
             if (currentSlide === totalSlides - 1) {
-                document.getElementById('btn-next').textContent = '瀵偓婵濞囬悽?;
+                document.getElementById('btn-next').textContent = '开始使用';
             }
         }
 
@@ -9642,7 +9642,7 @@
             }
         }
 
-        /* ==================== 韫囶偅宓庨幙宥勭稊閸旂喕鍏?==================== */
+        /* ==================== 快捷操作功能 ==================== */
         function showQuickActions() {
             const quickPanel = document.createElement('div');
             quickPanel.className = 'quick-actions-panel';
@@ -9650,20 +9650,20 @@
             quickPanel.innerHTML = `
                 <div class="quick-actions-content">
                     <div class="quick-action-item" onclick="quickAction('newMatch')">
-                        <span class="quick-icon">棣冨緝</span>
-                        <span class="quick-label">閺傜増鐦挧?/span>
+                        <span class="quick-icon">🏸</span>
+                        <span class="quick-label">新比赛</span>
                     </div>
                     <div class="quick-action-item" onclick="quickAction('randomTeam')">
-                        <span class="quick-icon">棣冨箟</span>
-                        <span class="quick-label">闂呭繑婧€閸掑棛绮?/span>
+                        <span class="quick-icon">🎲</span>
+                        <span class="quick-label">随机分组</span>
                     </div>
                     <div class="quick-action-item" onclick="quickAction('splitCost')">
-                        <span class="quick-icon">棣冩尩</span>
-                        <span class="quick-label">鐠愬湱鏁ら崚鍡樻啞</span>
+                        <span class="quick-icon">💰</span>
+                        <span class="quick-label">费用分摊</span>
                     </div>
                     <div class="quick-action-item" onclick="quickAction('viewStats')">
-                        <span class="quick-icon">棣冩惓</span>
-                        <span class="quick-label">閺屻儳婀呯紒鐔活吀</span>
+                        <span class="quick-icon">📊</span>
+                        <span class="quick-label">查看统计</span>
                     </div>
                 </div>
             `;
@@ -9701,7 +9701,7 @@
             }
         }
 
-        // 閸欏苯鍤仦蹇撶閺勫墽銇氳箛顐ｅ祹閹垮秳缍?
+        // 双击屏幕显示快捷操作
         let lastTap = 0;
         document.addEventListener('touchend', function(e) {
             const currentTime = new Date().getTime();
@@ -9714,7 +9714,7 @@
             lastTap = currentTime;
         });
 
-        // 妞ょ敻娼伴崝鐘烘祰鐎瑰本鍨氶崥搴″灥婵瀵?
+        // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             initOnboarding();
         });

@@ -1,6 +1,6 @@
 /* ================================================================
    effects.css — 全屏特效：彩带 / 烟花 / 胜利横幅 / 得分脉冲
-   浅色主题适配：粒子用高饱和实色，避免在白底上不可见。
+   深色主题适配：粒子用 VOLT 高饱和实色 + 自辉光，在黑底上炸开。
    ================================================================ */
 
 .fx-layer {
@@ -17,7 +17,7 @@
     top: -12px;
     width: 9px;
     height: 14px;
-    border-radius: 2px;
+    border-radius: 0;
     will-change: transform, opacity;
     animation: confettiFall linear forwards;
 }
@@ -39,6 +39,7 @@
     width: 7px;
     height: 7px;
     border-radius: var(--r-full);
+    box-shadow: 0 0 8px currentColor;
     will-change: transform, opacity;
     animation: fireworkOut var(--fdur, 1100ms) var(--ease-out) forwards;
 }
@@ -68,7 +69,8 @@
     padding: var(--sp-6) var(--sp-7);
     text-align: center;
     background: var(--c-surface);
-    border-radius: var(--r-2xl);
+    border-radius: 0;
+    clip-path: var(--cut);
     box-shadow: var(--sh-3), inset 0 0 0 2px var(--c-gold);
     transform: translate(-50%, -50%);
 }
@@ -78,22 +80,26 @@
     animation: victoryIn var(--dur-3) var(--ease-out);
 }
 
-.victory-banner .vb-icon { font-size: 56px; line-height: 1; }
+.victory-banner .vb-icon { font-size: 52px; line-height: 1; color: var(--c-gold); }
 
 .victory-banner .vb-title {
     font-size: var(--fs-2xl);
     font-weight: var(--fw-black);
-    letter-spacing: -0.02em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
 }
 
 .victory-banner .vb-team {
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--c-brand);
+    text-shadow: 0 0 20px rgba(212, 255, 63, 0.4);
 }
 
 @keyframes victoryIn {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.86); }
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
     to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
@@ -119,7 +125,7 @@
 .skeleton {
     background: linear-gradient(90deg, var(--c-surface-2) 25%, var(--c-surface-3) 37%, var(--c-surface-2) 63%);
     background-size: 400% 100%;
-    border-radius: var(--r-sm);
+    border-radius: 0;
     animation: skeletonShift 1.4s var(--ease) infinite;
 }
 

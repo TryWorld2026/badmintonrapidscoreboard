@@ -1,6 +1,6 @@
 /* ================================================================
    screens.css — 4 个 Tab 的页面级排版
-   Tab1 记分板 / Tab2 分组+费用 / Tab3 数据 / Tab4 我的
+   Tab1 记分板（转播 score-bug 形制）/ Tab2 分组+费用 / Tab3 数据 / Tab4 我的
    ================================================================ */
 
 /* ================================================================
@@ -16,7 +16,8 @@
 .panel-head-title {
     font-size: var(--fs-lg);
     font-weight: var(--fw-black);
-    letter-spacing: -0.01em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .panel-head-sub {
@@ -32,23 +33,25 @@
     flex-shrink: 0;
 }
 
-/* 分组标题（大字 + 描述） */
+/* 分组标题（大写小标签 + 伏特竖线） */
 .section-title {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: var(--sp-2);
     margin-bottom: var(--sp-3);
-    font-size: var(--fs-md);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-text-2);
 }
 
 .section-title::before {
     content: "";
-    width: 4px;
-    height: 1em;
+    width: 3px;
+    height: 0.9em;
     background: var(--c-brand);
-    border-radius: var(--r-full);
-    transform: translateY(1px);
+    box-shadow: var(--glow-brand);
 }
 
 .section-desc {
@@ -59,14 +62,33 @@
 }
 
 /* ================================================================
-   Tab1 — 记分板
+   Tab1 — 记分板：转播 score-bug
+   左右分屏 + 中央 VS 浮标 + 底部状态条
    ================================================================ */
 .scoreboard {
     position: relative;
-    background: var(--c-surface);
-    border-radius: var(--r-xl);
-    box-shadow: var(--sh-1);
+    background: var(--c-bg);
+    /* 比分板纹理：球场横向细线 */
+    background-image:
+        repeating-linear-gradient(0deg,
+            rgba(255, 255, 255, 0.028) 0px,
+            rgba(255, 255, 255, 0.028) 1px,
+            transparent 1px,
+            transparent 7px);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
     overflow: hidden;
+}
+
+/* 比分板顶部伏特高压线 */
+.scoreboard::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--c-team-a) 0%, var(--c-brand) 50%, var(--c-team-b) 100%);
+    z-index: 3;
 }
 
 .scoreboard-grid {
@@ -85,18 +107,21 @@
     transition: background var(--dur-2) var(--ease);
 }
 
-.score-team.team-a { background: var(--c-team-a-soft); }
-.score-team.team-b { background: var(--c-team-b-soft); }
+.score-team + .score-team { border-left: 1px solid var(--c-line); }
 
-/* 领先方淡放大的高亮条 */
+.score-team.team-a { background: linear-gradient(180deg, var(--c-team-a-soft) 0%, transparent 62%); }
+.score-team.team-b { background: linear-gradient(180deg, var(--c-team-b-soft) 0%, transparent 62%); }
+
+/* 底部队伍色硬边（领先方高亮） */
 .score-team.leading::after {
     content: "";
     position: absolute;
-    inset: 0;
-    pointer-events: none;
-    box-shadow: inset 0 0 0 2px currentColor;
-    opacity: 0.28;
-    border-radius: inherit;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: currentColor;
+    box-shadow: 0 0 14px currentColor;
 }
 
 .score-team.team-a.leading { color: var(--c-team-a); }
@@ -110,31 +135,59 @@
     width: 100%;
 }
 
+/* 队伍 A/B 角标：切角方块 */
+.score-team-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    font-size: var(--fs-3xs);
+    font-weight: var(--fw-black);
+    letter-spacing: 0.06em;
+    color: var(--c-on-fill);
+    clip-path: var(--cut-xs);
+    border-radius: 0;
+}
+
+.team-a .score-team-tag { background: var(--c-team-a); }
+.team-b .score-team-tag { background: var(--c-team-b); }
+
+/* 头像：切角方块（转播车队标） */
 .score-team-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     flex-shrink: 0;
     font-size: var(--fs-lg);
     line-height: 1;
-    background: var(--c-surface);
-    border-radius: var(--r-full);
-    box-shadow: var(--sh-1);
+    background: var(--c-surface-2);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    clip-path: var(--cut-sm);
+    border-radius: 0;
 }
 
+.team-a .score-team-avatar { color: var(--c-team-a); }
+.team-b .score-team-avatar { color: var(--c-team-b); }
+
+/* 队名：全大写微型标签输入框 */
 .score-team-name {
     width: 100%;
     min-width: 0;
-    min-height: 34px;
+    min-height: 30px;
     padding: var(--sp-1) var(--sp-2);
-    font-size: var(--fs-sm);
+    font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     text-align: center;
-    background: var(--c-surface);
+    background: transparent;
+    color: var(--c-text);
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: 0;
     box-shadow: inset 0 0 0 1px var(--c-line);
     transition: box-shadow var(--dur-1) var(--ease);
 }
@@ -144,66 +197,83 @@
     box-shadow: inset 0 0 0 1px var(--c-brand), 0 0 0 3px var(--c-brand-soft);
 }
 
-/* 大比分 */
+/* ---------- 大比分：LED 记分字 ---------- */
 .score-num {
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: clamp(3.25rem, 17vw, 4.75rem);
-    font-weight: var(--fw-black);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
+    font-size: clamp(3.5rem, 20vw, 5.25rem);
+    font-weight: 400;
+    line-height: 0.92;
+    letter-spacing: 0;
+    transform: skewX(-7deg);
 }
 
-.team-a .score-num { color: var(--c-team-a); }
-.team-b .score-num { color: var(--c-team-b); }
+.team-a .score-num {
+    color: var(--c-team-a);
+    text-shadow: var(--glow-a);
+}
+.team-b .score-num {
+    color: var(--c-team-b);
+    text-shadow: var(--glow-b);
+}
 
 .score-num.bump { animation: scoreBump var(--dur-3) var(--ease-out); }
 
 @keyframes scoreBump {
-    0% { transform: scale(1); }
-    35% { transform: scale(1.14); }
-    100% { transform: scale(1); }
+    0% { transform: skewX(-7deg) scale(1); }
+    35% { transform: skewX(-7deg) scale(1.12); }
+    100% { transform: skewX(-7deg) scale(1); }
 }
 
 .score-team-meta {
     display: flex;
     align-items: center;
     gap: var(--sp-1);
-    min-height: 22px;
+    min-height: 20px;
+    font-size: var(--fs-3xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
-/* 发球方小圆点 */
+/* 发球方小灯 */
 .serve-dot {
     width: 8px;
     height: 8px;
     background: var(--c-text-3);
-    border-radius: var(--r-full);
-    opacity: 0.35;
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    opacity: 0.4;
+    transition: opacity var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
 }
 
 .serve-dot.on { opacity: 1; }
-.team-a .serve-dot.on { background: var(--c-team-a); }
-.team-b .serve-dot.on { background: var(--c-team-b); }
+.team-a .serve-dot.on { background: var(--c-team-a); box-shadow: var(--glow-ring-a); }
+.team-b .serve-dot.on { background: var(--c-team-b); box-shadow: var(--glow-ring-b); }
 
-/* 中央 VS 徽标 */
+/* ---------- 中央 VS 浮标：切角矩形 + 计时 ---------- */
 .scoreboard-vs {
     position: absolute;
-    top: 42px;
+    top: 46px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 46px;
-    height: 46px;
-    font-size: var(--fs-2xs);
+    gap: 2px;
+    min-width: 62px;
+    padding: var(--sp-1) var(--sp-2);
+    font-size: var(--fs-xs);
     font-weight: var(--fw-black);
-    letter-spacing: 0.06em;
-    color: var(--c-text-2);
-    background: var(--c-surface);
-    border-radius: var(--r-full);
-    box-shadow: var(--sh-2);
+    letter-spacing: 0.14em;
+    color: var(--c-brand-ink);
+    background: var(--c-brand);
+    box-shadow: var(--glow-brand), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    clip-path: var(--cut-sm);
+    border-radius: 0;
+    z-index: 4;
 }
 
 .scoreboard-vs .vs-timer {
@@ -211,17 +281,19 @@
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text);
-    letter-spacing: 0;
+    color: var(--c-brand-ink);
+    letter-spacing: 0.04em;
+    opacity: 0.75;
 }
 
-/* 比分板底栏：局数 / 计时 / 操作 */
+/* ---------- 底部状态条：局分 / 计时 / 操作 ---------- */
 .scoreboard-bar {
     display: flex;
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3) var(--sp-4);
     border-top: 1px solid var(--c-line);
+    background: var(--c-surface);
 }
 
 .games-won {
@@ -238,19 +310,29 @@
 .game-dot {
     width: 9px;
     height: 9px;
-    background: var(--c-line-strong);
-    border-radius: var(--r-full);
-    transition: background var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+    background: var(--c-surface-3);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    transition: background var(--dur-2) var(--ease), transform var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease);
 }
 
-.games-won-side.a .game-dot.won { background: var(--c-team-a); transform: scale(1.1); }
-.games-won-side.b .game-dot.won { background: var(--c-team-b); transform: scale(1.1); }
+.games-won-side.a .game-dot.won {
+    background: var(--c-team-a);
+    box-shadow: var(--glow-ring-a);
+    transform: scale(1.1);
+}
+.games-won-side.b .game-dot.won {
+    background: var(--c-team-b);
+    box-shadow: var(--glow-ring-b);
+    transform: scale(1.1);
+}
 
 .games-won-label {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
     color: var(--c-text-3);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .scoreboard-timer {
@@ -265,6 +347,7 @@
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
     color: var(--c-text);
 }
 
@@ -278,8 +361,9 @@
     flex-wrap: wrap;
     margin-bottom: var(--sp-4);
     padding: var(--sp-2) var(--sp-3);
-    background: var(--c-surface-2);
-    border-radius: var(--r-md);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    border-radius: var(--r-sm);
     font-size: var(--fs-2xs);
     color: var(--c-text-2);
 }
@@ -296,7 +380,9 @@
     display: flex;
     gap: var(--sp-2);
     padding: var(--sp-2) var(--gutter);
-    background: var(--c-surface);
+    background: rgba(10, 14, 19, 0.96);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border-top: 1px solid var(--c-line);
     box-shadow: var(--sh-dock);
 }
@@ -305,16 +391,19 @@
 
 .score-btn {
     flex: 1;
-    min-height: 52px;
+    min-height: 54px;
     font-size: var(--fs-md);
     font-weight: var(--fw-black);
-    border-radius: var(--r-lg);
-    color: var(--c-brand-ink);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-on-fill);
+    border-radius: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-.score-btn.team-a { background: var(--c-team-a); }
-.score-btn.team-b { background: var(--c-team-b); }
-.score-btn:active { transform: scale(0.97); }
+.score-btn.team-a { --fill: var(--c-team-a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-a); }
+.score-btn.team-b { --fill: var(--c-team-b); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-b); }
+.score-btn:active { transform: scale(0.98); }
 
 .app.dock-on .content {
     padding-bottom: calc(var(--dock-h, 68px) + var(--tabbar-h) + var(--sp-6) + env(safe-area-inset-bottom, 0px));
@@ -335,7 +424,7 @@
     gap: var(--sp-2);
     padding: var(--sp-1) var(--sp-2);
     font-size: var(--fs-2xs);
-    border-radius: var(--r-sm);
+    border-radius: 0;
     background: var(--c-surface-2);
 }
 
@@ -346,8 +435,8 @@
     font-weight: var(--fw-bold);
 }
 
-.point-log-item.a { box-shadow: inset 2px 0 0 var(--c-team-a); }
-.point-log-item.b { box-shadow: inset 2px 0 0 var(--c-team-b); }
+.point-log-item.a { box-shadow: inset 3px 0 0 var(--c-team-a); }
+.point-log-item.b { box-shadow: inset 3px 0 0 var(--c-team-b); }
 
 /* ---------- 比赛结果弹层 ---------- */
 .result-hero {
@@ -355,13 +444,14 @@
     padding: var(--sp-4) 0 var(--sp-5);
 }
 
-.result-trophy { font-size: 52px; line-height: 1; }
+.result-trophy { font-size: 48px; line-height: 1; }
 
 .result-title {
     margin-top: var(--sp-3);
     font-size: var(--fs-2xl);
     font-weight: var(--fw-black);
-    letter-spacing: -0.02em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .result-sub {
@@ -372,25 +462,29 @@
 
 .result-score {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    gap: var(--sp-3);
+    gap: var(--sp-2);
     margin: var(--sp-4) 0;
 }
 
 .result-score-side {
     flex: 1;
     padding: var(--sp-3);
-    border-radius: var(--r-md);
+    border-radius: 0;
     text-align: center;
+    background: var(--c-surface-2);
+    box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
-.result-score-side.a { background: var(--c-team-a-soft); }
-.result-score-side.b { background: var(--c-team-b-soft); }
+.result-score-side.a { box-shadow: inset 0 0 0 1px var(--c-team-a-line), inset 0 3px 0 var(--c-team-a); }
+.result-score-side.b { box-shadow: inset 0 0 0 1px var(--c-team-b-line), inset 0 3px 0 var(--c-team-b); }
 
 .result-score-side .name {
     font-size: var(--fs-2xs);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--c-text-2);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -398,16 +492,22 @@
 }
 
 .result-score-side .val {
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-2xl);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-3xl);
+    font-weight: 400;
+    line-height: 1.05;
 }
 
 .result-score-side.a .val { color: var(--c-team-a); }
 .result-score-side.b .val { color: var(--c-team-b); }
 
-.result-score-side.win { box-shadow: inset 0 0 0 2px var(--c-gold); }
+/* 胜方：金色描边 + 顶部横条 */
+.result-score-side.win {
+    background: var(--c-gold-soft);
+    box-shadow: inset 0 0 0 2px var(--c-gold);
+}
 
 .result-stats {
     display: grid;
@@ -419,12 +519,16 @@
 .result-stat {
     padding: var(--sp-2);
     background: var(--c-surface-2);
-    border-radius: var(--r-md);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
     text-align: center;
 }
 
 .result-stat .k {
     font-size: var(--fs-3xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--c-text-3);
 }
 
@@ -448,12 +552,14 @@
     gap: var(--sp-3);
     padding: var(--sp-3);
     background: var(--c-surface-2);
-    border-radius: var(--r-md);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), inset 3px 0 0 var(--c-brand);
 }
 
 .highlight-item .hi-icon {
     font-size: var(--fs-xl);
     line-height: 1;
+    color: var(--c-brand);
 }
 
 .highlight-item .hi-title {
@@ -488,7 +594,8 @@
     font-weight: var(--fw-bold);
     color: var(--c-brand);
     background: var(--c-brand-soft);
-    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    border-radius: var(--r-xs, 2px);
 }
 
 /* 单个球员的水平输入行 */
@@ -513,7 +620,8 @@
     font-weight: var(--fw-bold);
     color: var(--c-text-3);
     background: var(--c-surface-2);
-    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    border-radius: var(--r-xs, 2px);
 }
 
 .skill-row .name-input { flex: 1; min-width: 0; }
@@ -527,6 +635,9 @@
 }
 
 .skill-row .del-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 30px;
     height: 30px;
     flex-shrink: 0;
@@ -534,7 +645,7 @@
     color: var(--c-text-3);
     background: none;
     border: none;
-    border-radius: var(--r-full);
+    border-radius: var(--r-xs, 2px);
     cursor: pointer;
 }
 
@@ -553,8 +664,8 @@
 
 .duel-card {
     background: var(--c-surface);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     overflow: hidden;
 }
 
@@ -563,11 +674,12 @@
     align-items: center;
     gap: var(--sp-2);
     padding: var(--sp-2) var(--sp-3);
-    font-size: var(--fs-2xs);
+    font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
     color: var(--c-text-3);
     background: var(--c-surface-2);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .duel-card-head .vs-tag { margin-left: auto; }
@@ -590,8 +702,9 @@
     flex-shrink: 0;
     font-size: var(--fs-2xs);
     font-weight: var(--fw-black);
-    color: var(--c-brand-ink);
-    border-radius: var(--r-sm);
+    color: var(--c-on-fill);
+    clip-path: var(--cut-xs);
+    border-radius: 0;
 }
 
 .duel-side.side-a .duel-side-tag { background: var(--c-team-a); }
@@ -614,26 +727,29 @@
     padding: var(--sp-5) var(--sp-4);
     text-align: center;
     background: var(--c-surface);
-    border-radius: var(--r-xl);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     margin-bottom: var(--sp-4);
 }
 
 .expense-hero .label {
-    font-size: var(--fs-2xs);
-    font-weight: var(--fw-semibold);
+    font-size: var(--fs-3xs);
+    font-weight: var(--fw-bold);
     color: var(--c-text-3);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
 }
 
 .hero-number {
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-3xl);
-    font-weight: var(--fw-black);
+    font-weight: 400;
     line-height: 1.05;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
     color: var(--c-text);
+    text-shadow: 0 0 28px rgba(212, 255, 63, 0.22);
 }
 
 .expense-hero .per {
@@ -654,8 +770,8 @@
     gap: var(--sp-3);
     padding: var(--sp-3);
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
 .split-row .who {
@@ -673,7 +789,7 @@
     height: 6px;
     flex-shrink: 0;
     background: var(--c-surface-3);
-    border-radius: var(--r-full);
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -681,7 +797,8 @@
     display: block;
     height: 100%;
     background: var(--c-brand);
-    border-radius: var(--r-full);
+    box-shadow: var(--glow-brand);
+    border-radius: 0;
 }
 
 .split-row .amt {
@@ -742,27 +859,43 @@
 }
 
 .stat-card {
+    position: relative;
     padding: var(--sp-3);
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     text-align: center;
+    overflow: hidden;
+}
+
+/* 顶部伏特细线 */
+.stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--c-brand-line);
 }
 
 .stat-card .k {
     font-size: var(--fs-3xs);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-bold);
     color: var(--c-text-3);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .stat-card .v {
     margin-top: 2px;
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-2xl);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-3xl);
+    font-weight: 400;
     line-height: 1.1;
+    color: var(--c-text);
 }
 
 .stat-card .u {
@@ -775,8 +908,8 @@
 .chart-card {
     padding: var(--sp-4);
     background: var(--c-surface);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     margin-bottom: var(--sp-4);
 }
 
@@ -787,6 +920,7 @@
     margin-bottom: var(--sp-3);
     font-size: var(--fs-sm);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.04em;
 }
 
 .chart-box {
@@ -806,38 +940,61 @@
 }
 
 .podium-step {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--sp-2);
     padding: var(--sp-3) var(--sp-1) var(--sp-3);
     background: var(--c-surface);
-    border-radius: var(--r-lg) var(--r-lg) var(--r-sm) var(--r-sm);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     text-align: center;
+    overflow: hidden;
 }
 
-.podium-step .medal { font-size: var(--fs-2xl); line-height: 1; }
+/* 领奖台基座色条 */
+.podium-step::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--c-line-strong);
+}
+
+.podium-step.rank-1::before { background: var(--c-gold); box-shadow: var(--glow-brand); }
+.podium-step.rank-2::before { background: var(--c-silver); }
+.podium-step.rank-3::before { background: var(--c-bronze); }
+
+.podium-step .medal { font-size: var(--fs-2xl); line-height: 1; color: var(--c-text-2); }
+.podium-step.rank-1 .medal { color: var(--c-gold); }
+.podium-step.rank-2 .medal { color: var(--c-silver); }
+.podium-step.rank-3 .medal { color: var(--c-bronze); }
 
 .podium-step .pname {
     width: 100%;
     font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .podium-step .pval {
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-xl);
+    font-weight: 400;
     color: var(--c-brand);
 }
 
-.podium-step.rank-1 { padding-top: var(--sp-5); box-shadow: var(--sh-2); }
-.podium-step.rank-1 .medal { font-size: 32px; }
+.podium-step.rank-1 { padding-top: var(--sp-5); }
+.podium-step.rank-1 .medal { font-size: 30px; }
 .podium-step.rank-2 .medal { font-size: 26px; }
 .podium-step.rank-3 .medal { font-size: 22px; }
 
@@ -847,8 +1004,8 @@
     gap: var(--sp-3);
     padding: var(--sp-3);
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
 .rank-row + .rank-row { margin-top: var(--sp-2); }
@@ -862,10 +1019,11 @@
     flex-shrink: 0;
     font-family: var(--font-num);
     font-size: var(--fs-xs);
-    font-weight: var(--fw-black);
+    font-weight: var(--fw-bold);
     color: var(--c-text-3);
     background: var(--c-surface-2);
-    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    border-radius: var(--r-xs, 2px);
 }
 
 .rank-row .rmain { flex: 1; min-width: 0; }
@@ -886,10 +1044,11 @@
 
 .rank-row .rval {
     flex-shrink: 0;
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-md);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-xl);
+    font-weight: 400;
     color: var(--c-brand);
 }
 
@@ -910,13 +1069,17 @@
     flex-shrink: 0;
     font-size: var(--fs-2xl);
     line-height: 1;
+    color: var(--c-brand);
     background: var(--c-brand-soft);
-    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    clip-path: var(--cut-sm);
+    border-radius: 0;
 }
 
 .ability-head .nm {
     font-size: var(--fs-lg);
     font-weight: var(--fw-black);
+    letter-spacing: 0.04em;
 }
 
 .ability-head .sl {
@@ -937,10 +1100,13 @@
     gap: 4px;
     padding: var(--sp-1) var(--sp-3);
     font-size: var(--fs-2xs);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--c-brand);
     background: var(--c-brand-soft);
-    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    border-radius: var(--r-xs, 2px);
 }
 
 .ability-section { margin-top: var(--sp-5); }
@@ -950,8 +1116,11 @@
     align-items: center;
     gap: var(--sp-2);
     margin-bottom: var(--sp-3);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-text-2);
 }
 
 .recent-row {
@@ -960,8 +1129,8 @@
     gap: var(--sp-3);
     padding: var(--sp-3);
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
 .recent-row + .recent-row { margin-top: var(--sp-2); }
@@ -980,10 +1149,11 @@
 
 .recent-row .r-score {
     flex-shrink: 0;
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-md);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-xl);
+    font-weight: 400;
 }
 
 /* ---------- 成就 ---------- */
@@ -993,8 +1163,8 @@
     gap: var(--sp-4);
     padding: var(--sp-4);
     background: var(--c-surface);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     margin-bottom: var(--sp-4);
 }
 
@@ -1017,7 +1187,8 @@
     fill: none;
     stroke: var(--c-brand);
     stroke-width: 8;
-    stroke-linecap: round;
+    stroke-linecap: butt;
+    filter: drop-shadow(0 0 6px rgba(212, 255, 63, 0.55));
     transition: stroke-dashoffset var(--dur-3) var(--ease);
 }
 
@@ -1028,6 +1199,7 @@
     align-items: center;
     justify-content: center;
     font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
     font-size: var(--fs-sm);
     font-weight: var(--fw-black);
 }
@@ -1037,6 +1209,8 @@
 .achv-progress .txt .t {
     font-size: var(--fs-md);
     font-weight: var(--fw-black);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .achv-progress .txt .d {
@@ -1055,15 +1229,15 @@
     padding: var(--sp-3);
     text-align: center;
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
 .achv-card .ic {
-    font-size: 30px;
+    font-size: 28px;
     line-height: 1;
-    filter: grayscale(1);
-    opacity: 0.4;
+    color: var(--c-text-3);
+    margin: 0 auto;
 }
 
 .achv-card .nm {
@@ -1083,7 +1257,7 @@
     margin-top: var(--sp-2);
     height: 4px;
     background: var(--c-surface-3);
-    border-radius: var(--r-full);
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -1091,14 +1265,14 @@
     display: block;
     height: 100%;
     background: var(--c-line-strong);
-    border-radius: var(--r-full);
+    border-radius: 0;
 }
 
 .achv-card.unlocked {
-    box-shadow: var(--sh-2), inset 0 0 0 1px var(--c-gold);
+    box-shadow: inset 0 0 0 1px var(--c-gold), inset 0 3px 0 var(--c-gold);
 }
 
-.achv-card.unlocked .ic { filter: none; opacity: 1; }
+.achv-card.unlocked .ic { color: var(--c-gold); }
 .achv-card.unlocked .nm { color: var(--c-text); }
 .achv-card.unlocked .ds { color: var(--c-text-2); }
 .achv-card.unlocked .pb i { background: var(--c-gold); }
@@ -1110,8 +1284,8 @@
     gap: var(--sp-3);
     padding: var(--sp-3);
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
 .history-row + .history-row { margin-top: var(--sp-2); }
@@ -1138,10 +1312,11 @@
 
 .history-row .h-score {
     flex-shrink: 0;
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-md);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-xl);
+    font-weight: 400;
 }
 
 .history-actions {
@@ -1154,14 +1329,29 @@
    Tab4 — 我的
    ================================================================ */
 .me-head {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--sp-4);
     padding: var(--sp-4);
     background: var(--c-surface);
-    border-radius: var(--r-xl);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     margin-bottom: var(--sp-4);
+    overflow: hidden;
+}
+
+/* 右上伏特斜切色块 */
+.me-head::before {
+    content: "";
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 110px;
+    height: 110px;
+    background: var(--c-brand);
+    opacity: 0.1;
+    transform: rotate(45deg);
 }
 
 .me-avatar {
@@ -1173,11 +1363,14 @@
     flex-shrink: 0;
     font-size: var(--fs-3xl);
     line-height: 1;
+    color: var(--c-brand);
     background: var(--c-brand-soft);
-    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    clip-path: var(--cut-sm);
+    border-radius: 0;
 }
 
-.me-head .nm { font-size: var(--fs-lg); font-weight: var(--fw-black); }
+.me-head .nm { font-size: var(--fs-lg); font-weight: var(--fw-black); letter-spacing: 0.04em; }
 
 .me-head .sl {
     margin-top: 2px;
@@ -1195,13 +1388,14 @@
     text-align: left;
     background: var(--c-surface);
     border: none;
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    transition: background var(--dur-1) var(--ease);
 }
 
-.me-nav-item:hover { box-shadow: var(--sh-2); }
+.me-nav-item:hover { background: var(--c-surface-2); }
 
 .me-nav-item .ni-icon {
     display: inline-flex;
@@ -1211,8 +1405,11 @@
     height: 34px;
     flex-shrink: 0;
     font-size: var(--fs-md);
+    color: var(--c-brand);
     background: var(--c-brand-soft);
-    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    clip-path: var(--cut-xs);
+    border-radius: 0;
 }
 
 .me-nav-item .ni-main { flex: 1; min-width: 0; }
@@ -1233,12 +1430,14 @@
     min-height: 36px;
     padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-1);
     margin-bottom: var(--sp-3);
-    font-size: var(--fs-sm);
+    font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--c-text-2);
     background: none;
     border: none;
-    border-radius: var(--r-full);
+    border-radius: var(--r-xs, 2px);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1252,20 +1451,21 @@
     gap: var(--sp-3);
     padding: var(--sp-4);
     background: var(--c-surface);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     margin-bottom: var(--sp-4);
 }
 
-.weather-card .w-icon { font-size: var(--fs-3xl); line-height: 1; }
+.weather-card .w-icon { font-size: var(--fs-3xl); line-height: 1; color: var(--c-brand); }
 
 .weather-card .w-main { flex: 1; min-width: 0; }
 
 .weather-card .w-temp {
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-2xl);
-    font-weight: var(--fw-black);
+    font-weight: 400;
     line-height: 1.1;
 }
 
@@ -1293,14 +1493,20 @@
     justify-content: center;
     width: 68px;
     height: 68px;
-    font-size: 34px;
-    background: var(--c-brand);
+    font-size: 32px;
     color: var(--c-brand-ink);
-    border-radius: var(--r-xl);
-    box-shadow: var(--sh-2);
+    background: var(--c-brand);
+    clip-path: var(--cut-sm);
+    border-radius: 0;
+    box-shadow: var(--glow-brand);
 }
 
-.about-logo .nm { font-size: var(--fs-lg); font-weight: var(--fw-black); }
+.about-logo .nm {
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-black);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
 .about-logo .ver { font-size: var(--fs-2xs); color: var(--c-text-3); }
 
 .about-list { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -1311,8 +1517,8 @@
     gap: var(--sp-3);
     padding: var(--sp-3) var(--sp-4);
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
     font-size: var(--fs-sm);
 }
 
@@ -1350,7 +1556,7 @@
     line-height: 1;
     background: var(--c-surface);
     border: none;
-    border-radius: var(--r-md);
+    border-radius: 0;
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
     transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
@@ -1374,8 +1580,8 @@
     gap: var(--sp-3);
     padding: var(--sp-2) var(--sp-3);
     background: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
 .avatar-bound-row .ab-avatar {
@@ -1388,7 +1594,9 @@
     font-size: var(--fs-lg);
     line-height: 1;
     background: var(--c-surface-2);
-    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    clip-path: var(--cut-xs);
+    border-radius: 0;
 }
 
 .avatar-bound-row .ab-name {
@@ -1415,20 +1623,28 @@
     gap: var(--sp-5);
     padding: var(--sp-6);
     text-align: center;
-    background: var(--c-surface);
+    background: var(--c-bg);
+    background-image:
+        repeating-linear-gradient(0deg,
+            rgba(255, 255, 255, 0.022) 0px,
+            rgba(255, 255, 255, 0.022) 1px,
+            transparent 1px,
+            transparent 3px);
 }
 
 .onboard.show { display: flex; }
 
 .onboard-art {
-    font-size: 64px;
+    font-size: 60px;
     line-height: 1;
+    color: var(--c-brand);
 }
 
 .onboard-title {
     font-size: var(--fs-2xl);
     font-weight: var(--fw-black);
-    letter-spacing: -0.02em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
 }
 
 .onboard-desc {
@@ -1447,11 +1663,11 @@
     width: 7px;
     height: 7px;
     background: var(--c-line-strong);
-    border-radius: var(--r-full);
+    border-radius: 0;
     transition: background var(--dur-2) var(--ease), width var(--dur-2) var(--ease);
 }
 
-.onboard-dots i.on { width: 20px; background: var(--c-brand); }
+.onboard-dots i.on { width: 20px; background: var(--c-brand); box-shadow: var(--glow-brand); }
 
 .onboard-actions {
     display: flex;
@@ -1475,15 +1691,23 @@
 .backup-stat .bs {
     padding: var(--sp-3);
     background: var(--c-surface-2);
-    border-radius: var(--r-md);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px var(--c-line);
     text-align: center;
 }
 
-.backup-stat .bs .k { font-size: var(--fs-3xs); color: var(--c-text-3); }
+.backup-stat .bs .k {
+    font-size: var(--fs-3xs);
+    font-weight: var(--fw-bold);
+    color: var(--c-text-3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
 
 .backup-stat .bs .v {
-    font-family: var(--font-num);
+    font-family: var(--font-display);
+    font-style: italic;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-lg);
-    font-weight: var(--fw-black);
+    font-size: var(--fs-2xl);
+    font-weight: 400;
 }

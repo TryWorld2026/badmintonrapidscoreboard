@@ -1,9 +1,13 @@
 /* ================================================================
    components.css — 按钮 / 输入 / chip / 列表 / 弹层 / toast
+   深色 VOLT TRUCK：填充块切角、描边块硬边、发丝线分隔。
    ================================================================ */
 
 /* ---------- 按钮 ---------- */
+/* 切角填充：用两枚角落渐变裁掉右上 + 左下，元素本身不被 clip，
+   所以 outline 焦点环不会被裁掉（可访问性优先）。*/
 .btn {
+    --fill: var(--c-surface-2);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -12,63 +16,77 @@
     padding: var(--sp-3) var(--sp-5);
     font-size: var(--fs-sm);
     font-weight: var(--fw-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     line-height: 1;
     text-align: center;
-    background: var(--c-surface-2);
+    background-color: var(--fill);
+    background-image:
+        linear-gradient(225deg, transparent 50%, var(--fill) 50%) top right /
+        calc(var(--chamfer) * 2) calc(var(--chamfer) * 2) no-repeat,
+        linear-gradient(45deg, transparent 50%, var(--fill) 50%) bottom left /
+        calc(var(--chamfer) * 2) calc(var(--chamfer) * 2) no-repeat;
     color: var(--c-text);
     border: none;
-    border-radius: var(--r-md);
+    border-radius: var(--r-sm);
     cursor: pointer;
-    transition: transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),
-        box-shadow var(--dur-1) var(--ease);
+    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
+        box-shadow var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--c-brand);
+    outline-offset: 2px;
 }
 
 .btn:active { transform: scale(0.97); }
 
 .btn[disabled] {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: default;
     transform: none;
 }
 
+/* 主行动：VOLT 高压电填充 + 微辉光 */
 .btn-primary {
-    background: var(--c-brand);
+    --fill: var(--c-brand);
     color: var(--c-brand-ink);
-    box-shadow: var(--sh-1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--glow-brand);
 }
-.btn-primary:hover { background: var(--c-brand-hi); }
+.btn-primary:hover { --fill: var(--c-brand-hi); }
 
-.btn-success { background: var(--c-success); color: var(--c-on-fill); }
-.btn-warning { background: var(--c-warning); color: var(--c-on-warning); }
-.btn-danger { background: var(--c-danger); color: var(--c-on-fill); }
-.btn-dark { background: var(--c-text); color: var(--c-surface); }
+.btn-success { --fill: var(--c-success); color: var(--c-on-gold); }
+.btn-warning { --fill: var(--c-warning); color: var(--c-on-warning); }
+.btn-danger { --fill: var(--c-danger); color: var(--c-on-fill); }
+.btn-dark { --fill: var(--c-text); color: var(--c-bg); }
 
+/* 描边按钮：硬边 + 发丝线，不切角（切角会切断描边）*/
 .btn-outline {
-    background: var(--c-surface);
+    background: transparent;
     color: var(--c-text);
     box-shadow: inset 0 0 0 1px var(--c-line-strong);
 }
 .btn-outline:hover { background: var(--c-surface-2); }
 
 .btn-ghost {
-    background: none;
+    background: transparent;
     color: var(--c-text-2);
 }
-.btn-ghost:hover { background: var(--c-surface-2); }
+.btn-ghost:hover { background: var(--c-surface-2); color: var(--c-text); }
 
 .btn-small {
     min-height: 34px;
     padding: var(--sp-2) var(--sp-3);
     font-size: var(--fs-xs);
-    border-radius: var(--r-sm);
+    --chamfer: var(--chamfer-sm);
 }
 
 .btn-large {
     min-height: 52px;
     font-size: var(--fs-md);
-    border-radius: var(--r-lg);
+    --chamfer: var(--chamfer);
 }
 
 .btn-block { width: 100%; }
@@ -87,9 +105,11 @@
     align-items: center;
     gap: var(--sp-2);
     margin-bottom: var(--sp-2);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
-    color: var(--c-text-2);
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-3);
 }
 
 .input,
@@ -99,12 +119,16 @@
     min-height: 44px;
     padding: var(--sp-3);
     font-size: var(--fs-md);
-    background: var(--c-surface);
+    background: var(--c-bg);
+    color: var(--c-text);
     border: none;
-    border-radius: var(--r-md);
+    border-radius: var(--r-sm);
     box-shadow: inset 0 0 0 1px var(--c-line-strong);
     transition: box-shadow var(--dur-1) var(--ease);
 }
+
+.input::placeholder,
+.textarea::placeholder { color: var(--c-text-3); }
 
 .input:focus,
 .textarea:focus,
@@ -121,10 +145,11 @@
 
 .select {
     appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--c-text-3) 50%),
-        linear-gradient(135deg, var(--c-text-3) 50%, transparent 50%);
-    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
-    background-size: 5px 5px, 5px 5px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--c-text-2) 50%),
+        linear-gradient(135deg, var(--c-text-2) 50%, transparent 50%),
+        linear-gradient(90deg, var(--c-bg), var(--c-bg));
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%, 0 0;
+    background-size: 5px 5px, 5px 5px, 100% 100%;
     background-repeat: no-repeat;
     padding-right: var(--sp-7);
 }
@@ -176,12 +201,14 @@
     cursor: pointer;
 }
 
+/* 开关：硬边轨道，非胶囊 */
 .toggle-track {
     position: absolute;
     inset: 0;
-    background: var(--c-line-strong);
-    border-radius: var(--r-full);
-    transition: background var(--dur-2) var(--ease);
+    background: var(--c-surface-3);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
     pointer-events: none;
 }
 
@@ -192,20 +219,26 @@
     left: 3px;
     width: 22px;
     height: 22px;
-    background: var(--c-surface);
-    border-radius: var(--r-full);
-    box-shadow: var(--sh-1);
-    transition: transform var(--dur-2) var(--ease);
+    background: var(--c-text-3);
+    border-radius: var(--r-xs, 1px);
+    transition: transform var(--dur-2) var(--ease), background var(--dur-2) var(--ease);
 }
 
-.toggle input:checked + .toggle-track { background: var(--c-brand); }
-.toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+.toggle input:checked + .toggle-track {
+    background: var(--c-brand);
+    box-shadow: inset 0 0 0 1px var(--c-brand), var(--glow-brand);
+}
+.toggle input:checked + .toggle-track::after {
+    transform: translateX(20px);
+    background: var(--c-brand-ink);
+}
 .toggle input:focus-visible + .toggle-track {
-    box-shadow: 0 0 0 3px var(--c-brand-soft);
+    box-shadow: inset 0 0 0 1px var(--c-brand), 0 0 0 3px var(--c-brand-soft);
 }
 
 /* ---------- Chip / 分段小按钮 ---------- */
 .chip {
+    --fill: var(--c-surface);
     display: inline-flex;
     align-items: center;
     gap: var(--sp-1);
@@ -213,21 +246,27 @@
     padding: var(--sp-2) var(--sp-4);
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
     color: var(--c-text-2);
-    background: var(--c-surface);
+    background-color: var(--fill);
+    background-image:
+        linear-gradient(225deg, transparent 50%, var(--fill) 50%) top right /
+        calc(var(--chamfer-sm) * 2) calc(var(--chamfer-sm) * 2) no-repeat,
+        linear-gradient(45deg, transparent 50%, var(--fill) 50%) bottom left /
+        calc(var(--chamfer-sm) * 2) calc(var(--chamfer-sm) * 2) no-repeat;
     border: none;
-    border-radius: var(--r-full);
+    border-radius: var(--r-sm);
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
-    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
+    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
         box-shadow var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
 .chip.active {
-    color: var(--c-brand);
-    background: var(--c-brand-soft);
-    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    --fill: var(--c-brand);
+    color: var(--c-brand-ink);
+    box-shadow: inset 0 0 0 1px var(--c-brand);
 }
 
 .chip-row {
@@ -244,29 +283,36 @@
 }
 
 .pick-card {
+    --fill: var(--c-surface);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--sp-1);
     padding: var(--sp-3) var(--sp-2);
     text-align: center;
-    background: var(--c-surface);
+    background-color: var(--fill);
+    background-image:
+        linear-gradient(225deg, transparent 50%, var(--fill) 50%) top right /
+        calc(var(--chamfer-sm) * 2) calc(var(--chamfer-sm) * 2) no-repeat,
+        linear-gradient(45deg, transparent 50%, var(--fill) 50%) bottom left /
+        calc(var(--chamfer-sm) * 2) calc(var(--chamfer-sm) * 2) no-repeat;
     border: none;
-    border-radius: var(--r-md);
+    border-radius: var(--r-sm);
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
-    transition: box-shadow var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+    transition: background-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.pick-card:hover { background: var(--c-surface-2); }
+.pick-card:hover { background-color: var(--c-surface-2); }
 
 .pick-card.active {
-    background: var(--c-brand-soft);
+    --fill: var(--c-brand-soft);
     box-shadow: inset 0 0 0 2px var(--c-brand);
 }
 
-.pick-icon { font-size: var(--fs-2xl); line-height: 1; }
+.pick-icon { font-size: var(--fs-2xl); line-height: 1; color: var(--c-text-2); }
+.pick-card.active .pick-icon { color: var(--c-brand); }
 .pick-name { font-size: var(--fs-sm); font-weight: var(--fw-bold); }
 .pick-desc { font-size: var(--fs-3xs); color: var(--c-text-3); }
 
@@ -282,15 +328,14 @@
     text-align: left;
     background: var(--c-surface);
     border: none;
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
     cursor: pointer;
-    transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+    transition: background var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.list-item:hover { box-shadow: var(--sh-2); }
-.list-item:active { transform: scale(0.99); }
+.list-item:hover { background: var(--c-surface-2); }
 
 .list-item-main { flex: 1; min-width: 0; }
 .list-item-title { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
@@ -302,6 +347,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 .list-item-end {
     flex-shrink: 0;
     font-family: var(--font-num);
@@ -317,8 +363,8 @@
     color: var(--c-text-3);
 }
 
-.empty-icon { font-size: 40px; line-height: 1; margin-bottom: var(--sp-3); }
-.empty-title { font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--c-text-2); }
+.empty-icon { font-size: 36px; line-height: 1; margin-bottom: var(--sp-3); opacity: 0.55; }
+.empty-title { font-size: var(--fs-sm); font-weight: var(--fw-bold); color: var(--c-text-2); }
 .empty-hint { margin-top: var(--sp-1); font-size: var(--fs-2xs); }
 
 /* ---------- 徽标 / 标签 ---------- */
@@ -328,17 +374,19 @@
     gap: 4px;
     padding: 3px var(--sp-2);
     font-size: var(--fs-3xs);
-    font-weight: var(--fw-semibold);
-    border-radius: var(--r-full);
-    background: var(--c-surface-2);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: var(--r-xs, 2px);
+    background: var(--c-surface-3);
     color: var(--c-text-2);
 }
 
 .tag-win { background: var(--c-success-soft); color: var(--c-success); }
 .tag-lose { background: var(--c-danger-soft); color: var(--c-danger); }
-.tag-draw { background: var(--c-warning-soft); color: var(--c-on-gold); }
+.tag-draw { background: var(--c-warning-soft); color: var(--c-warning); }
 .tag-brand { background: var(--c-brand-soft); color: var(--c-brand); }
-.tag-gold { background: var(--c-gold-soft); color: var(--c-on-gold); }
+.tag-gold { background: var(--c-gold-soft); color: var(--c-gold); }
 
 /* ---------- 底部弹层 ---------- */
 .sheet-backdrop {
@@ -357,26 +405,29 @@
 .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
 
 .sheet {
+    position: relative;
     width: 100%;
     max-width: var(--content-max);
     max-height: 88dvh;
     overflow-y: auto;
     padding: var(--sp-5) var(--gutter) calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
     background: var(--c-surface);
-    border-radius: var(--r-2xl) var(--r-2xl) 0 0;
-    box-shadow: var(--sh-sheet);
+    border-radius: 0;
+    box-shadow: var(--sh-sheet), inset 0 2px 0 var(--c-brand);
     transform: translateY(100%);
     transition: transform var(--dur-3) var(--ease);
 }
 
 .sheet-backdrop.show .sheet { transform: none; }
 
+/* 抓手：VOLT 短横 */
 .sheet-grip {
-    width: 40px;
-    height: 4px;
+    width: 44px;
+    height: 3px;
     margin: 0 auto var(--sp-4);
-    background: var(--c-line-strong);
-    border-radius: var(--r-full);
+    background: var(--c-brand);
+    border-radius: 0;
+    box-shadow: var(--glow-brand);
 }
 
 .sheet-header {
@@ -386,7 +437,13 @@
     margin-bottom: var(--sp-4);
 }
 
-.sheet-title { flex: 1; font-size: var(--fs-lg); font-weight: var(--fw-black); }
+.sheet-title {
+    flex: 1;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-black);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
 
 .sheet-close {
     display: inline-flex;
@@ -397,22 +454,25 @@
     font-size: var(--fs-md);
     background: var(--c-surface-2);
     border: none;
-    border-radius: var(--r-full);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--c-line-strong);
     cursor: pointer;
     color: var(--c-text-2);
 }
 
-.sheet-close:hover { background: var(--c-surface-3); }
+.sheet-close:hover { background: var(--c-surface-3); color: var(--c-text); }
 
 /* 桌面端：弹层居中而非贴底 */
 @media (min-width: 720px) {
     .sheet-backdrop { align-items: center; padding: var(--sp-6); }
     .sheet {
         max-height: 82dvh;
-        border-radius: var(--r-2xl);
-        transform: translateY(16px) scale(0.98);
+        clip-path: var(--cut);
+        border-radius: 0;
+        transform: translateY(12px) scale(0.99);
+        opacity: 0;
     }
-    .sheet-backdrop.show .sheet { transform: none; }
+    .sheet-backdrop.show .sheet { transform: none; opacity: 1; }
 }
 
 /* ---------- Toast ---------- */
@@ -423,13 +483,13 @@
     z-index: var(--z-toast);
     width: min(calc(100% - var(--sp-8)), 420px);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--c-text);
-    color: var(--c-surface);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-pop);
+    background: var(--c-surface-2);
+    color: var(--c-text);
+    border-radius: var(--r-sm);
+    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--c-line-strong), inset 3px 0 0 var(--c-brand);
     transform: translate(-50%, -140%);
     opacity: 0;
-    transition: transform var(--dur-3) var(--ease), opacity var(--dur-3) var(--ease);
+    transition: transform var(--dur-3) var(--ease-out), opacity var(--dur-3) var(--ease);
     pointer-events: none;
 }
 
@@ -441,7 +501,7 @@
     font-size: var(--fs-2xs);
     line-height: var(--lh-snug);
     white-space: pre-line;
-    opacity: 0.82;
+    color: var(--c-text-2);
 }
 
 /* ---------- 输入对话框 ---------- */
@@ -450,9 +510,9 @@
     max-width: 340px;
     padding: var(--sp-5);
     background: var(--c-surface);
-    border-radius: var(--r-xl);
-    box-shadow: var(--sh-pop);
-    transform: scale(0.94);
+    border-radius: var(--r-sm);
+    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--c-line-strong);
+    transform: scale(0.96);
     opacity: 0;
     transition: transform var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease);
 }
@@ -473,11 +533,16 @@
 .dialog-backdrop.show { opacity: 1; }
 .dialog-backdrop.show .dialog { transform: none; opacity: 1; }
 
-.dialog-title { font-size: var(--fs-md); font-weight: var(--fw-bold); margin-bottom: var(--sp-3); }
+.dialog-title {
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    margin-bottom: var(--sp-3);
+}
+
 .dialog-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
 .dialog-actions .btn { flex: 1; }
 
-/* ---------- 高亮徽章（赛点/加分赛/逆转）---------- */
+/* ---------- 高亮徽章（赛点 / 加分赛 / 逆转）---------- */
 .highlight-badge {
     position: fixed;
     top: calc(var(--appbar-h) + var(--sp-3));
@@ -488,14 +553,19 @@
     gap: var(--sp-3);
     width: min(calc(100% - var(--sp-8)), 360px);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--c-surface);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--c-gold);
+    background: var(--c-surface-2);
+    border-radius: var(--r-sm);
+    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--c-gold), inset 3px 0 0 var(--c-gold);
     transform: translateX(-50%);
 }
 
 .highlight-icon { font-size: var(--fs-2xl); line-height: 1; }
-.highlight-title { font-size: var(--fs-sm); font-weight: var(--fw-black); }
+.highlight-title {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-black);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
 .highlight-desc { margin-top: 2px; font-size: var(--fs-2xs); color: var(--c-text-2); }
 
 .highlight-badge.show { animation: highlightIn var(--dur-3) var(--ease-out) both; }
@@ -522,19 +592,32 @@
     gap: var(--sp-3);
     width: min(calc(100% - var(--sp-8)), 340px);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--c-surface);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--c-gold);
+    background: var(--c-surface-2);
+    border-radius: var(--r-sm);
+    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--c-gold), inset 3px 0 0 var(--c-gold);
     transform: translateX(-50%);
 }
 
 .achv-badge.show { display: flex; animation: achvPop var(--dur-3) var(--ease-out); }
 
 @keyframes achvPop {
-    from { opacity: 0; transform: translate(-50%, 16px) scale(0.96); }
+    from { opacity: 0; transform: translate(-50%, 16px) scale(0.97); }
     to { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 
 .achv-icon { font-size: var(--fs-2xl); line-height: 1; }
-.achv-title { font-size: var(--fs-sm); font-weight: var(--fw-black); color: var(--c-gold); }
+.achv-title {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-black);
+    color: var(--c-gold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
 .achv-desc { margin-top: 2px; font-size: var(--fs-2xs); color: var(--c-text-2); }
+
+/* ---------- 通用焦点环（键盘可达）---------- */
+a:focus-visible,
+[role="button"]:focus-visible {
+    outline: 2px solid var(--c-brand);
+    outline-offset: 2px;
+}

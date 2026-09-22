@@ -289,6 +289,10 @@ window.App = window.App || {};
         });
         nav.on('me:back', function () { nav.go('me'); });
 
+        /* 顶栏标题只绑一次。这里原来调了两次 bindQuickTrigger()，
+           标题上会挂两份 click / keydown 监听：双击时 showQuickActions()
+           被调用两次、Enter 也是。目前有「已开着就只续期」的兜底所以看不出
+           问题，但这是白挂一倍的监听，以后往 handler 里加非幂等动作就会翻车。 */
         bindQuickTrigger();
 
         var file = $('backup-file');
@@ -301,7 +305,6 @@ window.App = window.App || {};
                 if (el) el.addEventListener('change', saveFromUI);
             });
 
-        bindQuickTrigger();
         applySettingsToUI();
     }
 

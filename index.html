@@ -7,153 +7,123 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
+        /* ================================================================
+           设计令牌层 — 深色演播室 / 体育 HUD
+           全文件唯一允许出现裸 #hex / rgba() 的位置。
+           组件层只允许写 var(--*)，禁止裸值。
+           ================================================================ */
         :root {
-            --primary-color: #6839E8;
-            --secondary-color: #0133A4;
-            --accent-color: #27F05C;
-            --highlight-color: #27F05C;
-            --success-color: #27F05C;
-            --warning-color: #FFB800;
-            --light-color: #FFFFFF;
-            --glass-bg: rgba(255, 255, 255, 0.92);
-            --glass-border: rgba(104, 57, 232, 0.15);
-            --shadow-sm: 0 4px 12px rgba(104, 57, 232, 0.08);
-            --shadow-md: 0 8px 30px rgba(104, 57, 232, 0.12);
-            --shadow-lg: 0 16px 50px rgba(104, 57, 232, 0.18);
-            --shadow-xl: 0 24px 80px rgba(104, 57, 232, 0.25);
-            --radius-sm: 12px;
-            --radius-md: 20px;
-            --radius-lg: 28px;
-            --radius-xl: 40px;
-            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            --bg-gradient-1: #D4C8FF;
-            --bg-gradient-2: #B8A9FF;
-            --bg-gradient-3: #A894FF;
+            /* ---- 表面（冷中性深色，不用纯黑）---- */
+            --c-bg: #0B0E11;          /* 页面最深层 */
+            --c-surface: #14181D;     /* 一级：卡片 / 面板 */
+            --c-surface-2: #1C222A;   /* 二级：控件 / 按钮底 */
+            --c-surface-3: #262E38;   /* 三级：hover / 激活 */
+
+            /* ---- 发丝线（替代 border，避免影响盒模型）---- */
+            --c-line: #232A33;        /* 默认分隔 */
+            --c-line-strong: #38424F; /* 输入框 / 悬停 */
+
+            /* ---- 文本（不用纯白，降低刺眼）---- */
+            --c-text: #F2F5F8;        /* 主 */
+            --c-text-2: #9AA6B4;      /* 次：标签 / 说明 / 占位 */
+            --c-text-3: #5F6B7A;      /* 弱：禁用 / 微注 */
+
+            /* ---- 队伍色：全应用唯一高饱和色 ---- */
+            --c-team-a: #FF4D5E;      /* A 队 珊瑚红 */
+            --c-team-b: #3D9BFF;      /* B 队 天蓝 */
+            --c-brand: #00E5A0;       /* 品牌 / 行动 / 进行中 */
+            --c-brand-ink: #06281D;   /* 品牌色上的文字 */
+            --c-gold: #FFC53D;        /* 成就 / 奖牌 */
+
+            /* ---- 语义 ---- */
+            --c-success: #00E5A0;
+            --c-warning: #FFB020;
+            --c-danger: #FF4D5E;
+
+            /* ---- 排版 ---- */
+            --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC',
+                         'HarmonyOS Sans SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+            --font-num: 'Barlow Condensed', 'Oswald', 'Archivo Narrow',
+                        'Arial Narrow', var(--font-sans);
+            --fs-2xs: .625rem;  --fs-xs: .75rem;   --fs-sm: .8125rem;  --fs-md: .875rem;
+            --fs-base: 1rem;    --fs-lg: 1.125rem; --fs-xl: 1.375rem;  --fs-2xl: 1.75rem;
+            --fs-score: clamp(3.25rem, 13vw, 5.5rem);
+            --fw-normal: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+            --tracking-tight: -.01em;
+            --tracking-wide: .04em;
+
+            /* ---- 空间（4px 基频）---- */
+            --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 20px;
+            --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+
+            /* ---- 圆角 ---- */
+            --r-sm: 6px;    /* 输入框 / chip / 小徽章 */
+            --r-md: 10px;   /* 按钮 / 小卡 */
+            --r-lg: 14px;   /* 卡片 / 面板 */
+            --r-xl: 20px;   /* 模态 */
+            --r-full: 999px;
+
+            /* ---- 高度（暗色下阴影需更重才可见）---- */
+            --e-1: 0 1px 2px rgba(0, 0, 0, .40);
+            --e-2: 0 2px 8px rgba(0, 0, 0, .45);
+            --e-3: 0 8px 24px rgba(0, 0, 0, .55);
+            --e-4: 0 16px 48px rgba(0, 0, 0, .65);
+            --line-1: inset 0 0 0 1px var(--c-line);
+            --line-2: inset 0 0 0 1px var(--c-line-strong);
+
+            /* ---- 动效 ---- */
+            --dur-1: 120ms; --dur-2: 200ms; --dur-3: 320ms;
+            --ease-out: cubic-bezier(.22, 1, .36, 1);
+            --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+
+            /* ---- 层级 ---- */
+            --z-sticky: 100; --z-overlay: 200; --z-modal: 300; --z-toast: 400;
         }
 
-        [data-theme="orange"] {
-            --primary-color: #FF6B35;
-            --secondary-color: #D63031;
-            --accent-color: #FDCB6E;
-            --highlight-color: #FDCB6E;
-            --success-color: #00B894;
-            --warning-color: #FFEAA7;
-            --glass-border: rgba(255, 107, 53, 0.15);
-            --shadow-sm: 0 4px 12px rgba(255, 107, 53, 0.08);
-            --shadow-md: 0 8px 30px rgba(255, 107, 53, 0.12);
-            --shadow-lg: 0 16px 50px rgba(255, 107, 53, 0.18);
-            --shadow-xl: 0 24px 80px rgba(255, 107, 53, 0.25);
-            --bg-gradient-1: #FFE8D6;
-            --bg-gradient-2: #FFD4B8;
-            --bg-gradient-3: #FFB894;
-        }
-
-        [data-theme="blue"] {
-            --primary-color: #0984E3;
-            --secondary-color: #0066CC;
-            --accent-color: #00CEC9;
-            --highlight-color: #00CEC9;
-            --success-color: #00CEC9;
-            --warning-color: #FDCB6E;
-            --glass-border: rgba(9, 132, 227, 0.15);
-            --shadow-sm: 0 4px 12px rgba(9, 132, 227, 0.08);
-            --shadow-md: 0 8px 30px rgba(9, 132, 227, 0.12);
-            --shadow-lg: 0 16px 50px rgba(9, 132, 227, 0.18);
-            --shadow-xl: 0 24px 80px rgba(9, 132, 227, 0.25);
-            --bg-gradient-1: #D4F1FF;
-            --bg-gradient-2: #B8E3FF;
-            --bg-gradient-3: #94D2FF;
-        }
-
-        [data-theme="green"] {
-            --primary-color: #00B894;
-            --secondary-color: #009432;
-            --accent-color: #55EFC4;
-            --highlight-color: #55EFC4;
-            --success-color: #55EFC4;
-            --warning-color: #FFEAA7;
-            --glass-border: rgba(0, 184, 148, 0.15);
-            --shadow-sm: 0 4px 12px rgba(0, 184, 148, 0.08);
-            --shadow-md: 0 8px 30px rgba(0, 184, 148, 0.12);
-            --shadow-lg: 0 16px 50px rgba(0, 184, 148, 0.18);
-            --shadow-xl: 0 24px 80px rgba(0, 184, 148, 0.25);
-            --bg-gradient-1: #D4FFED;
-            --bg-gradient-2: #B8FFE0;
-            --bg-gradient-3: #94FFD0;
-        }
-
-        [data-theme="pink"] {
-            --primary-color: #E84393;
-            --secondary-color: #C44569;
-            --accent-color: #FD79A8;
-            --highlight-color: #FD79A8;
-            --success-color: #00B894;
-            --warning-color: #FDCB6E;
-            --glass-border: rgba(232, 67, 147, 0.15);
-            --shadow-sm: 0 4px 12px rgba(232, 67, 147, 0.08);
-            --shadow-md: 0 8px 30px rgba(232, 67, 147, 0.12);
-            --shadow-lg: 0 16px 50px rgba(232, 67, 147, 0.18);
-            --shadow-xl: 0 24px 80px rgba(232, 67, 147, 0.25);
-            --bg-gradient-1: #FFD4E8;
-            --bg-gradient-2: #FFB8D8;
-            --bg-gradient-3: #FF94C8;
-        }
-
-        [data-theme="blackgold"] {
-            --primary-color: #FDCB6E;
-            --secondary-color: #D4A418;
-            --accent-color: #FFEAA7;
-            --highlight-color: #FDCB6E;
-            --success-color: #00B894;
-            --warning-color: #E17055;
-            --light-color: #FFFFFF;
-            --glass-bg: rgba(30, 30, 30, 0.95);
-            --glass-border: rgba(253, 203, 110, 0.3);
-            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 16px 50px rgba(0, 0, 0, 0.5);
-            --shadow-xl: 0 24px 80px rgba(0, 0, 0, 0.6);
-            --bg-gradient-1: #1A1A1A;
-            --bg-gradient-2: #2D2D2D;
-            --bg-gradient-3: #404040;
-        }
+        /* ---- 基础层 reset ---- */
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
         }
 
-        *::-webkit-scrollbar {
-            display: none;
+        /* 滚动条细样式化（不再全局隐藏，保留滚动线索） */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
 
-        html, body {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar {
-            display: none;
+        ::-webkit-scrollbar-thumb {
+            background: var(--c-surface-3);
+            border-radius: var(--r-full);
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--c-line-strong);
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: var(--c-surface-3) transparent;
+        }
 
         body {
-            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(180deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 50%, var(--bg-gradient-3) 100%);
-            background-attachment: fixed;
-            color: var(--primary-color);
+            font-family: var(--font-sans);
+            background: var(--c-bg);
+            color: var(--c-text);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
+        /* 极淡的队伍色氛围光（opacity ≤ .06，仅暗示演播室灯光） */
         body::before {
             content: '';
             position: fixed;
@@ -161,12 +131,41 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
-                radial-gradient(circle at 15% 85%, rgba(104, 57, 232, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 85% 15%, rgba(39, 240, 92, 0.12) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(1, 51, 164, 0.08) 0%, transparent 40%);
+            background:
+                radial-gradient(60rem 40rem at 12% -10%, rgba(255, 77, 94, 0.06) 0%, transparent 60%),
+                radial-gradient(60rem 40rem at 88% -10%, rgba(61, 155, 255, 0.06) 0%, transparent 60%);
             pointer-events: none;
             z-index: 0;
+        }
+
+        /* ---- 选择与焦点 ---- */
+        ::selection {
+            background: rgba(0, 229, 160, 0.28);
+            color: var(--c-text);
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--c-brand);
+            outline-offset: 2px;
+            border-radius: var(--r-sm);
+        }
+
+        /* ---- 数字必须等宽（比分 9→10 不抖动）---- */
+        .score-number, .score-label, .timer-value, .games-won-dots,
+        .stat-value, .stat-card-value, .leaderboard-score, .expense-amount,
+        .ability-stat-value, [class*='number'], [class*='count'] {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: 'tnum' 1;
+        }
+
+        /* ---- 动效降级 ---- */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
         .container {
@@ -213,7 +212,7 @@
 
         .version-badge {
             display: inline-block;
-            background: linear-gradient(135deg, var(--highlight-color), #ff6b9d);
+            background: linear-gradient(135deg, var(--c-brand), #ff6b9d);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -380,7 +379,7 @@
         /* ==================== 记分板样式 ==================== */
         .scoreboard-wrapper {
             background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 50%, #6839E8 100%);
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             padding: 30px;
             margin-bottom: 30px;
             position: relative;
@@ -411,7 +410,7 @@
             align-items: center;
             padding: 16px 20px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             margin-bottom: 24px;
             backdrop-filter: blur(10px);
         }
@@ -502,7 +501,7 @@
             font-size: 1.8rem;
             margin: 0 auto 10px;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .team-avatar:hover {
@@ -545,7 +544,7 @@
             height: 12px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.2);
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .game-dot.won {
@@ -564,7 +563,7 @@
             justify-content: center;
             margin: 0 auto 16px;
             cursor: pointer;
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             border: 4px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
         }
@@ -606,7 +605,7 @@
             font-size: 1.8rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -848,7 +847,7 @@
             color: white;
             font-weight: 600;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .mode-chip:hover {
@@ -876,10 +875,10 @@
             gap: 8px;
             padding: 12px 20px;
             border: none;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             font-weight: 600;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .control-btn .btn-icon {
@@ -933,9 +932,9 @@
             font-size: 1rem;
             font-weight: 700;
             border: none;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             cursor: pointer;
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             position: relative;
             overflow: hidden;
             letter-spacing: 0.5px;
@@ -1007,7 +1006,7 @@
             transform: translate(-50%, -50%);
             background: #FFFFFF;
             padding: 40px 55px;
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             box-shadow: 0 20px 80px rgba(104, 57, 232, 0.3);
             z-index: 1000;
             text-align: center;
@@ -1045,7 +1044,7 @@
             transform: translate(-50%, -50%);
             background: #FFFFFF;
             padding: 40px 50px;
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             box-shadow: 0 20px 80px rgba(104, 57, 232, 0.3);
             z-index: 1000;
             text-align: center;
@@ -1069,13 +1068,13 @@
             width: 100%;
             padding: 14px 20px;
             border: 3px solid rgba(104, 57, 232, 0.2);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             background: rgba(104, 57, 232, 0.03);
             font-size: 1.05rem;
             color: #0133A4;
             margin-bottom: 24px;
             outline: none;
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             font-weight: 500;
         }
 
@@ -1093,7 +1092,7 @@
 
         .result-card {
             background: #FFFFFF;
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             box-shadow: 0 16px 50px rgba(104, 57, 232, 0.2);
             padding: 40px;
             text-align: center;
@@ -1151,7 +1150,7 @@
 
         .stats-summary-card {
             background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 100%);
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             padding: 30px;
             color: white;
             box-shadow: 0 12px 40px rgba(104, 57, 232, 0.3);
@@ -1218,9 +1217,9 @@
 
         .chart-card {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .chart-title {
@@ -1243,9 +1242,9 @@
 
         .history-list-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .list-header {
@@ -1277,10 +1276,10 @@
 
         .history-card {
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             padding: 16px;
             border-left: 4px solid #6839E8;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
             cursor: pointer;
         }
 
@@ -1460,7 +1459,7 @@
             align-items: center;
             padding: 10px 14px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
         }
 
         .info-label {
@@ -1540,9 +1539,9 @@
             padding: 12px 20px;
             background: white;
             border: 2px solid rgba(104, 57, 232, 0.15);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .tab-item:hover {
@@ -1586,10 +1585,10 @@
 
         .top-player-card {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
             text-align: center;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
             position: relative;
             overflow: hidden;
         }
@@ -1660,9 +1659,9 @@
 
         .leaderboard-list-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .leaderboard-list-section .list-header {
@@ -1670,7 +1669,7 @@
             grid-template-columns: 60px 1fr 100px;
             padding: 12px 16px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
             font-size: 0.85rem;
             font-weight: 600;
             color: #6839E8;
@@ -1689,8 +1688,8 @@
             align-items: center;
             padding: 14px 16px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
-            transition: all var(--transition-fast);
+            border-radius: var(--r-sm);
+            transition: all var(--dur-1);
         }
 
         .leaderboard-item:hover {
@@ -1757,7 +1756,7 @@
 
         .achievements-progress-card {
             background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 100%);
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             padding: 30px;
             display: flex;
             align-items: center;
@@ -1849,9 +1848,9 @@
 
         .achievement-category {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .category-header {
@@ -1881,11 +1880,11 @@
 
         .achievement-card {
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             padding: 16px;
             text-align: center;
             border: 2px solid transparent;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .achievement-card.unlocked {
@@ -1942,9 +1941,9 @@
 
         .settings-card {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .settings-card-header {
@@ -1974,12 +1973,12 @@
 
         .theme-card {
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             padding: 12px;
             text-align: center;
             cursor: pointer;
             border: 2px solid transparent;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .theme-card:hover {
@@ -2027,7 +2026,7 @@
             align-items: center;
             padding: 12px 16px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
         }
 
         .setting-info {
@@ -2088,7 +2087,7 @@
             justify-content: center;
             font-size: 1.3rem;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .avatar-item:hover {
@@ -2108,9 +2107,9 @@
             padding: 14px 16px;
             background: #FAFAFF;
             border: 2px solid rgba(104, 57, 232, 0.1);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
             text-align: left;
         }
 
@@ -2958,9 +2957,9 @@
 
         .input-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .input-label {
@@ -2983,11 +2982,11 @@
             padding: 16px;
             font-size: 1rem;
             font-family: inherit;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             border: 2px solid rgba(104, 57, 232, 0.15);
             background: #FAFAFF;
             resize: vertical;
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             color: #0133A4;
             font-weight: 500;
             line-height: 1.6;
@@ -3010,9 +3009,9 @@
 
         .quick-add-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--e-1);
         }
 
         .quick-add-buttons {
@@ -3030,7 +3029,7 @@
             font-weight: 600;
             color: #6839E8;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .quick-add-btn:hover {
@@ -3042,9 +3041,9 @@
 
         .mode-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .mode-cards {
@@ -3063,10 +3062,10 @@
             padding: 16px 12px;
             background: #FAFAFF;
             border: 2px solid rgba(104, 57, 232, 0.1);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             text-align: center;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .mode-card:hover {
@@ -3106,9 +3105,9 @@
 
         .skill-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .skill-hint {
@@ -3130,7 +3129,7 @@
             gap: 10px;
             padding: 10px 14px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
             border: 2px solid rgba(104, 57, 232, 0.1);
         }
 
@@ -3187,9 +3186,9 @@
 
         .group-results-section {
             background: white;
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             padding: 30px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--e-3);
             margin-top: 20px;
         }
 
@@ -3221,11 +3220,11 @@
 
         .group-card {
             background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 100%);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
             text-align: center;
             box-shadow: 0 8px 25px rgba(104, 57, 232, 0.25);
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             position: relative;
             overflow: hidden;
         }
@@ -3283,7 +3282,7 @@
             gap: 8px;
             padding: 12px 16px;
             background: rgba(255, 255, 255, 0.15);
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
             color: white;
             font-weight: 600;
             font-size: 1rem;
@@ -3301,7 +3300,7 @@
             margin-top: 25px;
             padding: 20px;
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
@@ -3326,9 +3325,9 @@
         .grouping-history-section {
             margin-top: 30px;
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--e-1);
         }
 
         .grouping-history-section .history-header {
@@ -3353,7 +3352,7 @@
         .grouping-history-item {
             padding: 16px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
             border-left: 4px solid #6839E8;
             display: flex;
             justify-content: space-between;
@@ -3415,9 +3414,9 @@
 
         .expense-type-section, .amount-section, .split-mode-section, .participants-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
         }
 
         .expense-type-cards {
@@ -3436,10 +3435,10 @@
             padding: 16px 12px;
             background: #FAFAFF;
             border: 2px solid rgba(104, 57, 232, 0.1);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             text-align: center;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .expense-type-card:hover {
@@ -3474,9 +3473,9 @@
             align-items: center;
             background: #FAFAFF;
             border: 2px solid rgba(104, 57, 232, 0.15);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             padding: 4px;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .amount-input-wrapper:focus-within {
@@ -3529,7 +3528,7 @@
             font-weight: 600;
             color: #6839E8;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .quick-amount-btn:hover {
@@ -3555,10 +3554,10 @@
             padding: 14px 10px;
             background: #FAFAFF;
             border: 2px solid rgba(104, 57, 232, 0.1);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             text-align: center;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .split-mode-card:hover {
@@ -3584,11 +3583,11 @@
             padding: 14px;
             font-size: 1rem;
             font-family: inherit;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             border: 2px solid rgba(104, 57, 232, 0.15);
             background: #FAFAFF;
             resize: vertical;
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             color: #0133A4;
             font-weight: 500;
             line-height: 1.6;
@@ -3613,7 +3612,7 @@
             margin-top: 16px;
             padding: 16px;
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
         }
 
         .ratio-inputs-grid {
@@ -3628,7 +3627,7 @@
             gap: 8px;
             padding: 8px 12px;
             background: white;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
             border: 2px solid rgba(104, 57, 232, 0.1);
         }
 
@@ -3660,15 +3659,15 @@
 
         .expense-result-section {
             background: white;
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             padding: 30px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--e-3);
             margin-top: 20px;
         }
 
         .expense-summary-card {
             background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 100%);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
             color: white;
             margin-bottom: 20px;
@@ -3712,7 +3711,7 @@
             align-items: center;
             padding: 14px 18px;
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             border-left: 4px solid #6839E8;
         }
 
@@ -3730,9 +3729,9 @@
         .expense-history-section {
             margin-top: 30px;
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--e-1);
         }
 
         .expense-history-section .history-header {
@@ -3757,7 +3756,7 @@
         .expense-history-item {
             padding: 16px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
             border-left: 4px solid #27F05C;
             display: flex;
             justify-content: space-between;
@@ -3790,7 +3789,7 @@
 
         .expense-history-item {
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .expense-history-item:hover {
@@ -3850,7 +3849,7 @@
             color: #6839E8;
             font-size: 1.2rem;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3878,9 +3877,9 @@
 
         .player-selector-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
             margin-bottom: 24px;
         }
 
@@ -3890,11 +3889,11 @@
             font-size: 1.1rem;
             font-weight: 600;
             border: 2px solid rgba(104, 57, 232, 0.15);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             background: #FAFAFF;
             color: #0133A4;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all var(--dur-1);
         }
 
         .player-select:focus {
@@ -3905,7 +3904,7 @@
 
         .player-info-card {
             background: linear-gradient(135deg, #6839E8 0%, #8B5CF6 100%);
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             padding: 30px;
             text-align: center;
             margin-bottom: 24px;
@@ -3935,9 +3934,9 @@
         .ability-trend-section,
         .ability-tags-section {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--e-2);
             margin-bottom: 20px;
         }
 
@@ -3958,7 +3957,7 @@
 
         .ability-stat-card {
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             padding: 16px;
             text-align: center;
             border-left: 4px solid #6839E8;
@@ -3991,7 +3990,7 @@
 
         .rank-card {
             background: #FAFAFF;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             padding: 16px;
             text-align: center;
         }
@@ -4025,7 +4024,7 @@
             align-items: center;
             padding: 12px 16px;
             background: #FAFAFF;
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-sm);
             border-left: 4px solid #6839E8;
         }
 
@@ -4098,12 +4097,12 @@
         input, select {
             width: 100%;
             padding: 14px 18px;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             border: 3px solid rgba(104, 57, 232, 0.15);
             background: #FFFFFF;
             font-size: 1rem;
             font-family: inherit;
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             color: #0133A4;
             font-weight: 500;
         }
@@ -4137,7 +4136,7 @@
             background: rgba(104, 57, 232, 0.08);
             border-radius: 50px;
             cursor: pointer;
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
             font-weight: 600;
             border: 2px solid rgba(104, 57, 232, 0.15);
             color: #0133A4;
@@ -4158,7 +4157,7 @@
         .expense-result {
             margin-top: 30px;
             background: #FFFFFF;
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             box-shadow: 0 16px 50px rgba(104, 57, 232, 0.2);
             padding: 35px;
             animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -4171,7 +4170,7 @@
             color: #0133A4;
             padding: 18px;
             background: rgba(104, 57, 232, 0.08);
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
         }
 
         .expense-details {
@@ -4185,8 +4184,8 @@
             padding: 14px 18px;
             margin: 10px 0;
             background: rgba(104, 57, 232, 0.05);
-            border-radius: var(--radius-sm);
-            transition: all var(--transition-fast);
+            border-radius: var(--r-sm);
+            transition: all var(--dur-1);
         }
 
         .detail-item:hover {
@@ -4199,7 +4198,7 @@
             list-style: none;
             margin-bottom: 30px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 6px;
             box-shadow: 0 8px 30px rgba(104, 57, 232, 0.12);
             overflow-x: auto;
@@ -4218,8 +4217,8 @@
             padding: 12px 16px;
             text-align: center;
             cursor: pointer;
-            border-radius: var(--radius-md);
-            transition: all var(--transition-normal);
+            border-radius: var(--r-md);
+            transition: all var(--dur-2);
             font-weight: 600;
             font-size: 0.85rem;
             color: #0133A4;
@@ -4261,14 +4260,14 @@
             top: 20px;
             right: 20px;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 18px 22px;
             box-shadow: 0 12px 40px rgba(104, 57, 232, 0.15);
             z-index: 100;
             min-width: 180px;
             opacity: 0;
             transform: translateY(-10px);
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
         }
 
         .weather-container.loaded {
@@ -4317,10 +4316,10 @@
 
         .history-card {
             background: #FFFFFF;
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 24px;
             box-shadow: 0 8px 30px rgba(104, 57, 232, 0.12);
-            transition: all var(--transition-normal);
+            transition: all var(--dur-2);
         }
 
         .history-card:hover {
@@ -4350,7 +4349,7 @@
 
         .history-players {
             font-size: 0.95rem;
-            color: var(--secondary-color);
+            color: var(--c-text-2);
         }
 
         .stats-grid {
@@ -4361,12 +4360,12 @@
         }
 
         .stat-card {
-            background: var(--glass-bg);
+            background: var(--c-surface);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
             text-align: center;
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--c-line);
         }
 
         .stat-value {
@@ -4380,24 +4379,24 @@
 
         .stat-label {
             font-size: 0.9rem;
-            color: var(--secondary-color);
+            color: var(--c-text-2);
             margin-top: 5px;
         }
 
         .settings-section {
-            background: var(--glass-bg);
+            background: var(--c-surface);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-xl);
+            border-radius: var(--r-xl);
             padding: 25px;
             margin-bottom: 20px;
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--c-line);
         }
 
         .settings-title {
             font-size: 1.2rem;
             font-weight: 700;
             margin-bottom: 15px;
-            color: var(--secondary-color);
+            color: var(--c-text-2);
         }
 
         .setting-item {
@@ -4459,7 +4458,7 @@
         .empty-state {
             text-align: center;
             padding: 40px;
-            color: var(--secondary-color);
+            color: var(--c-text-2);
             opacity: 0.7;
         }
 
@@ -4943,12 +4942,12 @@
         }
 
         .achievement-card {
-            background: var(--glass-bg);
+            background: var(--c-surface);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
             text-align: center;
-            border: 2px solid var(--glass-border);
+            border: 2px solid var(--c-line);
             transition: all 0.3s ease;
         }
 
@@ -4975,13 +4974,13 @@
         .achievement-card-title {
             font-size: 1rem;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--c-brand);
             margin-bottom: 5px;
         }
 
         .achievement-card-desc {
             font-size: 0.85rem;
-            color: var(--secondary-color);
+            color: var(--c-text-2);
             opacity: 0.8;
         }
 
@@ -4994,12 +4993,12 @@
         }
 
         .achievement-stat {
-            background: var(--glass-bg);
+            background: var(--c-surface);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 15px 25px;
             text-align: center;
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--c-line);
         }
 
         .achievement-stat-value {
@@ -5013,7 +5012,7 @@
 
         .achievement-stat-label {
             font-size: 0.9rem;
-            color: var(--secondary-color);
+            color: var(--c-text-2);
             margin-top: 5px;
         }
 
@@ -5030,17 +5029,17 @@
         }
 
         .chart-card {
-            background: var(--glass-bg);
+            background: var(--c-surface);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--c-line);
         }
 
         .chart-title {
             font-size: 1.1rem;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--c-brand);
             margin-bottom: 15px;
             text-align: center;
         }
@@ -5135,11 +5134,11 @@
             padding: 12px 24px;
             background: rgba(255, 255, 255, 0.3);
             border: none;
-            border-radius: var(--radius-md);
+            border-radius: var(--r-md);
             cursor: pointer;
             font-weight: 700;
-            color: var(--secondary-color);
-            transition: all var(--transition-normal);
+            color: var(--c-text-2);
+            transition: all var(--dur-2);
         }
 
         .leaderboard-tab:hover {
@@ -5148,7 +5147,7 @@
         }
 
         .leaderboard-tab.active {
-            background: var(--accent-color);
+            background: var(--c-brand);
             color: #000000;
             box-shadow: 0 4px 15px rgba(39, 240, 92, 0.4);
             transform: translateY(-2px);
@@ -5161,15 +5160,15 @@
         }
 
         .leaderboard-item {
-            background: var(--glass-bg);
+            background: var(--c-surface);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
+            border-radius: var(--r-lg);
             padding: 20px;
             display: flex;
             align-items: center;
             gap: 15px;
-            border: 1px solid var(--glass-border);
-            transition: all var(--transition-normal);
+            border: 1px solid var(--c-line);
+            transition: all var(--dur-2);
         }
 
         .leaderboard-item:hover {
@@ -5209,7 +5208,7 @@
 
         .leaderboard-rank.rank-other {
             background: rgba(104, 57, 232, 0.1);
-            color: var(--primary-color);
+            color: var(--c-brand);
         }
 
         .leaderboard-info {
@@ -5219,20 +5218,20 @@
         .leaderboard-name {
             font-size: 1.1rem;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--c-brand);
             margin-bottom: 5px;
         }
 
         .leaderboard-stats {
             font-size: 0.9rem;
-            color: var(--secondary-color);
+            color: var(--c-text-2);
             opacity: 0.8;
         }
 
         .leaderboard-value {
             font-size: 1.8rem;
             font-weight: 900;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--c-brand), var(--c-text-2));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -5255,11 +5254,11 @@
 
         .avatar-item:hover {
             transform: scale(1.1);
-            border-color: var(--primary-color);
+            border-color: var(--c-brand);
         }
 
         .avatar-item.selected {
-            border-color: var(--accent-color);
+            border-color: var(--c-brand);
             box-shadow: 0 0 15px rgba(39, 240, 92, 0.5);
         }
 
@@ -5279,11 +5278,11 @@
 
         .avatar-option:hover {
             transform: scale(1.1);
-            border-color: var(--primary-color);
+            border-color: var(--c-brand);
         }
 
         .avatar-option.selected {
-            border-color: var(--accent-color);
+            border-color: var(--c-brand);
             box-shadow: 0 0 15px rgba(39, 240, 92, 0.5);
         }
 
@@ -5296,7 +5295,7 @@
             justify-content: center;
             font-size: 1.5rem;
             background: rgba(104, 57, 232, 0.15);
-            border: 2px solid var(--glass-border);
+            border: 2px solid var(--c-line);
         }
 
         @media (orientation: landscape) and (max-height: 500px) {
@@ -6225,13 +6224,13 @@
     <!-- Avatar Manager Modal -->
     <div class="share-card-modal" id="avatar-manager-modal">
         <div class="share-card-wrapper">
-            <h3 style="text-align: center; margin-bottom: 20px; color: var(--primary-color); font-size: 1.5rem; font-weight: 900;">🎭 选手头像管理</h3>
+            <h3 style="text-align: center; margin-bottom: 20px; color: var(--c-brand); font-size: 1.5rem; font-weight: 900;">🎭 选手头像管理</h3>
             <div class="form-group" style="margin-bottom: 20px;">
                 <label>选手名称</label>
                 <input type="text" id="avatar-player-name" placeholder="输入选手名称">
             </div>
             <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 700; color: var(--secondary-color);">选择头像</label>
+                <label style="display: block; margin-bottom: 10px; font-weight: 700; color: var(--c-text-2);">选择头像</label>
                 <div class="avatar-selector" id="avatar-selector" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 10px;"></div>
             </div>
             <div class="share-card-controls">

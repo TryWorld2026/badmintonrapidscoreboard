@@ -313,6 +313,42 @@
             contains(summary(), '加分赛', '高光摘要');
         });
 
+        await test('计分规则', '快速切换赛制：点击即高亮，且 match-info 不是空盒子', async function () {
+            await fresh();
+
+            /* 干净 boot 时没有比赛状态，loadMatchState() 提前 return，render()
+               一次都不跑：match-info 沦为空盒子（.match-info 有 padding 和
+               inset 边框，空态是个看得见的灰条）。 */
+            var mi = doc.getElementById('match-info');
+            assert(mi, 'match-info 应存在');
+            contains(mi.textContent, '目标', '干净 boot 后 match-info 应已填充，旧版是空的');
+
+            setupMatch();
+
+            function active() {
+                return Array.from(doc.querySelectorAll('[data-act="match:mode"]'))
+                    .filter(function (b) { return b.classList.contains('active'); })
+                    .map(function (b) { return b.getAttribute('data-mode'); });
+            }
+
+            /* index.html 把 active 写死在 21 分按钮上，旧版 setGameMode 只
+               重写 match-info 的文字、四个按钮一步不动——分数和落盘都改了
+               却零视觉反馈，用户看到的就是「点击无反应」。 */
+            doc.querySelector('[data-act="match:mode"][data-mode="15"]').click();
+            await sleep(80);
+            eq(active(), ['15'], '点 15 分后应只有 15 分高亮');
+            eq(app.state.settings.targetScore, 15, '目标分应随之变 15');
+            contains(mi.textContent.replace(/\s+/g, ''), '目标15分', 'match-info 应跟着变');
+
+            doc.querySelector('[data-act="match:mode"][data-mode="custom"]').click();
+            await sleep(80);
+            eq(active(), ['custom'], '点自定义后应只有自定义高亮');
+
+            app.state.settings.gameMode = '21';
+            app.state.settings.targetScore = 21;
+            app.match.render();
+        });
+
         /* ---------- 2. 存档规整（A11） ---------- */
         await fresh();
 

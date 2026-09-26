@@ -124,9 +124,22 @@ window.App = window.App || {};
     }
 
     function renderMatchInfo() {
+        var s = App.state.settings;
+        /* 「快速切换赛制」的高亮必须跟着当前赛制走。index.html 里 active
+           写死在 21 分按钮上，而这条链路旧版只重写 match-info 的文字：
+           分数、目标、落盘全改了，四个按钮的高亮却一步没动——点下去零
+           视觉反馈，看上去就是「点击无反应」；在设置页切成 11 分后再回
+           计分页，这里依旧高亮 21 分。
+           expense / grouping / share / settings 四处同类选择器都在
+           toggle 高亮，只有 match:mode 这一处漏了。
+           必须排在 match-info 判空之前：match-info 不在 DOM 时不能把
+           高亮同步也一起跳过。 */
+        document.querySelectorAll('[data-act="match:mode"]').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-mode') === String(s.gameMode));
+        });
+
         var box = $('match-info');
         if (!box) return;
-        var s = App.state.settings;
         var modeName = s.gameMode === 'custom' ? ('自定义 ' + s.targetScore) : s.gameMode + ' 分制';
         /* 「加分赛」开关的实际语义只是「是否 30 分封顶」——关掉后依然要求
            领先 2 分（否则 21-20 就结束，不符合规则）。旧标签写成
@@ -702,6 +715,11 @@ window.App = window.App || {};
         nav.on('match:team-name', function (el) {
             setTeamName(el.getAttribute('data-team'), el.value);
         });
+        /* 干净 boot（没有进行中的比赛）时 loadMatchState() 会提前 return，
+           render() 一次都不跑：match-info 沦为空盒子，赛制高亮停在写死的
+           21 分上。这里补一次，把「无比赛」也当正常态渲染出来。
+           state.js:136 在模块加载时就备好了 settings，早于本函数。 */
+        renderMatchInfo();
     }
 
     /* 双击顶栏弹出的快捷操作（旧版 quickAction，switchScreen 已由 nav.go 取代）*/

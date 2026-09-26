@@ -1,27 +1,33 @@
 /* ================================================================
    charts.js — 统计图表（4 张：月度折线 / 胜负环 / 胜率趋势 / 时长分布）
-   图表类型与数据口径与旧版一致；配色改为 Court Light 亮色主题。
+   图表类型与数据口径与旧版一致；配色从 VOLT TRUCK 令牌层运行时读取。
    ================================================================ */
 window.App = window.App || {};
 (function (App) {
     'use strict';
 
-    /* 图表调色板（字面量，避免 html2canvas / canvas 解析 var() 失败）*/
-    var C = {
-        brand: '#1B4DFF',
-        teamA: '#E5484D',
-        teamB: '#0090FF',
-        gold: '#FFB020',
-        white: '#FFFFFF',
-        grid: 'rgba(15, 21, 28, 0.07)',
-        tick: '#8B96A4',
-        border: '#FFFFFF',
-        fillBrand: 'rgba(27, 77, 255, 0.12)',
-        fillBrandStrong: 'rgba(27, 77, 255, 0.35)',
-        fillTeamA: 'rgba(229, 72, 77, 0.35)',
-        fillTeamB: 'rgba(0, 144, 255, 0.35)',
-        fillGold: 'rgba(255, 176, 32, 0.35)'
-    };
+    /* 画布吃不到 var(--*)，但可以读已解析的值。禁止再手抄色值：
+       旧版在这里硬编码了一套浅色主题配色（#1B4DFF / 白边），
+       视觉重构后没人同步，图表在深色卡片上直接花掉。 */
+    function palette() {
+        var p = App.tokens.palette({
+            brand: ['--c-brand', '#D4FF3F'],
+            teamA: ['--c-team-a', '#FF2E63'],
+            teamB: ['--c-team-b', '#00E5FF'],
+            gold: ['--c-gold', '#FFB627'],
+            text2: ['--c-text-2', '#8A94A3'],
+            text3: ['--c-text-3', '#5A6472'],
+            surface: ['--c-surface', '#111721']
+        });
+        /* 网格线：深色底上用极淡的同系色，比旧版 rgba(15,21,28,.07) 可见得多 */
+        p.grid = App.tokens.alpha(p.text3, 0.35);
+        p.fillBrand = App.tokens.alpha(p.brand, 0.14);
+        p.fillBrandStrong = App.tokens.alpha(p.brand, 0.38);
+        return p;
+    }
+
+    /* 每次建图都重新取一遍：设置里改不了主题，但这样读绝不会拿到过期值 */
+    function C() { return palette(); }
 
     var charts = {
         monthly: null,
@@ -40,13 +46,16 @@ window.App = window.App || {};
         });
     }
 
+    /* Chart.js v4 起 grid.drawBorder 已移除，改用 grid.border.display。
+       旧写法里的 drawBorder:false 是静默失效的死配置。 */
     function baseScales(yStep) {
+        var c = C();
         return {
-            x: { grid: { color: C.grid, drawBorder: false }, ticks: { color: C.tick } },
+            x: { grid: { color: c.grid, border: { display: false } }, ticks: { color: c.text2 } },
             y: {
                 beginAtZero: true,
-                grid: { color: C.grid, drawBorder: false },
-                ticks: { color: C.tick, stepSize: yStep || 1 }
+                grid: { color: c.grid, border: { display: false } },
+                ticks: { color: c.text2, stepSize: yStep || 1 }
             }
         };
     }
@@ -54,6 +63,7 @@ window.App = window.App || {};
     function createMonthly(matchHistory) {
         var ctx = document.getElementById('monthlyChart');
         if (!ctx || !hasChart()) return;
+        var c = C();
 
         var monthlyData = {};
         matchHistory.forEach(function (m) {
@@ -72,12 +82,13 @@ window.App = window.App || {};
                 datasets: [{
                     label: '比赛场数',
                     data: data,
-                    borderColor: C.brand,
-                    backgroundColor: C.fillBrand,
+                    borderColor: c.brand,
+                    backgroundColor: c.fillBrand,
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: C.brand,
-                    pointBorderColor: C.border,
+                    pointBackgroundColor: c.brand,
+                    /* 数据点外圈用卡片底色，不再是 3px 白边 */
+                    pointBorderColor: c.surface,
                     pointBorderWidth: 2,
                     pointRadius: 6
                 }]
@@ -94,6 +105,7 @@ window.App = window.App || {};
     function createWinLoss(matchHistory) {
         var ctx = document.getElementById('winLossChart');
         if (!ctx || !hasChart()) return;
+        var c = C();
 
         var wins = 0;
         var losses = 0;
@@ -108,8 +120,9 @@ window.App = window.App || {};
                 labels: ['胜利', '失败'],
                 datasets: [{
                     data: [wins, losses],
-                    backgroundColor: [C.brand, C.teamA],
-                    borderColor: C.border,
+                    backgroundColor: [c.brand, c.teamA],
+                    /* 用卡片底色做分隔，不再是 3px 白边 */
+                    borderColor: c.surface,
                     borderWidth: 3
                 }]
             },
@@ -119,7 +132,7 @@ window.App = window.App || {};
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: C.tick }
+                        labels: { color: c.text2 }
                     }
                 }
             }
@@ -129,6 +142,7 @@ window.App = window.App || {};
     function createWinRateTrend(matchHistory) {
         var ctx = document.getElementById('winRateTrendChart');
         if (!ctx || !hasChart()) return;
+        var c = C();
 
         var sorted = matchHistory.slice().reverse();
         var cumulativeWins = 0;
@@ -151,8 +165,8 @@ window.App = window.App || {};
                 datasets: [{
                     label: '胜率 (%)',
                     data: recentRates,
-                    backgroundColor: C.fillBrandStrong,
-                    borderColor: C.brand,
+                    backgroundColor: c.fillBrandStrong,
+                    borderColor: c.brand,
                     borderWidth: 2
                 }]
             },
@@ -161,13 +175,13 @@ window.App = window.App || {};
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { display: false, drawBorder: false }, ticks: { color: C.tick } },
+                    x: { grid: { display: false, border: { display: false } }, ticks: { color: c.text2 } },
                     y: {
                         beginAtZero: true,
                         max: 100,
-                        grid: { color: C.grid, drawBorder: false },
+                        grid: { color: c.grid, border: { display: false } },
                         ticks: {
-                            color: C.tick,
+                            color: c.text2,
                             callback: function (v) { return v + '%'; }
                         }
                     }
@@ -179,6 +193,7 @@ window.App = window.App || {};
     function createDuration(matchHistory) {
         var ctx = document.getElementById('durationChart');
         if (!ctx || !hasChart()) return;
+        var c = C();
 
         var ranges = {
             '0-10分钟': 0,
@@ -204,9 +219,11 @@ window.App = window.App || {};
                 datasets: [{
                     data: Object.keys(ranges).map(function (k) { return ranges[k]; }),
                     backgroundColor: [
-                        C.fillBrand, C.fillBrandStrong, C.fillGold, C.fillTeamB, C.fillTeamA
+                        c.fillBrand, c.fillBrandStrong, App.tokens.alpha(c.gold, 0.38),
+                        App.tokens.alpha(c.teamB, 0.38), App.tokens.alpha(c.teamA, 0.38)
                     ],
-                    borderColor: C.border,
+                    /* 极坐标分隔线同样用卡片底色，不再是白边 */
+                    borderColor: c.surface,
                     borderWidth: 2
                 }]
             },
@@ -216,14 +233,14 @@ window.App = window.App || {};
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: C.tick }
+                        labels: { color: c.text2 }
                     }
                 },
                 scales: {
                     r: {
-                        grid: { color: C.grid },
-                        angleLines: { color: C.grid },
-                        ticks: { color: C.tick, backdropColor: 'rgba(0,0,0,0)' }
+                        grid: { color: c.grid },
+                        angleLines: { color: c.grid },
+                        ticks: { color: c.text2, backdropColor: 'rgba(0, 0, 0, 0)' }
                     }
                 }
             }

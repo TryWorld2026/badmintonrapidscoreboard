@@ -6,7 +6,24 @@ window.App = window.App || {};
     'use strict';
 
     var nav = App.nav;
-    var COLORS = ['#D4FF3F', '#FF2E63', '#00E5FF', '#FFB627', '#2EE6A8', '#F0F4F8', '#A8B3C0'];
+    /* 彩带配色同样从令牌层读，不再手抄一份（抄错了视觉重构后没人发现）。 */
+    var COLORS = null;
+    function palette() {
+        if (!COLORS) {
+            var p = App.tokens.palette({
+                brand: ['--c-brand', '#D4FF3F'],
+                teamA: ['--c-team-a', '#FF2E63'],
+                teamB: ['--c-team-b', '#00E5FF'],
+                warning: ['--c-warning', '#FFB627'],
+                success: ['--c-success', '#2EE6A8'],
+                text: ['--c-text', '#F0F4F8'],
+                silver: ['--c-silver', '#A8B3C0']
+            });
+            COLORS = [p.brand, p.teamA, p.teamB, p.warning,
+                p.success, p.text, p.silver];
+        }
+        return COLORS;
+    }
     var reduced = false;
 
     function prefersReduced() {
@@ -41,7 +58,7 @@ window.App = window.App || {};
                 var p = document.createElement('i');
                 p.className = 'confetti';
                 p.style.left = rand(0, 100) + '%';
-                p.style.background = pick(COLORS);
+                p.style.background = pick(palette());
                 p.style.width = rand(6, 11) + 'px';
                 p.style.height = rand(10, 16) + 'px';
                 p.style.setProperty('--dx', rand(-120, 120) + 'px');
@@ -67,7 +84,7 @@ window.App = window.App || {};
                 window.setTimeout(function () {
                     var cx = rand(15, 85);
                     var cy = rand(15, 55);
-                    var color = pick(COLORS);
+                    var color = pick(palette());
                     var j;
                     for (j = 0; j < 30; j++) {
                         var p = document.createElement('i');
@@ -90,15 +107,17 @@ window.App = window.App || {};
         }
     }
 
-    /* ---------- 胜利横幅（3 秒）---------- */
-    function victoryBanner(text, teamName) {
+    /* ---------- 胜利横幅（3 秒）----------
+       第二个参数是副标题（调用方传的是「最终比分 x : y」），
+       旧名字叫 teamName 会让人以为必须传队名。 */
+    function victoryBanner(text, subtitle) {
         var el = document.getElementById('victory-banner');
         if (!el) return;
         var t = document.getElementById('vb-title');
         var n = document.getElementById('vb-team');
         if (t) t.textContent = text || '比赛结束';
-        if (n) n.textContent = teamName || '';
-        nav.announce((text || '比赛结束') + (teamName ? '，' + teamName : ''));
+        if (n) n.textContent = subtitle || '';
+        nav.announce((text || '比赛结束') + (subtitle ? '，' + subtitle : ''));
         el.classList.add('show');
         confetti(120);
         fireworks(5);
@@ -112,7 +131,7 @@ window.App = window.App || {};
         if (!teamEl || prefersReduced()) return;
         var p = document.createElement('span');
         p.className = 'score-pulse';
-        p.style.background = color || 'rgba(212, 255, 63, 0.35)';
+        p.style.background = color || App.tokens.alpha(App.tokens.get('--c-brand', '#D4FF3F'), 0.35);
         teamEl.appendChild(p);
         window.setTimeout(function () {
             if (p.parentNode) p.parentNode.removeChild(p);

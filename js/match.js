@@ -1,9 +1,9 @@
 /* ================================================================
-   match.js — 比赛计分（规则与旧版逐条一致）
+   match.js — 比赛计分（规则与旧版一致）
    - updateScore / undoScore：需 timerRunning（旧版即如此）
    - checkSideChange：21→11 / 15→8 / 11→6 / custom→floor(t/2)+1
    - checkGameEnd：deuce 30 分封顶，或达到目标分且领先 2 分
-   - endGame：三局两胜（旧版硬编码 bestOfThree=true，2 胜出）
+   - endGame：三局两胜由 settings.bestOfThree 决定（2 胜出），单局则 1 胜出
    - 高光：加分赛 / 赛点 / 落后 5 分以上反超
    ================================================================ */
 window.App = window.App || {};
@@ -20,6 +20,9 @@ window.App = window.App || {};
     /* 高光时刻（内存态，与旧版一致，不落盘）*/
     var highlightMoments = [];
     var wasLeadingTeamA = null;
+    /* 换边提醒只报一次：旧代码用 total === N 精确相等，
+       一旦跳分（改分 / 异常数据）就整局漏报。改成越过阈值即报 + 已报标记。 */
+    var sideChangeAlerted = false;
 
     function $(id) { return document.getElementById(id); }
 
@@ -125,10 +128,14 @@ window.App = window.App || {};
         if (!box) return;
         var s = App.state.settings;
         var modeName = s.gameMode === 'custom' ? ('自定义 ' + s.targetScore) : s.gameMode + ' 分制';
+        /* 「加分赛」开关的实际语义只是「是否 30 分封顶」——关掉后依然要求
+           领先 2 分（否则 21-20 就结束，不符合规则）。旧标签写成
+           「加分赛开 / 加分赛关」会让人以为关掉就是先到目标分即胜，
+           这里改成如实描述差异。 */
         box.innerHTML =
             '<span class="tag tag-brand">' + ui.escapeHtml(modeName) + '</span>' +
             '<span class="tag">' + (s.bestOfThree ? '三局两胜' : '单局') + '</span>' +
-            '<span class="tag">' + (s.deuceMode ? '加分赛开' : '加分赛关') + '</span>' +
+            '<span class="tag">' + (s.deuceMode ? '30 分封顶' : '无封顶') + '</span>' +
             '<span class="grow text-3">目标 ' + App.state.targetScore() + ' 分</span>';
     }
 
@@ -139,9 +146,17 @@ window.App = window.App || {};
         return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r;
     }
 
+    /* 需要赢几局才算整场结束：设置里关掉「三局两胜」就是单局 1 胜出。
+       旧代码硬编码 >= 2，导致「单局」开关被完整持久化、完整展示，
+       却在 endGame 里完全不参与判定。 */
+    function gamesNeeded() {
+        return App.state.settings.bestOfThree ? 2 : 1;
+    }
+
     function updateGamesWonDisplay() {
         var m = App.state.match;
-        var maxGames = 3;
+        /* 单局模式只画 1 个点，别再画 3 个 */
+        var maxGames = gamesNeeded() === 1 ? 1 : 3;
         var a = $('games-won-a');
         var b = $('games-won-b');
         var ha = '';
@@ -248,7 +263,11 @@ window.App = window.App || {};
         var el = $(team === 'a' ? 'score-a' : 'score-b');
         fx.bumpScore(el);
         var panel = $(team === 'a' ? 'team-a-panel' : 'team-b-panel');
-        fx.scorePulse(panel, team === 'a' ? 'rgba(255, 46, 99, 0.30)' : 'rgba(0, 229, 255, 0.30)');
+        /* 脉冲色从令牌层取，不再手抄 rgba(255,46,99,.30) / rgba(0,229,255,.30) */
+        var pulse = team === 'a'
+            ? App.tokens.alpha(App.tokens.get('--c-team-a', '#FF2E63'), 0.30)
+            : App.tokens.alpha(App.tokens.get('--c-team-b', '#00E5FF'), 0.30);
+        fx.scorePulse(panel, pulse);
 
         if (amount > 0) { fx.pointSound(); fx.vibrate(50); }
         else { fx.clickSound(); fx.vibrate([30, 30, 30]); }
@@ -285,6 +304,9 @@ window.App = window.App || {};
     /* ================================================================
        换边提醒
        ================================================================ */
+    /* 换边提醒：越过阈值即报，且每局只报一次。
+       旧代码是 total === N 精确相等，跳分（改分、异常数据、中途开提醒）
+       会整局漏掉；三个 target 分支算出来的 switchPoint 本来就相同，合并成一条。 */
     function checkSideChange() {
         if (!App.state.settings.sideChangeAlert) return;
         var m = App.state.match;
@@ -292,13 +314,8 @@ window.App = window.App || {};
         var target = App.state.targetScore();
         var switchPoint = Math.floor(target / 2) + 1;
 
-        if (target === 21 && total === 11) {
-            ui.notify('双方得分之和达到 11 分，请交换场地！', '换边提醒');
-        } else if (target === 15 && total === 8) {
-            ui.notify('双方得分之和达到 8 分，请交换场地！', '换边提醒');
-        } else if (target === 11 && total === 6) {
-            ui.notify('双方得分之和达到 6 分，请交换场地！', '换边提醒');
-        } else if (App.state.settings.gameMode === 'custom' && total === switchPoint) {
+        if (total >= switchPoint && !sideChangeAlerted) {
+            sideChangeAlerted = true;
             ui.notify('双方得分之和达到 ' + switchPoint + ' 分，请交换场地！', '换边提醒');
         }
     }
@@ -351,8 +368,9 @@ window.App = window.App || {};
         m.gameScoresHistory.push(m.scoreA + '-' + m.scoreB);
         updateGamesWonDisplay();
 
-        /* 旧版 bestOfThree 硬编码 true */
-        var matchOver = (m.gamesWonA >= 2 || m.gamesWonB >= 2);
+        /* 局数上限跟随设置，不再硬编码 2 */
+        var need = gamesNeeded();
+        var matchOver = (m.gamesWonA >= need || m.gamesWonB >= need);
 
         if (matchOver) {
             if (m.timerRunning) {
@@ -389,12 +407,17 @@ window.App = window.App || {};
         m.scoreB = 0;
         m.scoreHistory = [];
         wasLeadingTeamA = null;
+        sideChangeAlerted = false;
         render();
         saveMatchState();
     }
 
-    function resetMatch() {
+    /* opts.silent：保存成功后自动重置时传 true。
+       那条路径上记录已经落盘，重置不损失任何数据，
+       旧代码却照样弹「此操作不可撤销！」的红色确认框，纯属吓人。 */
+    function resetMatch(opts) {
         var m = App.state.match;
+        var silent = !!(opts && opts.silent === true);
         var hasProgress = m.scoreA > 0 || m.scoreB > 0 || m.gamesWonA > 0 || m.gamesWonB > 0 || m.seconds > 0;
 
         function doReset() {
@@ -413,7 +436,7 @@ window.App = window.App || {};
             ui.notify('比赛已重置', '已重置');
         }
 
-        if (hasProgress) {
+        if (hasProgress && !silent) {
             ui.showConfirm({
                 title: '重置整场比赛？',
                 message: '当前局分 ' + m.gamesWonA + ' : ' + m.gamesWonB +
@@ -423,13 +446,7 @@ window.App = window.App || {};
                 onConfirm: doReset
             });
         } else {
-            ui.showConfirm({
-                title: '重置比赛？',
-                message: '确定要重置比赛吗？',
-                okText: '重置',
-                danger: true,
-                onConfirm: doReset
-            });
+            doReset();
         }
     }
 
@@ -474,23 +491,48 @@ window.App = window.App || {};
 
         if (m.scoreA > 0 && m.scoreB > 0) {
             var lead = m.scoreA - m.scoreB;
-            if (wasLeadingTeamA === null) {
+            if (lead === 0) {
+                /* 平手时谁也不领先：旧代码在这里把 wasLeadingTeamA 置成
+                   (lead > 0) === false，等同于提前认定「乙领先」，
+                   之后甲只要拉开 5 分就误报一次「甲 落后 5 分以上后反超」。
+                   平局不改变领先认知，直接跳过。 */
+            } else if (wasLeadingTeamA === null) {
                 wasLeadingTeamA = lead > 0;
             } else if (wasLeadingTeamA && lead < -5) {
-                recordHighlight('comeback', m.teamNameB + ' 大逆转！');
-                ui.showHighlight('flame', '大逆转！', m.teamNameA + ' 落后 5 分以上后反超！');
+                /* 乙反超：旧代码 recordHighlight 传乙、showHighlight 传甲，
+                   字幕把功劳安到了从未落后的人头上。统一用同一个变量。 */
+                fireComeback(m.teamNameB);
                 wasLeadingTeamA = false;
             } else if (!wasLeadingTeamA && lead > 5) {
-                recordHighlight('comeback', m.teamNameA + ' 大逆转！');
-                ui.showHighlight('flame', '大逆转！', m.teamNameA + ' 落后 5 分以上后反超！');
+                fireComeback(m.teamNameA);
                 wasLeadingTeamA = true;
             }
         }
     }
 
+    /* 大逆转：文案和记录用同一个队名，避免再次出现「说的是 A、记的是 B」 */
+    function fireComeback(teamName) {
+        recordHighlight('comeback', teamName + ' 大逆转！');
+        ui.showHighlight('flame', '大逆转！', teamName + ' 落后 5 分以上后反超！');
+    }
+
     function resetHighlights() {
         highlightMoments = [];
         wasLeadingTeamA = null;
+        sideChangeAlerted = false;
+    }
+
+    /* 零封判定扫「已结束的局」，不再看当前局比分。
+       旧写法读 scoreA/scoreB，第二局开局 0-0 时必然误报「零封胜利」，
+       分享卡和存入的历史记录都会带上一个假标签。 */
+    function hasShutoutGame() {
+        return App.state.match.gameScoresHistory.some(function (s) {
+            var p = String(s).split('-');
+            var a = parseInt(p[0], 10);
+            var b = parseInt(p[1], 10);
+            if (!isFinite(a) || !isFinite(b)) return false;
+            return (a > 0 && b === 0) || (b > 0 && a === 0);
+        });
     }
 
     function getHighlightsSummary() {
@@ -501,20 +543,22 @@ window.App = window.App || {};
         if (highlightMoments.filter(function (h) { return h.type === 'comeback'; }).length > 0) {
             summary.push('大逆转');
         }
-        if (App.state.match.scoreA === 0 || App.state.match.scoreB === 0) {
+        if (hasShutoutGame()) {
             summary.push('零封胜利');
         }
         return summary;
     }
 
     function checkPerfectWin() {
-        var m = App.state.match;
-        return (m.scoreA === 0 && m.scoreB > 0) || (m.scoreB === 0 && m.scoreA > 0);
+        return hasShutoutGame();
     }
 
+    /* 加分赛判定改成看已记录的高光，不再读当前局比分。
+       saveMatchResult() 是在 endGame() → resetCurrentGame() 之后跑的，
+       那时比分已被清零，旧写法 scoreA>=20 && scoreB>=20 恒为 false，
+       「加分赛专家」这个成就永远不可能解锁。 */
     function checkHadDeuce() {
-        var m = App.state.match;
-        return m.scoreA >= 20 && m.scoreB >= 20;
+        return highlightMoments.some(function (h) { return h.type === 'deuce'; });
     }
 
     function getGameScores() { return App.state.match.gameScoresHistory.join(', '); }
@@ -602,7 +646,8 @@ window.App = window.App || {};
         ui.notify('比赛记录已保存！', '保存成功');
         closeResultSheet();
         if (App.stats) App.stats.refreshAll();
-        resetMatch();
+        /* 记录已入历史，这里直接重置，不再弹破坏性确认 */
+        resetMatch({ silent: true });
     }
 
     /* ================================================================
@@ -708,6 +753,7 @@ window.App = window.App || {};
         loadMatchState: loadMatchState,
         saveMatchState: saveMatchState,
         clearMatchState: clearMatchState,
+        resetHighlights: resetHighlights,
         formatTime: formatTime,
         quickAction: quickAction
     };

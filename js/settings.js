@@ -176,6 +176,11 @@ window.App = window.App || {};
         App.state.hasSeenOnboarding = store.readJSON(store.KEYS.ONBOARDING, false) === true;
         App.state.lastGroups = store.readJSON(store.KEYS.LAST_GROUPS, null);
 
+        /* 高光时刻是内存态，不随存档走。恢复备份 / 清空数据时
+           如果不显式清掉，上一场的「加分赛 / 大逆转」会被当成
+           这一场的成绩写进下一次保存的比赛记录。 */
+        if (App.match && App.match.resetHighlights) App.match.resetHighlights();
+
         if (App.match) App.match.render();
         if (App.stats) App.stats.refreshAll();
         if (App.grouping) App.grouping.onEnter();

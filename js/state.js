@@ -71,6 +71,16 @@ window.App = window.App || {};
         });
     }
 
+    /* num() 只挡 NaN/Infinity，不挡负数和天文数字。
+       手改过的存档里出现过 gamesWonA:-5、currentGame:1e9，
+       原样存活后会渲染成「第 1000000000 局」、负局分，所以这里补范围钳制。 */
+    function clamp(v, d, min, max) {
+        var n = num(v, d);
+        if (n < min) n = min;
+        if (max !== null && max !== undefined && n > max) n = max;
+        return n;
+    }
+
     function bool(v, d) {
         return typeof v === 'boolean' ? v : d;
     }
@@ -79,12 +89,12 @@ window.App = window.App || {};
         var d = defaultMatch();
         if (!raw || typeof raw !== 'object') return d;
         return {
-            scoreA: num(raw.scoreA, d.scoreA),
-            scoreB: num(raw.scoreB, d.scoreB),
-            gamesWonA: num(raw.gamesWonA, d.gamesWonA),
-            gamesWonB: num(raw.gamesWonB, d.gamesWonB),
-            currentGame: num(raw.currentGame, d.currentGame),
-            seconds: num(raw.seconds, d.seconds),
+            scoreA: clamp(raw.scoreA, d.scoreA, 0, null),
+            scoreB: clamp(raw.scoreB, d.scoreB, 0, null),
+            gamesWonA: clamp(raw.gamesWonA, d.gamesWonA, 0, 2),
+            gamesWonB: clamp(raw.gamesWonB, d.gamesWonB, 0, 2),
+            currentGame: clamp(raw.currentGame, d.currentGame, 1, 3),
+            seconds: clamp(raw.seconds, d.seconds, 0, null),
             teamNameA: str(raw.teamNameA, d.teamNameA),
             teamNameB: str(raw.teamNameB, d.teamNameB),
             scoreHistory: objs(raw.scoreHistory),
@@ -229,12 +239,12 @@ window.App = window.App || {};
             id: num(raw.id, Date.now()),
             teamA: str(raw.teamA, '队伍 A'),
             teamB: str(raw.teamB, '队伍 B'),
-            scoreA: num(raw.scoreA, 0),
-            scoreB: num(raw.scoreB, 0),
-            gamesWonA: num(raw.gamesWonA, 0),
-            gamesWonB: num(raw.gamesWonB, 0),
+            scoreA: clamp(raw.scoreA, 0, 0, null),
+            scoreB: clamp(raw.scoreB, 0, 0, null),
+            gamesWonA: clamp(raw.gamesWonA, 0, 0, 2),
+            gamesWonB: clamp(raw.gamesWonB, 0, 0, 2),
             gameScores: str(raw.gameScores, ''),
-            duration: num(raw.duration, 0),
+            duration: clamp(raw.duration, 0, 0, null),
             mode: str(raw.mode, ''),
             date: num(d, Date.now()),
             highlights: arr(raw.highlights).map(String)

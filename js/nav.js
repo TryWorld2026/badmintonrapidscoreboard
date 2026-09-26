@@ -292,13 +292,23 @@ window.App = window.App || {};
     /* ================================================================
        弹层管理
        ================================================================ */
+    /* 打开弹层前清场：不管是 sheet 还是 dialog，只要还可见就先关掉。
+       旧写法只清理 .sheet-backdrop，而 --z-modal(210) > --z-sheet(200)，
+       确认框会一直浮在后来打开的分享卡上面，出现「双层叠住」+
+       Esc 关错层。弹层栈本来就是「同时只留一层」的语义。 */
+    function closeOtherOverlays(keep) {
+        $all('.sheet-backdrop.show, .dialog-backdrop.show').forEach(function (other) {
+            if (other === keep) return;
+            if (other.classList.contains('sheet-backdrop')) closeSheet(other.id);
+            else closeDialog(other.id);
+        });
+    }
+
     function openSheet(id) {
         var el = byId(id);
         if (!el) return null;
-        /* 同层互斥：打开新 sheet 前关闭其他仍可见的 sheet，避免双层叠住导致点不动、Esc 失灵 */
-        $all('.sheet-backdrop.show').forEach(function (other) {
-            if (other !== el) closeSheet(other.id);
-        });
+        /* 同层互斥：打开新 sheet 前关掉其他仍可见的弹层，避免双层叠住导致点不动、Esc 失灵 */
+        closeOtherOverlays(el);
         el.classList.add('show');
         el.removeAttribute('hidden');
         el.setAttribute('aria-hidden', 'false');
@@ -325,6 +335,8 @@ window.App = window.App || {};
     function openDialog(id) {
         var el = byId(id);
         if (!el) return null;
+        /* 与 openSheet 对称：dialog 打开时也清掉其他可见弹层 */
+        closeOtherOverlays(el);
         el.classList.add('show');
         el.removeAttribute('hidden');
         el.setAttribute('aria-hidden', 'false');

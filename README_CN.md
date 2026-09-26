@@ -22,14 +22,14 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/stars/1822520752/badmintonrapidscoreboard?style=social" alt="Stars">
-  <img src="https://img.shields.io/github/forks/1822520752/badmintonrapidscoreboard?style=social" alt="Forks">
-  <img src="https://img.shields.io/github/last-commit/1822520752/badmintonrapidscoreboard?color=00CEC9" alt="Last Commit">
+  <img src="https://img.shields.io/github/stars/TryWorld2026/badmintonrapidscoreboard?style=social" alt="Stars">
+  <img src="https://img.shields.io/github/forks/TryWorld2026/badmintonrapidscoreboard?style=social" alt="Forks">
+  <img src="https://img.shields.io/github/last-commit/TryWorld2026/badmintonrapidscoreboard?color=00CEC9" alt="Last Commit">
 </p>
 
 ---
 
-[🌐 在线演示](https://1822520752.github.io/badmintonrapidscoreboard/) | [✨ 功能特性](#-功能特性) | [🚀 快速开始](#-快速开始) | [❓ 常见问题](#-常见问题)
+[🌐 在线演示](https://tryworld2026.github.io/badmintonrapidscoreboard/) | [✨ 功能特性](#-功能特性) | [🚀 快速开始](#-快速开始) | [❓ 常见问题](#-常见问题)
 
 </div>
 
@@ -123,12 +123,12 @@
 ## 🚀 快速开始
 
 ### 方案 A：即开即用（推荐）⭐
-点击 [在线演示](https://1822520752.github.io/badmintonrapidscoreboard/) 链接，直接在浏览器中开始你的第一场比赛。
+点击 [在线演示](https://tryworld2026.github.io/badmintonrapidscoreboard/) 链接，直接在浏览器中开始你的第一场比赛。
 
 ### 方案 B：本地部署
 ```bash
 # 克隆项目
-git clone https://github.com/1822520752/badmintonrapidscoreboard.git
+git clone https://github.com/TryWorld2026/badmintonrapidscoreboard.git
 
 # 进入目录
 cd badmintonrapidscoreboard
@@ -190,10 +190,10 @@ python -m http.server 8899
 **TryWorld**  
 热爱编程，热爱羽毛球 🏸
 
-[![GitHub](https://img.shields.io/badge/GitHub-1822520752-181717?style=for-the-badge&logo=github)](https://github.com/1822520752)
+[![GitHub](https://img.shields.io/badge/GitHub-TryWorld2026-181717?style=for-the-badge&logo=github)](https://github.com/TryWorld2026)
 
 **如果这个项目对你有帮助，请点一个 ⭐ Star 支持一下！**
 
-<img src="https://api.star-history.com/svg?repos=1822520752/badmintonrapidscoreboard&type=Date" alt="Star History Chart" width="600">
+<img src="https://api.star-history.com/svg?repos=TryWorld2026/badmintonrapidscoreboard&type=Date" alt="Star History Chart" width="600">
 
 </div>

@@ -22,14 +22,14 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/stars/1822520752/badmintonrapidscoreboard?style=social" alt="Stars">
-  <img src="https://img.shields.io/github/forks/1822520752/badmintonrapidscoreboard?style=social" alt="Forks">
-  <img src="https://img.shields.io/github/last-commit/1822520752/badmintonrapidscoreboard?color=00CEC9" alt="Last Commit">
+  <img src="https://img.shields.io/github/stars/TryWorld2026/badmintonrapidscoreboard?style=social" alt="Stars">
+  <img src="https://img.shields.io/github/forks/TryWorld2026/badmintonrapidscoreboard?style=social" alt="Forks">
+  <img src="https://img.shields.io/github/last-commit/TryWorld2026/badmintonrapidscoreboard?color=00CEC9" alt="Last Commit">
 </p>
 
 ---
 
-[🌐 Live Demo](https://1822520752.github.io/badmintonrapidscoreboard/) | [✨ Features](#-features) | [🚀 Quick Start](#-quick-start) | [❓ FAQ](#-faq)
+[🌐 Live Demo](https://tryworld2026.github.io/badmintonrapidscoreboard/) | [✨ Features](#-features) | [🚀 Quick Start](#-quick-start) | [❓ FAQ](#-faq)
 
 </div>
 
@@ -123,12 +123,12 @@ Choose from 6 professionally tuned themes to suit your environment:
 ## 🚀 Quick Start
 
 ### Option A: Instant Use (Recommended) ⭐
-Click the [Live Demo](https://1822520752.github.io/badmintonrapidscoreboard/) link to start your first match directly in your browser.
+Click the [Live Demo](https://tryworld2026.github.io/badmintonrapidscoreboard/) link to start your first match directly in your browser.
 
 ### Option B: Local Deployment
 ```bash
 # Clone the repository
-git clone https://github.com/1822520752/badmintonrapidscoreboard.git
+git clone https://github.com/TryWorld2026/badmintonrapidscoreboard.git
 
 # Enter the directory
 cd badmintonrapidscoreboard
@@ -191,10 +191,10 @@ This project is licensed under the [MIT License](LICENSE). Feel free to use, mod
 **TryWorld**  
 Love Coding, Love Badminton 🏸
 
-[![GitHub](https://img.shields.io/badge/GitHub-1822520752-181717?style=for-the-badge&logo=github)](https://github.com/1822520752)
+[![GitHub](https://img.shields.io/badge/GitHub-TryWorld2026-181717?style=for-the-badge&logo=github)](https://github.com/TryWorld2026)
 
 **If this project helped you, please give it a ⭐ Star!**
 
-<img src="https://api.star-history.com/svg?repos=1822520752/badmintonrapidscoreboard&type=Date" alt="Star History Chart" width="600">
+<img src="https://api.star-history.com/svg?repos=TryWorld2026/badmintonrapidscoreboard&type=Date" alt="Star History Chart" width="600">
 
 </div>

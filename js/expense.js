@@ -91,6 +91,7 @@ window.App = window.App || {};
         }
 
         var ratios = [];
+        var durations = [];
         var perPerson = totalAmount / participants.length;
         var amounts = [];
         var hourlyRate = 0;
@@ -98,19 +99,37 @@ window.App = window.App || {};
 
         if (splitMode === 'custom') {
             var inputs = Array.prototype.slice.call(document.querySelectorAll('#ratio-inputs input[type="number"]'));
-            ratios = inputs.map(function (i) { return parseFloat(i.value) || 1; });
+            /* 份数必须是正数：旧代码用 parseFloat(v) || 1，负数原样保留，
+               -5 + 5 会让 totalRatio 变成 0，界面上直接渲染出 ±Infinity。
+               非正数一律按 1 份处理，totalRatio 因此恒 > 0。 */
+            ratios = inputs.map(function (i) {
+                var v = parseFloat(i.value);
+                return (isFinite(v) && v > 0) ? v : 1;
+            });
             if (ratios.length !== participants.length) {
                 ratios = participants.map(function () { return 1; });
             }
             var totalRatio = ratios.reduce(function (s, r) { return s + r; }, 0);
+            if (!isFinite(totalRatio) || totalRatio <= 0) {
+                ui.notify('分摊份数无效，请检查每人的份数', '提示');
+                return;
+            }
             amounts = ratios.map(function (r) { return (totalAmount * r / totalRatio); });
         } else if (splitMode === 'time') {
-            var durations = Array.prototype.slice.call(document.querySelectorAll('#time-inputs input'))
-                .map(function (i) { return parseFloat(i.value) || 0; });
-            if (durations.length !== participants.length) {
-                durations = participants.map(function () { return 60; });
+            var dInputs = Array.prototype.slice.call(document.querySelectorAll('#time-inputs input'))
+                .map(function (i) {
+                    var v = parseFloat(i.value);
+                    return (isFinite(v) && v > 0) ? v : 0;
+                });
+            if (dInputs.length !== participants.length) {
+                dInputs = participants.map(function () { return 60; });
             }
-            var totalTime = durations.reduce(function (s, d) { return s + d; }, 0) || 1;
+            durations = dInputs;
+            var totalTime = durations.reduce(function (s, d) { return s + d; }, 0);
+            if (!isFinite(totalTime) || totalTime <= 0) {
+                ui.notify('请至少为一位参与者填写有效的运动时长', '提示');
+                return;
+            }
             matchDuration = totalTime;
             hourlyRate = totalAmount / (totalTime / 60);
             amounts = durations.map(function (d) { return (totalAmount * d / totalTime); });
@@ -154,17 +173,38 @@ window.App = window.App || {};
         var section = $('expense-result-section');
         if (section) section.classList.remove('hidden');
 
-        /* 保存历史（结构不变：date/type/total/participants/splitMode/ratios）*/
-        App.state.pushExpenseHistory({
+        /* 保存历史。原有字段（date/type/total/participants/splitMode/ratios）
+           一个没动，只新增 durations：
+           旧代码把时长塞进 ratios，详情页只能按「自定义比例」或「平均」
+           两种口径重算，按时长的记录点开永远是错的金额，
+           还把分钟误标成「份」。 */
+        var record = {
             date: new Date().toISOString(),
             type: expenseType,
             total: totalAmount,
             participants: participants,
             splitMode: splitMode,
-            ratios: ratios
-        });
+            ratios: ratios,
+            durations: durations
+        };
+        /* 同一组参数重复点「计算」不再重复入账，只和最近一条比对。
+           确实要记两笔相同费用时，中间改任意一项即可。 */
+        if (!sameAsLastRecord(record)) App.state.pushExpenseHistory(record);
         renderHistory();
         ui.notify('已按' + MODE_NAMES[splitMode] + '完成分摊', '计算完成');
+    }
+
+    function sameAsLastRecord(rec) {
+        var list = App.state.getExpenseHistory();
+        if (!list.length) return false;
+        var last = list[0];
+        function key(r) {
+            return [r.type, r.total, r.splitMode,
+                (r.participants || []).join('\u0001'),
+                (r.ratios || []).join('\u0001'),
+                (r.durations || []).join('\u0001')].join('\u0002');
+        }
+        return key(last) === key(rec);
     }
 
     function clearForm() {
@@ -213,10 +253,19 @@ window.App = window.App || {};
         var participants = item.participants || [];
         var amounts = [];
         var perPerson = 0;
+        /* 每条记录按它自己的模式重算：time 模式必须用 durations 按比例分，
+           旧代码只有 custom 分支，time 记录全部掉进 else 走平均分摊，
+           详情页金额和计算页对不上。 */
+        var unitSuffix = '';
 
         if (item.splitMode === 'custom' && item.ratios && item.ratios.length > 0) {
             var totalRatio = item.ratios.reduce(function (s, r) { return s + r; }, 0) || 1;
             amounts = item.ratios.map(function (r) { return (item.total * r / totalRatio); });
+            unitSuffix = '份';
+        } else if (item.splitMode === 'time' && item.durations && item.durations.length > 0) {
+            var totalDur = item.durations.reduce(function (s, d) { return s + d; }, 0) || 1;
+            amounts = item.durations.map(function (d) { return (item.total * d / totalDur); });
+            unitSuffix = '分钟';
         } else {
             perPerson = item.total / (participants.length || 1);
             amounts = participants.map(function () { return perPerson; });
@@ -234,12 +283,14 @@ window.App = window.App || {};
                 '<div class="split-row"><span class="who">参与人数</span><span class="amt">' +
                 participants.length + ' 人</span></div>' +
                 '<div class="split-row"><span class="who">时间</span><span class="amt">' +
-                new Date(item.date).toLocaleString() + '</span></div>';
+                fmtDate(item.date) + '</span></div>';
         }
         var dl = $('expense-detail-list');
         if (dl) {
             dl.innerHTML = participants.map(function (p, i) {
-                var extra = (item.ratios && item.ratios[i]) ? (' (' + item.ratios[i] + '份)') : '';
+                /* 单位跟随模式：份 / 分钟，不再把时长显示成「120份」 */
+                var raw = (item.ratios && item.ratios[i]);
+                var extra = (unitSuffix && raw) ? (' (' + raw + unitSuffix + ')') : '';
                 return '<div class="split-row">' +
                     '<span class="who">' + ui.escapeHtml(p) + extra + '</span>' +
                     '<span class="amt">¥' + amounts[i].toFixed(2) + '</span>' +

@@ -59,7 +59,9 @@ window.App = window.App || {};
         if (!box) return;
         var entries = Object.keys(App.state.avatars);
         if (!entries.length) {
-            box.innerHTML = '<div class="empty"><div class="empty-icon">🙂</div>' +
+            /* 和其他空态一致用 ic-box + data-icon，由 MutationObserver 水合成 SVG。
+               旧代码这里放了个 🙂 emoji，与「0 UI emoji」的约定冲突。 */
+            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="users"></div>' +
                 '<div class="empty-title">还没有绑定头像</div>' +
                 '<div class="empty-hint">输入球员名字，选一个 emoji 后保存</div></div>';
             return;

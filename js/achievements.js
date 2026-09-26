@@ -99,7 +99,10 @@ window.App = window.App || {};
         var ic = nav.byId('ab-icon');
         var ti = nav.byId('ab-title');
         var de = nav.byId('ab-desc');
-        if (ic) ic.textContent = a.icon;
+        /* 必须走 App.icons.icon()：旧代码把图标「名字」当纯文本写进去，
+           成就弹窗显示的是 "shuttle" / "medal" 这类英文标识符。
+           全项目其余 7 处都是正确写法，这里是唯一漏网的。 */
+        if (ic) ic.innerHTML = App.icons.icon(a.icon);
         if (ti) ti.textContent = '成就解锁：' + a.title;
         if (de) de.textContent = a.desc;
         nav.announce('成就解锁：' + (a.title || '') + (a.desc ? '，' + a.desc : ''));

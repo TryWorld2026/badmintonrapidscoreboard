@@ -43,7 +43,7 @@ This is more than just a scoreboard; it's a comprehensive ecosystem for managing
 
 ### 💎 Pure Aesthetics
 **Glassmorphism 2.0**  
-Crafted with cutting-edge frosted glass design language and Teko tech-style fonts. Every pixel is meticulously polished.
+Crafted with a frosted-glass design language, condensed display type and monospace numerals. Every pixel is meticulously polished.
 
 </td>
 <td width="33%">
@@ -57,7 +57,7 @@ Optimized with full-width buttons and floating navigation. Perform complex opera
 
 ### 📊 Deep Insights
 **Data-Driven Analysis**  
-Integrated with Chart.js to provide skill radar charts and win rate trends, analyzing your game beyond just numbers.
+Integrated with Chart.js to track cumulative win rate, win/loss split, monthly volume and duration distribution — analyzing your game beyond just numbers.
 
 </td>
 </tr>
@@ -92,7 +92,7 @@ Data is stored strictly in your browser's LocalStorage. No server uploads, total
 
 ### 🏸 Professional Scoring System
 - **Real-time Timer**: Precisely record the duration of every match.
-- **Undo Mechanism**: Unlimited undos to prevent accidental score touches.
+- **Undo Mechanism**: Step back through the point log to undo accidental score touches.
 - **Auto-Judgment**: Handles Deuce up to 30 points, strictly following BWF rules.
 - **Victory FX**: Stunning full-screen effects and achievement unlock notifications.
 
@@ -101,22 +101,20 @@ Data is stored strictly in your browser's LocalStorage. No server uploads, total
 - **Expense Calculator**: Set totals, split by head, or use custom ratios. Copy results with one click.
 
 ### 📊 Personal Performance Profile
-- **Radar Analysis**: Visualize your Stamina, Technique, Defense, and Mentality.
+- **Player Profile**: Core stats, four rankings, recent form and auto-generated tags for every player.
 - **Leaderboards**: Real-time rankings based on win rate, matches played, and duration.
 - **Achievement System**: 12 beautifully designed badges tracking your journey from "Rookie" to "Badminton King".
 
 ---
 
-## 🎨 Visual Themes
+## 🎨 Visual Design
 
-Choose from 6 professionally tuned themes to suit your environment:
+One purpose-built dark studio theme, tuned for a dim gym — there is no theme picker.
 
-- 💜 **Night Purple**: Deep and mysterious, the ultimate tech vibe.
-- 🧡 **Vibrant Orange**: Ignites your fighting spirit for intense matches.
-- 💙 **Sky Blue**: Fresh and natural, providing the best reading experience.
-- 💚 **Forest Green**: Soft on the eyes, reduces fatigue during long sessions.
-- 💗 **Sakura Pink**: Elegant and delicate, a favorite among female players.
-- 🖤 **Black Gold**: Noble and classic, representing professional quality.
+- 🌑 **Dark Studio**: `#0A0E13` base with three layered surfaces, so depth survives low light.
+- ⚡ **Team Colors**: rose `#FF2E63` vs cyan `#00E5FF`, the only two saturated accents; `#D4FF3F` marks actions.
+- 🧊 **Frosted Glass**: `backdrop-filter: blur(12px)` on the app bar, bottom sheets and toasts.
+- 🔢 **Numerals First**: condensed display type for headings, monospace for scores, timers and game counts.
 
 ---
 
@@ -146,7 +144,7 @@ Built on the **"Vanilla First"** principle, achieving powerful features with min
 - **Core**: HTML5, CSS3 (Modern Flex & Grid), ES6+ JavaScript
 - **Charts**: [Chart.js](https://www.chartjs.org/) - Powerful data visualization
 - **Rendering**: [html2canvas](https://html2canvas.hertzen.com/) - High-quality share card generation
-- **Storage**: LocalStorage & SessionStorage
+- **Storage**: LocalStorage — 10 keys, all on-device
 
 ---
 

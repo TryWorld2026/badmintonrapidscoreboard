@@ -4,7 +4,7 @@
    预缓存清单只包含仓库中真实存在的文件（旧版缓存了不存在的
    图标，导致 install 直接失败，整个 SW 注册无效）。
    ================================================================ */
-var CACHE_NAME = 'badminton-score-v5';
+var CACHE_NAME = 'badminton-score-v6';
 
 var ASSETS = [
   './',
@@ -83,9 +83,17 @@ self.addEventListener('fetch', function (e) {
   if (request.mode === 'navigate') {
     e.respondWith(
       fetch(request).then(function (res) {
-        var copy = res.clone();
-        caches.open(CACHE_NAME).then(function (c) { c.put('./index.html', copy); });
-        return res;
+        /* 只把真正的页面写进缓存，且只把真正的页面交给浏览器。
+           fetch() 对错误状态（502/503/504、强制门户跳转页）并不抛异常，
+           照样 resolve，所以必须自己判 res.ok。否则一次源站抖动就会把
+           错误页 c.put 进 ./index.html —— 之后离线回退取到的是错误页
+           而不是应用，且会一直错到缓存名变更为止。 */
+        if (res && res.ok) {
+          var copy = res.clone();
+          caches.open(CACHE_NAME).then(function (c) { c.put('./index.html', copy); });
+          return res;
+        }
+        throw new Error('navigation not ok: ' + (res ? res.status : 'no response'));
       }).catch(function () {
         return caches.match('./index.html').then(function (r) {
           return r || caches.match('./');

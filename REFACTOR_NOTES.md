@@ -291,7 +291,9 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 - Tab Bar 激活项 `rgb(212,255,63)`，非激活 `rgb(90,100,114)`；
 - 图标水合：51 枚注册，首屏注入 49 个 `svg`，**残留 `data-icon` 占位 0 个**；
 - 4 个 Tab 均无横向溢出（`scrollWidth == clientWidth`），无 < 32×28 的触摸目标；
-- html2canvas 实导出 `720×808`，非透明采样 582，深色渐变模板正确。
+- html2canvas 实导出：分享卡固定 `360` CSS px 宽、`scale:2` → 出图宽恒为 `720`，
+  高度随内容浮动（队名长度 / 高光条数 / 局数），实测一局两连队卡片 `720×688`；
+  非透明采样 582，深色渐变模板正确。
 
 ### 浏览器实测（`http://` 与 `file://` 双通道）
 
@@ -408,7 +410,8 @@ D6 能活到对抗审查才被发现， partly 就是因为这个。
 - 返回键：弹层打开时先关弹层，路由不跳、不退出；
 - 6 种视口（320×568 / 390×844 / 430×932 / 768×1024 / 1280×800 / 844×390）
   × 11 个二级页全部无横向溢出、无越界元素、无 Dock 遮挡、无异常文案；
-- 分享卡三模板均 360 宽、`scale:2` 出 `720×948`，超长队名 + 4 条高光无异常文案；
+- 分享卡三模板均 360 宽、`scale:2` 出图宽恒为 `720`，高度随内容浮动
+  （实测 `720×688` ~ `720×948`），超长队名 + 4 条高光无异常文案；
 - `file://` 通道下 hash / history 降级路径正常（`try/catch` 回退 `location.hash`），
   4 Tab 渲染正常、0 error。
 
@@ -532,3 +535,78 @@ A3 是最典型的一类 bug：**不是没写，而是写了一半**。`openShee
 
 改动后重跑全部既有套件，无回归：`verify3.js` 96/96、`adv1b.js` 22/22、`adv2.js` 35/35、
 `everybtn3.js`（440 次无差别点击）、`rendercheck2.js` 全绿，`file://` 通道同样通过。
+
+---
+
+## v2.0.1 — 缺陷修复清单
+
+上面两轮（深度分析 + 对抗式审查）实证出的缺陷，按「改一处、验一处」全部修完。
+业务规则、localStorage 键名、存档结构均未改动；唯一的新增文件是 `js/tokens.js`
+（见 D2），已同步进 `index.html` 加载顺序与 `sw.js` 预缓存清单。
+
+### 评分引擎（`js/match.js`）
+
+| # | 缺陷 | 修法 |
+|---|---|---|
+| A1 | 「三局两胜」开关被完整持久化、完整展示，`endGame` 却硬编码 `gamesWon >= 2`，关掉后单局模式永远打不完 | 新增 `gamesNeeded()`，`endGame` 与 `updateGamesWonDisplay` 都读 `settings.bestOfThree`；单局模式只画 1 个局分点 |
+| A4 | 比分为 0 差时把 `wasLeadingTeamA` 置 `false`，等于提前认定「乙领先」，之后甲拉开 5 分就误报「大逆转」 | 平手分支直接跳过，不修改领先认知 |
+| A5 | 大逆转时 `recordHighlight` 传乙、`showHighlight` 传甲，字幕把功劳安给从未落后的人 | 抽出 `fireComeback(teamName)`，文案与记录用同一个队名 |
+| A7 | 「零封胜利」读当前局比分，第二局开局 0-0 必然误报 | 新增 `hasShutoutGame()` 扫 `gameScoresHistory`；`getHighlightsSummary` 与 `checkPerfectWin` 共用 |
+| A10 | 换边提醒用 `total === N` 精确相等，跳分即整局漏报 | 改 `total >= switchPoint` + `sideChangeAlerted` 每局标记；顺带合并三个恒等的 target 分支 |
+| — | `checkHadDeuce()` 读当前局比分，而 `saveMatchResult()` 跑在局末之后，比分已清零 →「加分赛专家」成就**永远无法解锁** | 改扫 `highlightMoments` 里的 deuce 记录，与 `getHighlightsSummary` 同源 |
+| D3 | 保存成功后自动重置时照样弹「此操作不可撤销！」红色确认框 | `resetMatch({silent:true})`；手动重置的确认框保持不变 |
+
+### 费用分摊（`js/expense.js`）
+
+| # | 缺陷 | 修法 |
+|---|---|---|
+| A2 | time 模式把时长塞进 `ratios`，详情页只有 custom / 平均两个分支 → 按时长的记录点开金额必错，还把分钟标成「份」 | `calculate()` 另存 `durations`；`showDetail()` 增加 time 分支，单位随模式变「份 / 分钟」 |
+| A3 | 份数为负时 `totalRatio` 可能为 0，界面渲染出 `±Infinity`；时长全 0 时 `hourlyRate` 为 `Infinity` | 非正份数按 1 份读入，`totalRatio` 恒 > 0；时长总量 ≤ 0 时提示并中止，不再入账 |
+| A8 | 每次点「计算」都入账一条，同组参数点 5 次存 5 条 | 与最近一条完全相同则跳过写入；改任意参数即重新记录 |
+
+### 弹层与存档（`js/nav.js` / `js/state.js` / `js/settings.js`）
+
+| # | 缺陷 | 修法 |
+|---|---|---|
+| A6 | 同层互斥只清 `.sheet-backdrop`，而 `--z-modal(210) > --z-sheet(200)`，确认框一直浮在后来打开的分享卡上，Esc 还关错层 | 抽出 `closeOtherOverlays(keep)`，sheet 与 dialog 打开前都清场，弹层栈恢复「同时只留一层」语义 |
+| A11 | `normalizeMatch` 只挡 `NaN/Infinity`，不挡负数与天文数字，`gamesWonA:-5`、`currentGame:1e9` 原样存活并渲染 | 新增 `clamp()`，局分/得分 ≥ 0、胜局 0~2、当前局 1~3、时长 ≥ 0；`normMatchItem` 同样处理 |
+| — | `reloadState()`（恢复备份 / 清空数据）换入新 match 却不清内存态高光，上一场的「加分赛 / 大逆转」会被写进下一场存档 | 导出 `App.match.resetHighlights()` 并在 `reloadState()` 调用 |
+
+### 视觉与文案
+
+| # | 缺陷 | 修法 |
+|---|---|---|
+| D2 | `charts.js` 手抄的是**旧版浅色**配色（`#1B4DFF` / 白边），在 `#111721` 深色卡片上直接花掉；根因是 JS 侧没有读令牌的通道 | 新增 `js/tokens.js`（`get` / `alpha` / `palette`），`charts.js` 与 `effects.js` 全部改为运行时读 CSS 自定义属性 |
+| — | `drawBorder:false` 是 Chart.js **v2** 写法，v4.4.1 已移除，属静默失效的死配置 | 改 `grid.border.display` |
+| D1 | `achievements.js` 把图标**名字**当纯文本写入 `#ab-icon`，成就弹窗显示 `shuttle` / `medal` | 改 `ic.innerHTML = App.icons.icon(a.icon)`，与其余 7 处一致 |
+| D4a | 头像管理页空态用 emoji `🙂`，与「0 UI emoji」约定冲突 | 改 `ic-box` + `data-icon="users"`，由 MutationObserver 水合成 SVG |
+| D4b | `victoryBanner(text, teamName)` 第二参数实为副标题，命名误导 | 改名 `subtitle` |
+| A9 | 「加分赛」开关的 in-match 标签写「加分赛开 / 加分赛关」，让人以为关掉就是先到目标分即胜；实际差异只是 30 分封顶 | 标签改为「30 分封顶 / 无封顶」，如实描述。**未改判定规则**（关掉后仍要求领先 2 分，否则 21-20 即结束不符合羽毛球规则） |
+| — | `match.js` 两处手抄 `rgba(255,46,99,.30)` / `rgba(0,229,255,.30)` 脉冲色 | 改走 `App.tokens.alpha()` |
+| — | `showDetail()` 直接 `new Date(item.date).toLocaleString()`，脏数据会显示 `Invalid Date` | 改用已有的 `fmtDate()` 守卫 |
+
+### 文档
+
+- 导出尺寸原先 `:294` 写 `720×808`、`:411` 写 `720×948`，自相矛盾且都不对：
+  分享卡固定 360 CSS px 宽、`scale:2` → 出图宽恒为 720，**高度随内容浮动**
+  （实测 `720×688` ~ `720×948`）。两处都已改成如实描述。
+
+### 验证方式
+
+每条修复都在 `file://` 通道实测通过，不是只看代码：
+
+- A1：单局模式赢 1 局即结束、只画 1 个点、计时器停止；三局两胜恢复 3 个点；
+- A4/A5：`1-1 → 10-1` 不再误报；`1-1 → 7-1 → 7-14` 正确报「乙 大逆转」；
+- A7/零封：0-0 不报，`21-0` 报，`21-18,20-22,21-19` 不报；
+- A2：120/60/60 分钟详情页出 `¥60.00 / ¥30.00 / ¥30.00`，标签「120分钟」；
+- A3：`-5 / 5` 不再出 Infinity，`2 / 1` 仍正确出 200/100，时长全 0 拒绝入账；
+- A6：确认框上开分享卡，dialog 关闭、sheet 获得焦点、Esc 只关一层；
+- A8：同参数点 4 次只存 1 条，改总额后存第 2 条；
+- A10：`0→10→15` 跳分后报警 1 次且只 1 次，新局重新武装；
+- A11：`gamesWonA:-5 / gamesWonB:1e9 / currentGame:1e9 / seconds:-500` 全部钳到合法区间；
+- D1/D2/D4：成就徽章出真 SVG；图表线色实测 `#D4FF3F`、网格 `rgba(90,100,114,.35)`；
+  头像空态水合出 SVG 且无 emoji；
+- 回归：完整三局（21-18 / 20-22 加分赛 / 21-19）存档正确、 highlights 为
+  「加分赛,大逆转」、无假零封、保存后无确认框且状态归零；
+- 全量回归：4 Tab × 16 个二级页 0 console error、0 横向溢出、
+  html2canvas 实导出 720×688 PNG 247KB、左上角采样 `rgb(16,22,31)` 与 `#10161F` 一致。

@@ -282,17 +282,16 @@ window.App = window.App || {};
        ================================================================ */
     function init() {
         nav.on('settings:mode', setMode);
-        nav.on('settings:save', saveFromUI);
+        /* settings:save 没有触发点：保存走的是 settings:custom（自定义分数输入框） */
         nav.on('settings:custom', function () { saveFromUI(); });
         nav.on('backup:export', exportBackup);
         nav.on('backup:import', importBackup);
-        nav.on('backup:file', handleBackupFile);
+        /* backup:file 没有触发点：文件选择走下面直连的 change 监听 */
         nav.on('backup:clear', clearAllData);
         nav.on('quick:action', function (el) {
             hideQuickActions();
             if (App.match) App.match.quickAction(el.getAttribute('data-action'));
         });
-        nav.on('me:back', function () { nav.go('me'); });
 
         /* 顶栏标题只绑一次。这里原来调了两次 bindQuickTrigger()，
            标题上会挂两份 click / keydown 监听：双击时 showQuickActions()

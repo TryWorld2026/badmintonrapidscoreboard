@@ -167,10 +167,6 @@ window.App = window.App || {};
         }
         if (a) a.innerHTML = ha;
         if (b) b.innerHTML = hb;
-        var ca = $('games-count-a');
-        var cb = $('games-count-b');
-        if (ca) ca.textContent = m.gamesWonA;
-        if (cb) cb.textContent = m.gamesWonB;
     }
 
     /* ================================================================
@@ -182,7 +178,7 @@ window.App = window.App || {};
         var raw = store.readJSON(store.KEYS.MATCH_STATE, null);
         if (!raw || typeof raw !== 'object') return false;
         App.state.match = App.state.normalizeMatch(raw);
-        /* B2/B3 修复：局分写 games-count-a/b，队名写 input.value */
+        /* 局分渲染进 games-won-a/b 的圆点，队名进 input.value */
         render();
         /* 旧版在刷新后不会恢复计时器运行态，这里补上，让「刷新后续赛」真正可用 */
         if (App.state.match.timerRunning) startTimerInterval();
@@ -705,9 +701,6 @@ window.App = window.App || {};
         nav.on('match:mode', function (el) { setGameMode(el.getAttribute('data-mode')); });
         nav.on('match:team-name', function (el) {
             setTeamName(el.getAttribute('data-team'), el.value);
-        });
-        nav.on('match:quick-action', function (el) {
-            quickAction(el.getAttribute('data-action'));
         });
     }
 

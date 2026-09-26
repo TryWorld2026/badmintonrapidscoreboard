@@ -334,9 +334,6 @@ window.App = window.App || {};
         nav.on('ui:onboard-next', onboardNext);
         nav.on('ui:onboard-prev', onboardPrev);
         nav.on('ui:onboard-skip', hideOnboarding);
-        nav.on('ui:copy', function (el) {
-            copyText(el.getAttribute('data-text') || '', el.getAttribute('data-ok') || '已复制');
-        });
     }
 
     App.ui = {

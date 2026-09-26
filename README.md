@@ -16,7 +16,7 @@
 <h3>🚀 The Ultimate Scoring & Management System for Badminton Lovers</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-2.5-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
+  <img src="https://img.shields.io/badge/Version-2.0.1-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-27F05C?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License">
   <img src="https://img.shields.io/badge/Adaptive-All_Platforms-00D9FF?style=for-the-badge&logo=skype&logoColor=white" alt="Platform">
 </p>
@@ -147,6 +147,23 @@ Built on the **"Vanilla First"** principle, achieving powerful features with min
 - **Charts**: [Chart.js](https://www.chartjs.org/) - Powerful data visualization
 - **Rendering**: [html2canvas](https://html2canvas.hertzen.com/) - High-quality share card generation
 - **Storage**: LocalStorage & SessionStorage
+
+---
+
+## 🧪 Regression Tests
+
+The project ships a zero-dependency regression suite: it opens an iframe loading the **real** `index.html`, so assertions run against the shipped artifact itself (the same `App` namespace, the same DOM) rather than a DOM stand-in — a stand-in only proves the stand-in works.
+
+```bash
+# Must be served over http (under file:// the iframe cannot reach App cross-origin,
+# and the Service Worker never registers)
+python -m http.server 8899
+
+# Then open in a browser
+# http://127.0.0.1:8899/test.html
+```
+
+The cases cover scoring rules, saved-state normalization, expense splitting, overlays, visual tokens and the PWA — each traced back to a defect in `REFACTOR_NOTES.md`, specifically guarding against the class of bug that regresses silently: a switch that exists but never participates in the decision.
 
 ---
 

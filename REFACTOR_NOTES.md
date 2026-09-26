@@ -1,6 +1,6 @@
-# 重构说明 — 羽毛球极速记分板 v2.0.0
+# 重构说明 — 羽毛球极速记分板 v2.0.1
 
-分支：`refactor/ia-v4`（未合并、未推送）
+分支：`main`（已并入，未推送）
 
 本次重构在**完整保留全部功能与数据结构**的前提下，重做了信息架构、视觉系统和工程组织。
 计分规则、分组算法、费用计算、成就判定等业务逻辑逐条对齐旧版，localStorage 的 10 个键名与
@@ -554,7 +554,7 @@ A3 是最典型的一类 bug：**不是没写，而是写了一半**。`openShee
 | A7 | 「零封胜利」读当前局比分，第二局开局 0-0 必然误报 | 新增 `hasShutoutGame()` 扫 `gameScoresHistory`；`getHighlightsSummary` 与 `checkPerfectWin` 共用 |
 | A10 | 换边提醒用 `total === N` 精确相等，跳分即整局漏报 | 改 `total >= switchPoint` + `sideChangeAlerted` 每局标记；顺带合并三个恒等的 target 分支 |
 | — | `checkHadDeuce()` 读当前局比分，而 `saveMatchResult()` 跑在局末之后，比分已清零 →「加分赛专家」成就**永远无法解锁** | 改扫 `highlightMoments` 里的 deuce 记录，与 `getHighlightsSummary` 同源 |
-| D3 | 保存成功后自动重置时照样弹「此操作不可撤销！」红色确认框 | `resetMatch({silent:true})`；手动重置的确认框保持不变 |
+| D3 | 保存成功后自动重置时照样弹「此操作不可撤销！」红色确认框 | `resetMatch({silent:true})`；手动重置改为**只在有进度时**弹确认（`hasProgress && !silent`）——0-0、00:00 时本就无内容可丢，直接重置并 toast |
 
 ### 费用分摊（`js/expense.js`）
 
@@ -635,4 +635,15 @@ SW 更新链路与离线行为走 `http://127.0.0.1:8899` 通道实测（`file:/
 - SW1/SW2：源站在线但恒返回 503 时刷新，应用仍从缓存完整加载、
   页面不出现错误页、`./index.html` 缓存项保持 200 真应用、全缓存 0 个错误条目；
   连续两次 503 刷新结果一致。修复前同一场景会缓存并吐出 503 错误页。
+- v6→v7 缓存 bump：`sw.js` 自 v6 建立后未再改动，而其间 3 个提交改了预缓存内的
+  `js/match.js`。`sw.js` 字节不变 → 浏览器不重装 → `install` 的 `cache.addAll` 不再跑，
+  而静态分支 `return cached || network` 是**缓存优先 + 后台 `c.put`**，
+  于是已装 v6 的浏览器**第一次打开拿旧 `match.js`、第二次才生效**。
+  bump 到 v7 后走真实升级路径实测（**不清缓存**，全靠 `activate` 自己回收）：
+  `badminton-score-v6` 被删除、`badminton-score-v7` 建成 **32/32**（`missingFromCache: []`）、
+  缓存内 `js/match.js` 是新代码、`./index.html` 是真应用且非错误页、
+  新 SW `active` 并已 `controller` 接管；随后 20/20 回归全绿。
+  ⚠️ 首轮曾误报「v6 未删 / 仅 29 项 / index 不是应用」，三条都是测量错误而非缺陷——
+  量在 `install` 中途，以及拿 `app-frame` 当 index.html 的标记（那是 `test.html` 的 id）。
+  后续若复现，先确认时机与标记，别急着改 SW。
 

@@ -4,7 +4,7 @@
    预缓存清单只包含仓库中真实存在的文件（旧版缓存了不存在的
    图标，导致 install 直接失败，整个 SW 注册无效）。
    ================================================================ */
-var CACHE_NAME = 'badminton-score-v6';
+var CACHE_NAME = 'badminton-score-v7';
 
 var ASSETS = [
   './',

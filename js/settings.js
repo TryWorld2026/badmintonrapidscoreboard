@@ -9,7 +9,7 @@ window.App = window.App || {};
     var ui = App.ui;
     var store = App.store;
 
-    var VERSION = '2.0.0';
+    var VERSION = '2.0.1';
 
     function $(id) { return document.getElementById(id); }
 

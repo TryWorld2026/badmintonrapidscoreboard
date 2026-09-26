@@ -30,3 +30,6 @@ build/
 
 # Trae IDE
 .trae/
+
+# 工具自身目录
+.mimocode/

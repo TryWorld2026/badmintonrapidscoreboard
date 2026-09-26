@@ -16,7 +16,7 @@
 <h3>🚀 为羽毛球爱好者打造的殿堂级计分与管理系统</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/版本-2.5-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
+  <img src="https://img.shields.io/badge/版本-2.0.1-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
   <img src="https://img.shields.io/badge/许可证-MIT-27F05C?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License">
   <img src="https://img.shields.io/badge/适配-全平台-00D9FF?style=for-the-badge&logo=skype&logoColor=white" alt="Platform">
 </p>
@@ -147,6 +147,22 @@ python -m http.server 8000
 - **图表**：[Chart.js](https://www.chartjs.org/) - 强大的数据可视化
 - **渲染**：[html2canvas](https://html2canvas.hertzen.com/) - 生成精美的分享卡片
 - **存储**：LocalStorage & SessionStorage
+
+---
+
+## 🧪 回归测试
+
+项目自带一套零依赖的回归测试：开一个 iframe 加载**真实的** `index.html`，断言全部打在发布物本身（同一个 `App` 命名空间、同一份 DOM），而不是 DOM 替身——替身只能证明替身是对的。
+
+```bash
+# 测试必须走 http 通道（file:// 下 iframe 跨域取不到 App，Service Worker 也不注册）
+python -m http.server 8899
+
+# 浏览器打开
+# http://127.0.0.1:8899/test.html
+```
+
+用例覆盖计分规则、存档规整、费用分摊、弹层、视觉令牌与 PWA，每条都对应 `REFACTOR_NOTES.md` 里的一处缺陷，专门防「开关存在但不参与判定」这类最容易悄悄退化的问题。
 
 ---
 

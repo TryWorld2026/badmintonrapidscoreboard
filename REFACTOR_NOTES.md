@@ -585,6 +585,17 @@ A3 是最典型的一类 bug：**不是没写，而是写了一半**。`openShee
 | — | `match.js` 两处手抄 `rgba(255,46,99,.30)` / `rgba(0,229,255,.30)` 脉冲色 | 改走 `App.tokens.alpha()` |
 | — | `showDetail()` 直接 `new Date(item.date).toLocaleString()`，脏数据会显示 `Invalid Date` | 改用已有的 `fmtDate()` 守卫 |
 
+### PWA / Service Worker
+
+| # | 缺陷 | 修法 |
+|---|---|---|
+| SW1 | 导航分支只判「`fetch()` 有没有抛异常」，不判 `res.ok`。而 `fetch()` 对 502/503/504、强制门户跳转页**照样 resolve 不 reject**，于是错误页被原样交给浏览器 | 只把 `res.ok` 的响应视为成功，其余 `throw` 掉走回退分支 |
+| SW2 | 上一条的直接后果：错误响应被 `c.put('./index.html')` **写进缓存**。此后离线回退 `caches.match('./index.html')` 取到的是错误页而不是应用，且一直错到缓存名变更 | 只缓存 `res.ok` 的页面；缓存名 bump 到 `badminton-score-v6`，作废旧逻辑建出的缓存 |
+
+SW1/SW2 不是推演，是在验证 SW 更新链路时**当场复现**的：起一个恒返回 503 的源站，
+刷新页面，`caches.match('./index.html')` 返回的就是那份 503 错误页（`status:503`、
+正文为 `upstream unavailable`）。修好后同一场景应用从缓存完整加载、缓存零污染。
+
 ### 文档
 
 - 导出尺寸原先 `:294` 写 `720×808`、`:411` 写 `720×948`，自相矛盾且都不对：
@@ -610,3 +621,18 @@ A3 是最典型的一类 bug：**不是没写，而是写了一半**。`openShee
   「加分赛,大逆转」、无假零封、保存后无确认框且状态归零；
 - 全量回归：4 Tab × 16 个二级页 0 console error、0 横向溢出、
   html2canvas 实导出 720×688 PNG 247KB、左上角采样 `rgb(16,22,31)` 与 `#10161F` 一致。
+
+SW 更新链路与离线行为走 `http://127.0.0.1:8899` 通道实测（`file://` 下 SW 根本不注册，
+必须起 HTTP 服务才能验）：
+
+- 注册与预缓存：SW `activated`、scope 正确；声明的 32 个资源全部 200、无一缺失；
+  缓存 `badminton-score-v5` 建成 32 项，`js/tokens.js` 确认在其中。
+- 更新链路：把缓存名临时改成 `badminton-score-v6-swtest` 后 `registration.update()`，
+  新缓存 32 项建成、旧缓存被删除、新 SW 激活并取得控制权；改回 v5 后同样往返正常。
+  **这条证明了 bump 到 v5 是必要且正确的**——老用户会拿到含 `tokens.js` 的新缓存，
+  配花色掉的旧 `charts.js` 会被清掉。
+- 真实断网：停掉 HTTP 服务后刷新，应用从缓存完整加载（49 个 SVG 水合、Chart.js 就位）。
+- SW1/SW2：源站在线但恒返回 503 时刷新，应用仍从缓存完整加载、
+  页面不出现错误页、`./index.html` 缓存项保持 200 真应用、全缓存 0 个错误条目；
+  连续两次 503 刷新结果一致。修复前同一场景会缓存并吐出 503 错误页。
+

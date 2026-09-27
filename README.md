@@ -123,7 +123,12 @@ One purpose-built dark studio theme, tuned for a dim gym — there is no theme p
 ### Option A: Instant Use (Recommended) ⭐
 Click the [Live Demo](https://tryworld2026.github.io/badmintonrapidscoreboard/) link to start your first match directly in your browser.
 
-Mirrored on Cloudflare Pages: https://badminton-score.pages.dev/ (same build, HTTPS + edge cache)
+Also mirrored on Cloudflare Pages (same build, HTTPS + edge cache):
+
+| Address | Notes |
+|---|---|
+| https://badminton.tryworld.com.cn/ | Custom domain on the `tryworld.com.cn` zone, proxied |
+| https://badminton-score.pages.dev/ | Default `*.pages.dev` domain |
 
 ### Option B: Local Deployment
 ```bash

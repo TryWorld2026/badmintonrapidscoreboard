@@ -258,7 +258,7 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 - `manifest.json`：UTF-8、`theme_color: #0A0E13`、`background_color: #0A0E13`、
   `display: standalone`、`orientation: portrait`、3 个 shortcuts 深链、
   `192` + `512 maskable` 图标；
-- `sw.js`：`CACHE_NAME = badminton-score-v4`，预缓存 31 个真实文件（含新增的 `js/icons.js`），
+- `sw.js`：`CACHE_NAME = badminton-score-v7`，预缓存 32 个真实文件（含新增的 `js/icons.js`），
   页面导航走网络优先 + 回退缓存 `index.html`，静态资源走缓存优先 + 后台更新，
   只处理同源 GET；
 - 图标：`images/icon-192.png` / `icon-512.png` / `apple-touch-icon.png` / `favicon.svg`
@@ -270,14 +270,25 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 | 平台 | 地址 |
 | --- | --- |
 | GitHub Pages | https://tryworld2026.github.io/badmintonrapidscoreboard/ |
-| Cloudflare Pages | https://badminton-score.pages.dev/ |
+| Cloudflare Pages（默认域名） | https://badminton-score.pages.dev/ |
+| Cloudflare Pages（自定义域名） | https://badminton.tryworld.com.cn/ |
+
+自定义域名 `badminton.tryworld.com.cn` 是一条 CNAME 指向 `badminton-score.pages.dev`，
+挂在账号下既有的 `tryworld.com.cn` zone（id `5afb4d45…`）上，**必须开橙云代理**——
+灰云（仅 DNS）Pages 不认，证书也签不下来。绑定后走完
+`initializing → pending → active`，证书由 Google CA 签发，`verification` 与
+`validation` 双双 `active`。两个坑：`wrangler pages domain` 在 4.x 已被移除，
+只能走 API `POST /accounts/{account_id}/pages/projects/{project}/domains`；
+而 wrangler 的 OAuth token 只有 `zone (read)`，**建不了 DNS 记录**，
+这一步得在 Cloudflare 面板手工加。
 
 Cloudflare 走 `wrangler pages deploy` 直传（项目 `badminton-score`，production branch `main`），
 暂存目录**只含 33 个生产文件**——`test/`、`test.html`、`README*`、`LICENSE`、
 `REFACTOR_NOTES.md` 一律不发，测试台与内部工程文档不该进公网产物。
 `.wrangler/`（wrangler 的本地缓存）已加进 `.gitignore`。
+跑 `deploy-cloudflare.ps1` 即可复现整个流程。
 
-附带一份 `_headers`，只给三个入口文件松绑：
+附带一份 `_headers`，给入口文件和 js/css/vendor 松绑：
 
 ```
 /sw.js
@@ -286,20 +297,76 @@ Cloudflare 走 `wrangler pages deploy` 直传（项目 `badminton-score`，produ
   Cache-Control: no-cache
 /manifest.json
   Cache-Control: no-cache
+/js/*
+  Cache-Control: no-cache
+/css/*
+  Cache-Control: no-cache
+/vendor/*
+  Cache-Control: no-cache
 ```
 
-理由是 PWA 的更新链路全靠这三个文件能及时到户：`sw.js` 字节不变浏览器就不重装，
+理由是 PWA 的更新链路全靠这些文件能及时到户：`sw.js` 字节不变浏览器就不重装，
 `install` 的 `cache.add` 不再跑，而静态分支是缓存优先 + 后台 `c.put`——
-已装旧版的用户会**第一次打开拿旧代码、第二次才生效**。`js/` `css/` 不带
-content-hash，同样必须可重验证，用 Pages 默认的 `max-age=0, must-revalidate` 正合适。
+已装旧版的用户会**第一次打开拿旧代码、第二次才生效**。
 
-线上实测（`https://badminton-score.pages.dev/`）：SW `activated` 且已 `controller` 接管、
-缓存 `badminton-score-v7` 建成 **33/33**、缓存内 `./index.html` 是真应用、
-26 个在用资源**全部命中缓存 0 缺失**、26 个网络请求 0 失败、49 个 SVG 水合、
-无横向溢出、`sw.js` 与 `manifest.json` 响应头确认为 `no-cache`；
-开始→计时→双方加分→撤销→暂停链路正常，`localStorage.matchState` 落盘。
+**实测纠正一处此前的误判**：Pages 对静态资源的默认值是
+`public, max-age=14400, must-revalidate`（**4 小时**），不是 `max-age=0`。
+`js/` `css/` 不带 content-hash，未接管（首次访问、SW 尚未激活）的客户端在重新部署后
+最长 4 小时仍拿旧代码，与新的 `index.html` 混用会直接错版，所以必须显式松绑。
+SW 激活后静态分支走缓存优先，这些重验证请求不再发生，没有额外成本。
+
+线上实测（自定义域名与 `*.pages.dev` 均已覆盖）：SW `activated` 且已 `controller` 接管、
+缓存 `badminton-score-v7` 预缓存 **32/32**（运行时又被 fetch handler 收进 `/sw.js` 与
+zone 自动注入的 `/cdn-cgi/speculation`，合计 34）、缓存内 `./index.html` 是真应用、
+**从 `index.html` 与 `sw.js` 源码抽出的 59 个真实引用资源逐个 `cache:'reload'` 核对，
+Content-Type 与字节数全部正确**、49 个 SVG 水合、无横向溢出；
+开计时→甲队 2 分→乙队 1 分→`localStorage.matchState` 落盘→撤销正确抹掉最后一分，
+`timerRunning` 为假时加分与撤销走同一道闸门、同一句 toast。
 **根路径 `/` 的 `_headers` 规则不生效**（Pages 匹配的是请求路径而非解析后的文件），
 但默认的 `max-age=0, must-revalidate` 已保证每次重验证，无实际影响。
+
+#### 部署脚本踩坑：无 BOM 的 `.ps1` 被按 GBK 解析
+
+`deploy-cloudflare.ps1` 一度产出过**只有 4 个文件**的坏部署
+（`index.html` / `manifest.json` / `sw.js` / `_headers`），
+所有 `/js/*` 与 `/css/*` 都被 Pages 的 SPA 兜底改写成了 `index.html`——
+**状态码全是 200，只是 `Content-Type: text/html`**，页面白屏但看不出哪里错。
+
+根因：文件以 UTF-8 **无 BOM** 落盘，而 PowerShell 5.1 按系统 ANSI 代码页（GBK）读 `.ps1`，
+中文字符串被啃成乱码，`foreach ($d in $dirs)` 整个暂存循环被跳过，
+而纯 ASCII 的 `foreach ($f in $files)` 照常执行——于是只复制到根目录那 4 个文件。
+修复：用 `UTF8Encoding($true)` 重新编码补上 BOM。
+
+**这个坏部署当时没被发现**，因为浏览器验证是在 SW 激活后做的——
+静态分支缓存优先，页面全从 `badminton-score-v7` 缓存里出，网络层早已坏死也看不出来。
+两条教训都已落到脚本里：上传前硬校验文件数（`< 30` 直接 `throw`），
+绝不让缺 js/css 的产物发出去；上传后自检 `Content-Type`，
+只查状态码不够——SPA 兜底会把不存在的路径也返回 200 + HTML。
+
+#### 自定义域名被 zone 级 Cache Rule 覆盖
+
+`_headers` 在 `*.pages.dev` 上完全生效（js/css/vendor/sw.js 全部 `no-cache`），
+但**在自定义域名上不生效**：`/js/*`、`/css/*`、`/vendor/*`、`/sw.js`
+实测仍是 `max-age=14400`（4 小时，且**没有** `must-revalidate`），
+而 `.json`、`.txt` 和无扩展名路径的 origin 头被原样保留。
+
+根因不在 Pages，在 `tryworld.com.cn` 这个 **zone 上有一条 Cache Rule**，
+按静态扩展名把 Browser TTL 覆盖成 4 小时，优先级高于 Pages 的 `_headers`。
+对照实验：同 zone 下另一个 Pages 项目 `lingyu.tryworld.com.cn` 的
+`.js` / `.css` / `.ico` 同样被改成 `max-age=14400`，所以这是 zone 级规则、
+影响该 zone 下所有 Pages 项目，不是本项目的问题。
+
+**影响**：自定义域名上 SW 的更新链路被拖慢最多 4 小时——
+`/sw.js` 被浏览器按 4 小时 TTL 缓存，重新部署后 `registration.update()`
+拿不到新字节，已装旧版的用户会连着旧 `js/` 一起继续跑，直到 TTL 过期。
+`*.pages.dev` 没有这个问题。SW 激活后静态分支走缓存优先，
+首次访问（缓存为空）也不受影响，受影响的只是「4 小时内回访 + SW 未接管」这一段。
+
+**待办**：需要在 Cloudflare 面板的 `tryworld.com.cn` → 规则 → Cache Rules 里，
+给 `badminton.tryworld.com.cn`（或直接给 `.js` / `.css` / `/sw.js`）加一条
+例外，把 Browser TTL 设为「遵循 Origin」。wrangler 的 OAuth token 只有 Pages
+API 权限，zone settings / rulesets / DNS 全部 403，这一步只能手工做。
+在改掉之前，**自定义域名上的 PWA 更新链路有最长 4 小时延迟**，文档据此如实描述。
 
 ---
 

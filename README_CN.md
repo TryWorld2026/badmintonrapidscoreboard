@@ -123,7 +123,12 @@
 ### 方案 A：即开即用（推荐）⭐
 点击 [在线演示](https://tryworld2026.github.io/badmintonrapidscoreboard/) 链接，直接在浏览器中开始你的第一场比赛。
 
-Cloudflare Pages 镜像：https://badminton-score.pages.dev/ （同一份代码，HTTPS + 边缘缓存）
+Cloudflare Pages 镜像（同一份代码，HTTPS + 边缘缓存）：
+
+| 地址 | 说明 |
+|---|---|
+| https://badminton.tryworld.com.cn/ | 自定义域名，挂在 `tryworld.com.cn` zone 下，已代理 |
+| https://badminton-score.pages.dev/ | 默认 `*.pages.dev` 域名 |
 
 ### 方案 B：本地部署
 ```bash

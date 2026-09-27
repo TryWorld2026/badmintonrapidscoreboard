@@ -1,6 +1,26 @@
+# PWA 更新链路的缓存策略。
+#
+# 三个入口文件必须松绑：sw.js 字节不变浏览器就不重装，install 的 cache.add
+# 不再跑；而静态分支是缓存优先 + 后台 c.put，已装旧版的用户会第一次打开拿
+# 旧代码、第二次才生效。
+#
+# js/css/vendor 同样要松绑。实测 Pages 对静态资源的默认值是
+# `public, max-age=14400, must-revalidate`（4 小时），不是 max-age=0——
+# 未接管（首次访问、SW 还没激活）的客户端在重新部署后最长 4 小时拿旧代码，
+# 而 js/css 不带 content-hash，新旧混用会直接错版。
+# SW 激活后静态分支走缓存优先，这些重验证请求不再发生，所以没有额外成本。
+#
+# 注意 /index.html 会被 Pages 308 重定向到 /，那条规则实际空转；
+# 但 / 默认就是 max-age=0, must-revalidate，已保证每次重验证，留着无害。
 /sw.js
   Cache-Control: no-cache
 /index.html
   Cache-Control: no-cache
 /manifest.json
+  Cache-Control: no-cache
+/js/*
+  Cache-Control: no-cache
+/css/*
+  Cache-Control: no-cache
+/vendor/*
   Cache-Control: no-cache

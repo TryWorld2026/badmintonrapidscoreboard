@@ -178,8 +178,8 @@ window.App = window.App || {};
             ha += '<div class="game-dot' + (i < m.gamesWonA ? ' won' : '') + '"></div>';
             hb += '<div class="game-dot' + (i < m.gamesWonB ? ' won' : '') + '"></div>';
         }
-        if (a) a.innerHTML = ha;
-        if (b) b.innerHTML = hb;
+        if (a) { a.innerHTML = ha; a.setAttribute('aria-label', '甲队局分 ' + m.gamesWonA + ' 胜'); }
+        if (b) { b.innerHTML = hb; b.setAttribute('aria-label', '乙队局分 ' + m.gamesWonB + ' 胜'); }
     }
 
     /* ================================================================
@@ -716,10 +716,13 @@ window.App = window.App || {};
             setTeamName(el.getAttribute('data-team'), el.value);
         });
         /* 干净 boot（没有进行中的比赛）时 loadMatchState() 会提前 return，
-           render() 一次都不跑：match-info 沦为空盒子，赛制高亮停在写死的
-           21 分上。这里补一次，把「无比赛」也当正常态渲染出来。
+           render() 一次都不跑。这里必须补整个 render()，不能只补 renderMatchInfo()：
+           只补那一处的话，局分圆点仍是空的、#current-game 停留在 index.html
+           写死的英文 "GAME 1"（render 输出中文「第 1 局」）、计时器按钮文字
+           停在「开始」——用户一触发任何渲染就会看到界面跳变。
+           render() 幂等，有存档时 loadMatchState() 会再跑一次，无害。
            state.js:136 在模块加载时就备好了 settings，早于本函数。 */
-        renderMatchInfo();
+        render();
     }
 
     /* 双击顶栏弹出的快捷操作（旧版 quickAction，switchScreen 已由 nav.go 取代）*/

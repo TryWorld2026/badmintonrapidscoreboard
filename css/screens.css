@@ -401,8 +401,12 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-.score-btn.team-a { --fill: var(--c-team-a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-a); }
-.score-btn.team-b { --fill: var(--c-team-b); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-b); }
+/* 文字色必须用深色墨水：--c-team-a #FF2E63 配白字只有 3.26:1、
+   --c-team-b #00E5FF 配白字仅 1.39:1（户外强光下等于看不见），
+   换 #0A0E13 后分别是 5.37:1 与 12.58:1，均过 WCAG AA。
+   基类 .score-btn 的 color: var(--c-on-fill) 在此被覆盖。 */
+.score-btn.team-a { --fill: var(--c-team-a); color: var(--c-brand-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-a); }
+.score-btn.team-b { --fill: var(--c-team-b); color: var(--c-brand-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-b); }
 .score-btn:active { transform: scale(0.98); }
 
 .app.dock-on .content {

@@ -24,3 +24,5 @@
   Cache-Control: no-cache
 /vendor/*
   Cache-Control: no-cache
+/robots.txt
+  Cache-Control: public, max-age=3600

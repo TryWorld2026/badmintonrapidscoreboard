@@ -3,8 +3,15 @@
    用相对 URL，任意子路径部署都能命中。
    预缓存清单只包含仓库中真实存在的文件（旧版缓存了不存在的
    图标，导致 install 直接失败，整个 SW 注册无效）。
+
+   【改 js / css 后必须同步 bump CACHE_NAME】
+   fetch handler 的静态分支是 cached || network（缓存优先），只有 install
+   才会重新拉清单里的字节；而 /sw.js 带 no-cache，字节不变浏览器就认为
+   SW 没更新、install 不再跑。于是已激活 SW 的用户会一直用旧缓存里的
+   js/css——实测改过 screens.css 后线上 Lighthouse 仍报旧色值，就是这个
+   原因。每次动 js/css/vendor 就把版本号 +1。
    ================================================================ */
-var CACHE_NAME = 'badminton-score-v7';
+var CACHE_NAME = 'badminton-score-v8';
 
 var ASSETS = [
   './',

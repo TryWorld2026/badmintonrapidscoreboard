@@ -227,6 +227,22 @@
         /* ---------- 1. 计分规则（A1 / A4 / A5 / A7 / A10 / 加分赛死成就） ---------- */
         await fresh();
 
+        /* 干净 boot（无存档）也必须完整渲染。match.js init() 里曾经只补了
+           renderMatchInfo()，于是局分圆点是空的、#current-game 停在 index.html
+           写死的英文 "GAME 1"——用户一加分就跳变成「第 1 局」，且屏幕阅读器
+           读不到带数字的局分。这条用例锁住整个 render() 真的被调用。 */
+        await test('干净 boot', '无存档时也完整渲染：局分圆点 / current-game / aria-label', async function () {
+            eq(dots('a'), 3, '甲局分点数量');
+            eq(dots('b'), 3, '乙局分点数量');
+            eq(doc.querySelectorAll('#games-won-a .game-dot.won').length, 0, '开局不应有已赢的局');
+            var cg = doc.getElementById('current-game').textContent.trim();
+            eq(cg, '第 1 局', 'current-game 应渲染成中文，而非 index.html 写死的 GAME 1');
+            var ga = doc.getElementById('games-won-a');
+            eq(ga.getAttribute('role'), 'img', 'aria-label 挂在无 role 的 div 上被 ARIA 禁止');
+            assert(/^甲队局分 \d+ 胜$/.test(ga.getAttribute('aria-label')),
+                'aria-label 应带真实局数，实际 ' + ga.getAttribute('aria-label'));
+        });
+
         await test('计分规则', 'A1 单局模式：赢 1 局即结束，且只画 1 个局分点', async function () {
             setupMatch({ bestOfThree: false });
             eq(dots('a'), 1, '局分点数量');

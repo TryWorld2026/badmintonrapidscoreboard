@@ -258,7 +258,7 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
 - `manifest.json`：UTF-8、`theme_color: #0A0E13`、`background_color: #0A0E13`、
   `display: standalone`、`orientation: portrait`、3 个 shortcuts 深链、
   `192` + `512 maskable` 图标；
-- `sw.js`：`CACHE_NAME = badminton-score-v7`，预缓存 32 个真实文件（含新增的 `js/icons.js`），
+- `sw.js`：`CACHE_NAME = badminton-score-v8`，预缓存 32 个真实文件（含新增的 `js/icons.js`），
   页面导航走网络优先 + 回退缓存 `index.html`，静态资源走缓存优先 + 后台更新，
   只处理同源 GET；
 - 图标：`images/icon-192.png` / `icon-512.png` / `apple-touch-icon.png` / `favicon.svg`
@@ -316,7 +316,7 @@ Cloudflare 走 `wrangler pages deploy` 直传（项目 `badminton-score`，produ
 SW 激活后静态分支走缓存优先，这些重验证请求不再发生，没有额外成本。
 
 线上实测（自定义域名与 `*.pages.dev` 均已覆盖）：SW `activated` 且已 `controller` 接管、
-缓存 `badminton-score-v7` 预缓存 **32/32**（运行时又被 fetch handler 收进 `/sw.js` 与
+缓存 `badminton-score-v8` 预缓存 **32/32**（运行时又被 fetch handler 收进 `/sw.js` 与
 zone 自动注入的 `/cdn-cgi/speculation`，合计 34）、缓存内 `./index.html` 是真应用、
 **从 `index.html` 与 `sw.js` 源码抽出的 59 个真实引用资源逐个 `cache:'reload'` 核对，
 Content-Type 与字节数全部正确**、49 个 SVG 水合、无横向溢出；
@@ -338,7 +338,7 @@ Content-Type 与字节数全部正确**、49 个 SVG 水合、无横向溢出；
 修复：用 `UTF8Encoding($true)` 重新编码补上 BOM。
 
 **这个坏部署当时没被发现**，因为浏览器验证是在 SW 激活后做的——
-静态分支缓存优先，页面全从 `badminton-score-v7` 缓存里出，网络层早已坏死也看不出来。
+静态分支缓存优先，页面全从 `badminton-score-v8` 缓存里出，网络层早已坏死也看不出来。
 两条教训都已落到脚本里：上传前硬校验文件数（`< 30` 直接 `throw`），
 绝不让缺 js/css 的产物发出去；上传后自检 `Content-Type`，
 只查状态码不够——SPA 兜底会把不存在的路径也返回 200 + HTML。
@@ -751,7 +751,7 @@ SW 更新链路与离线行为走 `http://127.0.0.1:8899` 通道实测（`file:/
   而静态分支 `return cached || network` 是**缓存优先 + 后台 `c.put`**，
   于是已装 v6 的浏览器**第一次打开拿旧 `match.js`、第二次才生效**。
   bump 到 v7 后走真实升级路径实测（**不清缓存**，全靠 `activate` 自己回收）：
-  `badminton-score-v6` 被删除、`badminton-score-v7` 建成 **32/32**（`missingFromCache: []`）、
+  `badminton-score-v6` 被删除、`badminton-score-v8` 建成 **32/32**（`missingFromCache: []`）、
   缓存内 `js/match.js` 是新代码、`./index.html` 是真应用且非错误页、
   新 SW `active` 并已 `controller` 接管；随后 20/20 回归全绿。
   ⚠️ 首轮曾误报「v6 未删 / 仅 29 项 / index 不是应用」，三条都是测量错误而非缺陷——
@@ -840,3 +840,77 @@ SW 更新链路与离线行为走 `http://127.0.0.1:8899` 通道实测（`file:/
 还原后 21/21 全绿。
 
 
+
+---
+
+## v2.0.2 — Lighthouse 审计：4 类失败、8 处对比度、1 处残留渲染缺陷
+
+### 为什么做这一轮
+
+此前的验收全是**自己写断言**（21 条回归 + 独立复核），从没经过第三方标准
+工具的检验。用 Lighthouse 对自定义域名跑 a11y / best-practices / SEO 三项，
+首测结果是 **a11y 0.92 / best-practices 1.00 / SEO 0.80**，4 类失败。
+
+> 该工具不跑 performance 基准、也不覆盖 PWA installability 专项，
+> 后两部分仍由 SW + manifest 的实测覆盖。
+
+### 审计发现的 4 类问题
+
+| 审计项 | 处数 | 实测 |
+|---|---|---|
+| `color-contrast` | 8 | 6 处 `--c-text-3` 小字 3.00 / 2.20:1；2 处 dock 计分按钮白字 3.26 / **1.39:1** |
+| `aria-prohibited-attr` | 2 | `#games-won-a/b` 的 `aria-label` 挂在无 role 的 div 上，ARIA 禁止 |
+| `label-content-name-mismatch` | 1 | `#appbar-title` 可见文字「记分」，可访问名却是「快捷操作…」 |
+| `robots-txt` | 1 | `/robots.txt` 被 Pages SPA 兜底返回 index.html（760 行 HTML 当 robots 解析） |
+
+### 修复
+
+1. **`--c-text-3: #5A6472 -> #8E98A7`，`--c-text-2: #8A94A3 -> #A3AEBC`**（`css/tokens.css`）。
+   取值用脚本算 WCAG 相对亮度确定，不是估的：text-3 要**同时**压在
+   `surface #111721`（6.16:1）和 pick-card 选中态 `#283325`（4.53:1，
+   即 surface 混入 12% 品牌色后的实际底色）上达标。text-2 随之上移一档，
+   保持 text > text-2 > text-3 层次不倒挂。**必须同步 `js/charts.js:18-19`
+   palette() 里的同族回落字面量**，否则 token 读取失败时图表会退回旧色。
+2. **dock 计分按钮改深色墨水**（`css/screens.css`）：加 `color: var(--c-brand-ink)`。
+   乙队按钮白字压亮青 `#00E5FF` 只有 1.39:1，户外强光下等于看不见；
+   换 `#0A0E13` 后甲 5.37:1、乙 12.58:1。复用现有令牌，不新增。
+3. **`#games-won-a/b` 补 `role="img"`**，并在 `updateGamesWonDisplay()` 里
+   把 aria-label 同步成 `甲队局分 N 胜`——只加 role 只能读出「甲队局分」，
+   读不出几个。
+4. **`#appbar-title` 的 aria-label 改为含可见文字**：`记分，双击或按回车打开快捷操作`。
+5. **新增 `robots.txt`**（生产资产，已入 `deploy-cloudflare.ps1` 清单与 `_headers`），
+   SEO 随之从 0.80 到 1.00。
+
+**复验：a11y 1.00 / best-practices 1.00 / SEO 1.00，0 失败。**
+
+### 审计顺带挖出一个残留渲染缺陷
+
+Lighthouse 报告的颜色值不对，回头查才发现 `match.js` 的 `init()` 里
+**只补了 `renderMatchInfo()`**（那是早先为修「match-info 空盒子」打的补丁），
+于是同一根因的其他症状全留着：干净 boot 时局分圆点是空的、
+`#current-game` 停在 `index.html` 写死的英文 `GAME 1`（render 输出中文
+「第 1 局」）、计时器按钮文字停在「开始」。用户一触发任何渲染就看着界面跳变。
+
+改成补整个 `render()`（幂等，有存档时 `loadMatchState()` 会再跑一次，无害）。
+补回归用例 `无存档时也完整渲染：局分圆点 / current-game / aria-label` 锁住，
+**双向变异验证**：把 `render()` 换回 `renderMatchInfo()` ->
+`甲局分点数量：期望 3，实际 0`，如期失败；还原后 22/22 全绿。
+
+### 部署链路的两个新坑（都是实测撞出来的）
+
+1. **改 js/css 后必须 bump `sw.js` 的 `CACHE_NAME`。** fetch handler 的静态分支是
+   `cached || network`，只有 install 才会重拉清单字节；而 `/sw.js` 带 `no-cache`，
+   字节不变浏览器就认为 SW 没更新、install 不再跑。已激活 SW 的用户会一直用旧
+   缓存里的 js/css。这次改完 `screens.css` 后线上 Lighthouse 仍报旧色值，就是这个
+   原因。已把这条约定写进 `sw.js` 文件头注释。
+2. **bump 之后当前已加载的文档仍用旧 CSS。** `<link>` 早已解析完，SW 升级
+   `clients.claim()` 也不会让已渲染的页面重新应用样式——**必须再刷新一次**。
+   表现为「缓存里明明是新的，computed style 还是旧的」，极易误判成部署失败。
+
+### 回归
+
+- 22/22 通过（新增 1 条干净 boot 渲染用例）；
+- `node --check` 17 个 JS + `sw.js` 全部通过；
+- 本地/线上对比度实测：6.16 / 6.16 / 6.16 / 5.37 / 12.58，全部过 AA；
+- 部署自检 9/9（含新增 `/robots.txt` -> `text/plain`）；
+- `test/runner.js` 确认未进公网产物（返回 SPA 兜底的 HTML）。

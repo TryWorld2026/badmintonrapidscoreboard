@@ -1,0 +1,6 @@
+# 羽毛球极速计分板 — robots.txt
+# 加这个文件之前，/robots.txt 会被 Cloudflare Pages 的 SPA 兜底
+# 改写成 index.html（200 + text/html，760 行 HTML 当 robots 解析），
+# Lighthouse 的 robots-txt 审计因此判为 invalid。
+User-agent: *
+Allow: /

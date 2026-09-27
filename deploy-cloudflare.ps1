@@ -25,7 +25,7 @@ if (-not (Test-Path $sentinel)) {
 # ---- 2. 生产资产清单 ------------------------------------------------------
 # 新增 js/css 文件时改这里，别把整个目录倒进去。
 $dirs  = @('css', 'js', 'vendor', 'images')
-$files = @('index.html', 'manifest.json', 'sw.js', '_headers')
+$files = @('index.html', 'manifest.json', 'sw.js', '_headers', 'robots.txt')
 
 # ---- 3. 暂存 --------------------------------------------------------------
 $stage = Join-Path $env:TEMP 'badminton-score-cf-deploy'
@@ -55,7 +55,8 @@ $count = (Get-ChildItem $stage -Recurse -File).Count
 Write-Host "暂存 $count 个文件 -> $stage"
 
 # ---- 4. 上传前硬校验 ------------------------------------------------------
-# 当前应有：css 6 + js 17 + vendor 2 + images 4 + 根目录 4 = 33
+# 当前应有：css 6 + js 17 + vendor 2 + images 4 + 根目录 5 = 34
+# （根目录 5 = index.html / manifest.json / sw.js / _headers / robots.txt）
 $MIN = 30
 if ($count -lt $MIN) {
     throw "只暂存了 $count 个文件，少于 $MIN。中止上传——否则会部署出缺 js/css 的坏产物。"
@@ -96,6 +97,7 @@ Check-Asset '/css/tokens.css'   'text/css'               'no-cache'
 Check-Asset '/css/screens.css'  'text/css'               'no-cache'
 Check-Asset '/sw.js'            'application/javascript' 'no-cache'
 Check-Asset '/manifest.json'    'application/json'       'no-cache'
+Check-Asset '/robots.txt'       'text/plain'             $null
 Check-Asset '/vendor/chart.umd.min.js' 'application/javascript' 'no-cache'
 # /index.html 会被 Pages 308 重定向到 /，所以查 /（默认就是 max-age=0, must-revalidate）
 Check-Asset '/'                   'text/html'              'must-revalidate'

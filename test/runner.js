@@ -393,7 +393,12 @@
                 assert(r && typeof r === 'object', '样本 ' + i + ' 应返回对象');
                 assert(isFinite(r.scoreA) && isFinite(r.scoreB), '样本 ' + i + ' 得分应为有限数');
             }
-            assert(({}).polluted === undefined, '不应发生原型污染');
+            /* 断言必须打在 iframe 域里：normalizeMatch 在 iframe 中执行，
+               污染的是 iframe 的 Object.prototype；而这里的 ({}) 是父窗口
+               新建的对象，两者根本不是同一个原型。旧写法让这条断言恒真——
+               实测把 iframe 域污染得一塌糊涂（iframe 内新建对象 .polluted === 1），
+               它照样全绿。 */
+            assert(win.Object.prototype.polluted === undefined, '不应发生原型污染');
         });
 
         /* ---------- 3. 费用分摊（A2 / A3 / A8） ---------- */
@@ -450,10 +455,29 @@
         await test('费用分摊', 'A3 非正份数不再产出 Infinity', async function () {
             await gotoExpense();
             app.state.setExpenseHistory([]);
-            fillExpense(100, '张三\n李四', null);
+            /* 必须真的切进 custom 分支：A3 修的那行就在里面。
+               fillExpense 的 minutes 传 null 时不会点任何模式按钮，
+               #split-mode 留着上一条用例点过的 time，两人各默认 60 分钟，
+               除零永远不会发生——旧写法让这条断言从没碰到它名义上
+               守着的代码（实测：把修复前的旧代码原样放回去，它照样全绿）。
+               -5 与 +5 相加得 0，正是旧代码渲染出 ±Infinity 的那个输入。 */
+            doc.getElementById('expense-type').value = '场地费';
+            doc.getElementById('total-amount').value = '100';
+            doc.getElementById('expense-players').value = '张三\n李四';
+            var modeBtn = doc.querySelector('[data-act="expense:mode"][data-mode="custom"]');
+            assert(modeBtn, '应有自定义分摊模式按钮');
+            modeBtn.click();
+            var ratioInputs = doc.querySelectorAll('#ratio-inputs input[type="number"]');
+            eq(ratioInputs.length, 2, '应按人数生成 2 个份数输入框');
+            ratioInputs[0].value = '-5';
+            ratioInputs[1].value = '5';
+            app.expense.calculate();
             var body = doc.body.innerText;
             notContains(body, 'Infinity', '界面不应出现 Infinity');
             notContains(body, 'NaN', '界面不应出现 NaN');
+            /* 负份数按 1 份处理后：100 × 1/6 与 100 × 5/6 */
+            contains(body, '¥16.67', '负份数应回落为 1 份，张三应摊 16.67');
+            contains(body, '¥83.33', '正份数应保留，李四应摊 83.33');
         });
 
         await test('费用分摊', 'A3 时长总量为 0 时中止入账', async function () {
@@ -507,11 +531,18 @@
         await test('视觉令牌', 'D1 成就徽章渲染出真 SVG 而不是图标名', async function () {
             win.location.hash = '#tab=me&sub=achievements';
             await sleep(700);
+            /* 必须真的走一遍 showBadge()：#ab-icon 在 index.html 里是静态
+               占位符，开机时就被 icons.js 的 hydrate 填成了真 SVG。光检查
+               DOM 只能证明 hydrate 是对的，证明不了 showBadge() 里那一行
+               （实测：把那行换成 ic.textContent = a.icon，旧写法照样全绿）。
+               showBadge 未导出，经 unlock() 触达；fresh() 已清空存档，
+               first_match 必然处于未解锁状态。 */
+            app.achievements.unlock(app.achievements.LIST[0]);
+            await sleep(250);
             var icon = doc.getElementById('ab-icon');
-            if (icon) {
-                assert(icon.querySelector('svg'), '徽章图标应为 SVG');
-                notContains(icon.textContent, 'shuttle', '不应显示图标名');
-            }
+            assert(icon, '徽章图标容器应存在');
+            assert(icon.querySelector('svg'), '徽章图标应为 SVG');
+            notContains(icon.textContent, 'shuttle', '不应显示图标名');
         });
 
         /* ---------- 6. PWA（SW1 / SW2，仅 http 通道有意义） ---------- */

@@ -647,3 +647,62 @@ SW 更新链路与离线行为走 `http://127.0.0.1:8899` 通道实测（`file:/
   量在 `install` 中途，以及拿 `app-frame` 当 index.html 的标记（那是 `test.html` 的 id）。
   后续若复现，先确认时机与标记，别急着改 SW。
 
+### 变异验证：20 条回归用例是否真的能杀死缺陷
+
+20 条全绿只说明「现在是对的」，不说明「改坏了能报警」。逐条做变异验证：
+把缺陷原样改回去（或改出一个等价错误），看对应用例是否失败。
+
+**协议**（关键，踩过两次坑）：
+
+1. 每轮先 `git checkout` 还原上一轮变异，再施加新变异；
+2. 必须 bump `sw.js` 的 `CACHE_NAME` 为唯一值（`badminton-score-mutN`）。
+   `install` 用的是 `cache.add(new Request(src, { cache: 'reload' }))`，
+   必然穿透浏览器 HTTP 缓存；**只清 `caches.keys()` 不够**；
+3. 开新标签页（带 `?run=N`）→ 等 SW 接管 → 点 `#run` 重跑。
+   第二轮才发现：**清 SW 缓存后刷新，页面跑的仍是旧 `test/runner.js`**——
+   浏览器自己的 HTTP 磁盘缓存也在按缓存优先返回旧文件，
+   导致整批变异得出「20/20 全过」的假结论。必须硬刷新，或给
+   `test/runner.js` 的 src 挂 `?v=` 查询串。
+
+**结果：17/20 可杀，3 条结构上无法失败。**
+
+| 变异 | 杀死的用例 |
+| --- | --- |
+| M1 `gamesNeeded()` 恒返 2 | 1 |
+| M2 `gamesNeeded()` 恒返 1 | 2 |
+| M3 平局时 `wasLeadingTeamA = false` | 3、4 |
+| M4 队名张冠李戴 | 4 |
+| M5 零封恒假 | 5 |
+| M6 零封改 `a > b` | 6 |
+| M7 去掉换边「每局一次」 | 7 |
+| M8 `checkHadDeuce()` 恒假 | 8 |
+| M9 移除赛制高亮同步 | 9 |
+| M10 去 `currentGame` 上限 | 10 |
+| M11 默认队名改错 | 11 |
+| M13 单位标成份 | 13 |
+| M14 去时长为 0 中止 | 15 |
+| M15 去重逻辑移除 | 16 |
+| M16 `openSheet` 去 `closeOtherOverlays` | 17 |
+| M17 `tokens.get()` 返回令牌名 | 18 |
+| M18 `sw.js` 不缓存 index.html | 20 |
+
+三条失明的用例都已定位根因并修好（只动 `test/runner.js`，零业务风险）：
+
+- **脏数据用例**：断言写 `({}).polluted`，读的是**父窗口**的 `Object.prototype`；
+  而 `normalizeMatch` 在 iframe 域执行，污染的是 **iframe 域**的原型，
+  两者不是同一个对象。实测 iframe 内新建对象 `.polluted === 1`，
+  断言照样恒真。→ 改成 `win.Object.prototype.polluted`。
+- **A3 非正份数**：`fillExpense(100, '张三\n李四', null)` 的 `minutes` 为 null
+  时**不点任何模式按钮**，`#split-mode` 留着上一条用例点过的 `time`，
+  两人各默认 60 分钟，除零永远不会发生——`custom` 分支里那行 A3 修复
+  从未被执行。→ 改成显式切 `custom` 模式并填 `-5 / 5`。
+- **D1 成就徽章**：`#ab-icon` 在 `index.html` 里是静态占位符，
+  开机时就被 `icons.js` 的 `hydrateIcons()` 水合成 SVG，用例从不调用
+  `showBadge()`，验的是水合而不是那一行。→ 改成经 `unlock()` 触达
+  `showBadge()`（`fresh()` 已清存档，`first_match` 必然未解锁）。
+
+三条修复都做了**反向验证**：把对应变异重新施加，三条全部如期失败
+（`不应发生原型污染` / `界面不应出现 Infinity` / `徽章图标应为 SVG`），
+零附带伤害；还原后 20/20 全绿。
+
+

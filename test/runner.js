@@ -349,6 +349,59 @@
             app.match.render();
         });
 
+        await test('计分规则', '计时未开始/暂停时，加分与撤销走同一道闸门', async function () {
+            await fresh();
+
+            /* match.js 文件头与 REFACTOR_NOTES 第 6 节都记着：updateScore 与
+               undoScore 同样要求 timerRunning，否则是同一句「请先点击开始比赛」。
+               两侧都必须打——只测一侧的话，把另一侧的守卫删掉它照样全绿。 */
+            setupMatch();
+
+            var notifySeen = [];
+            app.ui.notify = function (msg) { notifySeen.push(String(msg)); };
+            function gateCount() {
+                return notifySeen.filter(function (m) {
+                    return m.indexOf('请先点击「开始比赛」按钮开始计时！') >= 0;
+                }).length;
+            }
+
+            /* 1) 未开始：加分与撤销都被拦，且流水一条都不记 */
+            app.state.match.timerRunning = false;
+            app.state.match.scoreA = 0;
+            app.state.match.scoreB = 0;
+            app.state.match.scoreHistory.length = 0;
+
+            app.match.updateScore('a', 1);
+            eq(app.state.match.scoreA, 0, '计时未开始不应加分');
+            eq(app.state.match.scoreHistory.length, 0, '计时未开始不应记得分流水');
+
+            app.match.undoScore();
+            eq(app.state.match.scoreA, 0, '计时未开始不应撤销');
+
+            /* 2) 中途暂停：两道闸门同样拦得住 */
+            app.state.match.timerRunning = true;
+            app.match.updateScore('a', 1);
+            eq(app.state.match.scoreA, 1, '恢复计时后应能加分');
+
+            app.state.match.timerRunning = false;   /* 暂停 */
+            app.match.updateScore('a', 1);
+            eq(app.state.match.scoreA, 1, '暂停中不应加分');
+            eq(app.state.match.scoreHistory.length, 1, '暂停中不应记得分流水');
+
+            app.match.undoScore();
+            eq(app.state.match.scoreA, 1, '暂停中不应撤销');
+            eq(app.state.match.scoreHistory.length, 1, '暂停中不应弹掉得分流水');
+
+            /* 3) 恢复计时后撤销放开 */
+            app.state.match.timerRunning = true;
+            app.match.undoScore();
+            eq(app.state.match.scoreA, 0, '恢复计时后应能撤销');
+            eq(app.state.match.scoreHistory.length, 0, '撤销后流水应弹掉一条');
+
+            /* 4 × 2 道闸门：文案一致才说明是同一道闸门，不是各写各的 */
+            eq(gateCount(), 4, '加分与撤销各被拦 2 次，共 4 次同一句提示，实际 ' + gateCount());
+        });
+
         /* ---------- 2. 存档规整（A11） ---------- */
         await fresh();
 

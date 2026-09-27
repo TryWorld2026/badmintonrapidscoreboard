@@ -33,3 +33,4 @@ build/
 
 # 工具自身目录
 .mimocode/
+.wrangler/

@@ -265,6 +265,42 @@ vendor → icons → store → state → nav → effects → ui → avatars → 
   已按 VOLT 深色版重做（Playwright + Chrome 光栅化）；
 - `file://` 打开时自动跳过 SW 注册，不影响本地双击使用。
 
+### 双托管部署
+
+| 平台 | 地址 |
+| --- | --- |
+| GitHub Pages | https://tryworld2026.github.io/badmintonrapidscoreboard/ |
+| Cloudflare Pages | https://badminton-score.pages.dev/ |
+
+Cloudflare 走 `wrangler pages deploy` 直传（项目 `badminton-score`，production branch `main`），
+暂存目录**只含 33 个生产文件**——`test/`、`test.html`、`README*`、`LICENSE`、
+`REFACTOR_NOTES.md` 一律不发，测试台与内部工程文档不该进公网产物。
+`.wrangler/`（wrangler 的本地缓存）已加进 `.gitignore`。
+
+附带一份 `_headers`，只给三个入口文件松绑：
+
+```
+/sw.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache
+```
+
+理由是 PWA 的更新链路全靠这三个文件能及时到户：`sw.js` 字节不变浏览器就不重装，
+`install` 的 `cache.add` 不再跑，而静态分支是缓存优先 + 后台 `c.put`——
+已装旧版的用户会**第一次打开拿旧代码、第二次才生效**。`js/` `css/` 不带
+content-hash，同样必须可重验证，用 Pages 默认的 `max-age=0, must-revalidate` 正合适。
+
+线上实测（`https://badminton-score.pages.dev/`）：SW `activated` 且已 `controller` 接管、
+缓存 `badminton-score-v7` 建成 **33/33**、缓存内 `./index.html` 是真应用、
+26 个在用资源**全部命中缓存 0 缺失**、26 个网络请求 0 失败、49 个 SVG 水合、
+无横向溢出、`sw.js` 与 `manifest.json` 响应头确认为 `no-cache`；
+开始→计时→双方加分→撤销→暂停链路正常，`localStorage.matchState` 落盘。
+**根路径 `/` 的 `_headers` 规则不生效**（Pages 匹配的是请求路径而非解析后的文件），
+但默认的 `max-age=0, must-revalidate` 已保证每次重验证，无实际影响。
+
 ---
 
 ## 8. 验收状态

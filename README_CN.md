@@ -123,6 +123,8 @@
 ### 方案 A：即开即用（推荐）⭐
 点击 [在线演示](https://tryworld2026.github.io/badmintonrapidscoreboard/) 链接，直接在浏览器中开始你的第一场比赛。
 
+Cloudflare Pages 镜像：https://badminton-score.pages.dev/ （同一份代码，HTTPS + 边缘缓存）
+
 ### 方案 B：本地部署
 ```bash
 # 克隆项目

@@ -343,7 +343,7 @@ Content-Type 与字节数全部正确**、49 个 SVG 水合、无横向溢出；
 绝不让缺 js/css 的产物发出去；上传后自检 `Content-Type`，
 只查状态码不够——SPA 兜底会把不存在的路径也返回 200 + HTML。
 
-#### 自定义域名被 zone 级 Cache Rule 覆盖
+#### 自定义域名曾被 zone 级 Cache Rule 覆盖（已修复）
 
 `_headers` 在 `*.pages.dev` 上完全生效（js/css/vendor/sw.js 全部 `no-cache`），
 但**在自定义域名上不生效**：`/js/*`、`/css/*`、`/vendor/*`、`/sw.js`
@@ -362,11 +362,19 @@ Content-Type 与字节数全部正确**、49 个 SVG 水合、无横向溢出；
 `*.pages.dev` 没有这个问题。SW 激活后静态分支走缓存优先，
 首次访问（缓存为空）也不受影响，受影响的只是「4 小时内回访 + SW 未接管」这一段。
 
-**待办**：需要在 Cloudflare 面板的 `tryworld.com.cn` → 规则 → Cache Rules 里，
-给 `badminton.tryworld.com.cn`（或直接给 `.js` / `.css` / `/sw.js`）加一条
-例外，把 Browser TTL 设为「遵循 Origin」。wrangler 的 OAuth token 只有 Pages
-API 权限，zone settings / rulesets / DNS 全部 403，这一步只能手工做。
-在改掉之前，**自定义域名上的 PWA 更新链路有最长 4 小时延迟**，文档据此如实描述。
+**已修复（实测确认）**：用户在 Cloudflare 面板 `tryworld.com.cn` 的缓存规则中，
+把 `badminton.tryworld.com.cn` 的 Browser TTL 改为「遵循 Origin」。
+复验 23 个路径，`_headers` 现已完整生效：
+
+| 路径 | Cache-Control |
+|---|---|
+| `/sw.js`、`/js/*`（9 个）、`/css/*`（6 个）、`/vendor/*`（2 个）、`/manifest.json` | `no-cache` |
+| `/index.html`、`/images/icon-*.png` | `public, max-age=0, must-revalidate` |
+
+`Content-Type` 全部正确（`application/javascript` / `text/css` / `image/png` /
+`application/json`），`cf-cache-status` 为 `REVALIDATED`，浏览器不再按 4 小时
+TTL 缓存 `/sw.js`，SW 更新链路恢复即时。`/nope.txt` 仍返回 `text/html`，
+是 Pages SPA 兜底的既有行为，与本次无关。
 
 ---
 

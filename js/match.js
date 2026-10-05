@@ -274,8 +274,8 @@ window.App = window.App || {};
         var panel = $(team === 'a' ? 'team-a-panel' : 'team-b-panel');
         /* 脉冲色从令牌层取，不再手抄 rgba(255,46,99,.30) / rgba(0,229,255,.30) */
         var pulse = team === 'a'
-            ? App.tokens.alpha(App.tokens.get('--c-team-a', '#FF2E63'), 0.30)
-            : App.tokens.alpha(App.tokens.get('--c-team-b', '#00E5FF'), 0.30);
+            ? App.tokens.alpha(App.tokens.get('--a', '#E1554A'), 0.30)
+            : App.tokens.alpha(App.tokens.get('--b', '#3E8FD9'), 0.30);
         fx.scorePulse(panel, pulse);
 
         if (amount > 0) { fx.pointSound(); fx.vibrate(50); }
@@ -636,6 +636,11 @@ window.App = window.App || {};
 
         var matchResult = {
             id: Date.now(),
+            /* clientId 是云同步的去重键：服务端按 (owner_id, clientId) 唯一。
+               没有它这条记录就永远同步不上去（sync.js 会跳过）。
+               生成方式刻意不用随机数：离线多次保存时，
+               时间戳 + 队名足以区分（同一毫秒同一对阵几乎不可能重复）。 */
+            clientId: newClientId(teamANames, teamBNames, m),
             teamA: teamANames,
             teamB: teamBNames,
             scoreA: m.gamesWonA,
@@ -644,7 +649,9 @@ window.App = window.App || {};
             duration: m.seconds,
             date: new Date().toISOString(),
             mode: App.state.settings.gameMode,
-            highlights: getHighlightsSummary()
+            highlights: getHighlightsSummary(),
+            /* 本地刚创建，还没同步过 */
+            synced: false
         };
 
         App.state.pushMatchHistory(matchResult);
@@ -657,6 +664,20 @@ window.App = window.App || {};
         if (App.stats) App.stats.refreshAll();
         /* 记录已入历史，这里直接重置，不再弹破坏性确认 */
         resetMatch({ silent: true });
+    }
+
+    /* 生成客户端同步 id。
+       要求：同一场比赛在任何设备上"只此一个"，且不依赖随机数
+       （随机数会让"同一场被保存两次"生成两个 id，云端出现重复记录）。
+       组成：时间戳(base36) + 队名的稳定哈希 + 局分。 */
+    function newClientId(teamA, teamB, m) {
+        var seed = (teamA || '') + '|' + (teamB || '') + '|' + (m.gamesWonA || 0) + ':' + (m.gamesWonB || 0);
+        var h = 2166136261;
+        for (var i = 0; i < seed.length; i++) {
+            h ^= seed.charCodeAt(i);
+            h = (h * 16777619) >>> 0;
+        }
+        return 'm' + Date.now().toString(36) + '-' + h.toString(36);
     }
 
     /* ================================================================

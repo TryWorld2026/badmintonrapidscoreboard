@@ -213,6 +213,9 @@ window.App = window.App || {};
             /* 主页：展示概览 */
             renderAbout();
             renderBackupStats();
+            /* 账号卡片：它自己读 App.api / App.sync 的状态，
+               这里只负责在进入主页时触发重绘 */
+            if (App.account) App.account.render();
             var w = $('weather-box');
             if (w) w.classList.add('hidden');
             ui.initWeather();

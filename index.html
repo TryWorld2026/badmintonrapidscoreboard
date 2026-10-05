@@ -12,11 +12,18 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="极速计分">
+<!-- 后端地址。留空 = 纯本地模式（计分照常，无账号与同步）。
+     自部署后把这里改成你的 Worker 地址，例如：
+       https://badminton-score-api.<你的子域>.workers.dev
+     也可以不改文件，直接用 ?api=https://... 临时覆盖。 -->
+<meta name="api-base" content="">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/screens.css">
 <link rel="stylesheet" href="css/effects.css">
+<link rel="stylesheet" href="css/courtside.css">
+<link rel="stylesheet" href="css/account.css">
 <link rel="stylesheet" href="css/share-card.css">
 </head>
 <body>
@@ -26,6 +33,9 @@
     <header class="appbar">
         <h1 class="appbar-title" id="appbar-title" role="button" tabindex="0" aria-label="记分，双击或按回车打开快捷操作" title="双击打开快捷操作">记分</h1>
         <div class="appbar-actions">
+            <!-- 场边模式入口：最高频的"打球时"动作，所以放在顶栏最左侧 -->
+            <button type="button" class="icon-btn" data-act="courtside:open"
+                    aria-label="进入场边模式（超大字报）" title="场边模式：手机架场边，2 米外可读"><span class="ic-box" data-icon="eye"></span></button>
             <button type="button" class="icon-btn" data-act="nav:tab" data-tab="data"
                     aria-label="查看数据"><span class="ic-box" data-icon="chart"></span></button>
             <button type="button" class="icon-btn" data-act="match:share"
@@ -50,7 +60,7 @@
                         </div>
                         <input class="score-team-name" id="team-a-name" data-act="match:team-name"
                                data-team="a" value="队伍 A" maxlength="20" aria-label="甲队名称">
-                        <div class="score-num num" id="score-a">0</div>
+                        <div class="dial"><div class="score-num num" id="score-a">0</div></div>
                         <div class="score-team-meta">
                             <span class="serve-dot on" aria-hidden="true"></span>
                             <span class="text-3 text-2xs">甲队</span>
@@ -63,32 +73,37 @@
                         </div>
                         <input class="score-team-name" id="team-b-name" data-act="match:team-name"
                                data-team="b" value="队伍 B" maxlength="20" aria-label="乙队名称">
-                        <div class="score-num num" id="score-b">0</div>
+                        <div class="dial"><div class="score-num num" id="score-b">0</div></div>
                         <div class="score-team-meta">
                             <span class="text-3 text-2xs">乙队</span>
                             <span class="serve-dot" aria-hidden="true"></span>
                         </div>
                     </div>
                 </div>
-                <div class="scoreboard-vs" aria-hidden="true">
-                    VS
-                    <span class="vs-timer" id="current-game">GAME 1</span>
-                </div>
                 <div class="scoreboard-bar">
-                    <div class="games-won">
-                        <div class="games-won-side a" id="games-won-a" role="img" aria-label="甲队局分"></div>
-                        <span class="games-won-label">局分</span>
-                        <div class="games-won-side b" id="games-won-b" role="img" aria-label="乙队局分"></div>
+                    <div class="scoreboard-bar-top">
+                        <div class="games-won">
+                            <div class="games-won-side a" id="games-won-a" role="img" aria-label="甲队局分"></div>
+                            <span class="games-won-label">局分</span>
+                            <div class="games-won-side b" id="games-won-b" role="img" aria-label="乙队局分"></div>
+                        </div>
+                        <!-- 当前局读数：旧版是浮在比分板中央的 "VS" 徽标，
+                             会与队名输入框叠住；方向 C 把它放进状态条，
+                             当作一枚正常的仪表读数（保留 id 供渲染逻辑复用）。 -->
+                        <div class="scoreboard-game">
+                            <span class="vs-timer" id="current-game">第 1 局</span>
+                        </div>
                     </div>
-                    <div class="scoreboard-timer">
+                    <div class="scoreboard-bar-bottom">
                         <span class="timer-value num" id="timer-value">00:00</span>
-                        <button type="button" class="btn btn-small btn-outline" data-act="match:timer">
-                            <span id="timer-btn-label">开始</span>
-                        </button>
-                        <button type="button" class="btn btn-small btn-ghost" data-act="match:undo"
-                                aria-label="撤回上一分"><span class="ic-box" data-icon="undo"></span></button>
-                    </div>
-                </div>
+                        <div class="scoreboard-timer">
+                            <button type="button" class="btn btn-small btn-outline" data-act="match:timer">
+                                <span id="timer-btn-label">开始</span>
+                            </button>
+                            <button type="button" class="btn btn-small btn-ghost btn-icon" data-act="match:undo"
+                                    aria-label="撤回上一分"><span class="ic-box" data-icon="undo"></span></button>
+                        </div>
+                    </div>                </div>
             </div>
 
             <div class="card">
@@ -438,9 +453,23 @@
                 <div class="me-head">
                     <span class="me-avatar ic-box" data-icon="shuttle" aria-hidden="true"></span>
                     <div>
-                        <div class="nm">本机球员</div>
+                        <div class="nm" id="me-name">本机球员</div>
                         <div class="sl" id="about-storage">localStorage（本机）</div>
                     </div>
+                </div>
+
+                <!-- 账号与云同步。
+                     未登录时显示「登录以同步」；登录后显示邮箱 + 同步状态。
+                     后端未配置（纯本地部署）时整块隐藏，不留死按钮。 -->
+                <div class="account-card hidden" id="account-card">
+                    <div class="acc-main">
+                        <span class="acc-dot" id="acc-dot" aria-hidden="true"></span>
+                        <div class="acc-text">
+                            <div class="acc-title" id="acc-title">未登录</div>
+                            <div class="acc-sub" id="acc-sub">登录后可在多设备同步战绩</div>
+                        </div>
+                    </div>
+                    <div class="acc-actions" id="acc-actions"></div>
                 </div>
 
                 <div class="weather-card hidden" id="weather-box">
@@ -458,7 +487,7 @@
                 <div class="section-title mt-4">数据概览</div>
                 <div class="backup-stat" id="backup-stats"></div>
 
-                <p class="about-note">所有数据仅保存在本机浏览器，不会上传服务器。</p>
+                <p class="about-note" id="me-storage-note">所有数据仅保存在本机浏览器，不会上传服务器。</p>
             </div>
 
             <div class="me-sub hidden" data-me="settings">
@@ -588,15 +617,51 @@
     <!-- ================= 底部动作 Dock（仅记分页）================= -->
     <div class="dock" id="dock" hidden>
         <button type="button" class="btn score-btn team-a" data-act="match:score" data-team="a">
-            甲队得分
+            <span class="plus" aria-hidden="true">+</span>甲队得分
         </button>
         <button type="button" class="btn score-btn team-b" data-act="match:score" data-team="b">
-            乙队得分
+            <span class="plus" aria-hidden="true">+</span>乙队得分
         </button>
     </div>
 
     <!-- ================= 底部 Tab Bar ================= -->
     <nav class="tabbar" id="tabbar" role="tablist" aria-label="主功能"></nav>
+</div>
+
+<!-- ================= 场边模式（超大字报）=================
+     手机架在场边、人站 2 米外时使用。左右半屏即加分键，长按撤回。
+     计分逻辑完全复用 App.match，此处只是另一套视图。 -->
+<div class="courtside" id="courtside" hidden aria-hidden="true"
+     role="region" aria-label="场边模式">
+    <div class="cs-top">
+        <span class="cs-game" id="cs-game">第 1 局</span>
+        <div class="cs-status">
+            <span class="cs-timer" id="cs-timer">00:00</span>
+            <span class="cs-timer-label" id="cs-timer-label">未开始</span>
+            <button type="button" class="cs-btn" data-act="courtside:timer">计时</button>
+            <button type="button" class="cs-btn" data-act="courtside:close">退出</button>
+        </div>
+    </div>
+
+    <div class="cs-board">
+        <button type="button" class="cs-side cs-side-a leading" id="cs-side-a"
+                data-act="courtside:score" data-side="a" aria-label="甲队得分，长按撤回上一分">
+            <span class="cs-name" id="cs-name-a">队伍 A</span>
+            <span class="cs-score" id="cs-score-a">0</span>
+            <span class="cs-games" id="cs-games-a" aria-hidden="true"></span>
+            <span class="cs-tap-hint">轻点加分 · 长按撤回</span>
+        </button>
+
+        <button type="button" class="cs-side cs-side-b" id="cs-side-b"
+                data-act="courtside:score" data-side="b" aria-label="乙队得分，长按撤回上一分">
+            <span class="cs-name" id="cs-name-b">队伍 B</span>
+            <span class="cs-score" id="cs-score-b">0</span>
+            <span class="cs-games" id="cs-games-b" aria-hidden="true"></span>
+            <span class="cs-tap-hint">轻点加分 · 长按撤回</span>
+        </button>
+    </div>
+
+    <div class="cs-hint" id="cs-hint" role="status"></div>
 </div>
 
 <!-- ================= 快捷操作（双击顶栏）================= -->
@@ -764,6 +829,39 @@
     </div>
 </div>
 
+<!-- ================= 账号：登录 / 注册 =================
+     一个表单兼作登录与注册：填了邮箱密码，账号不存在就自动创建。
+     让用户先选「登录」还是「注册」是多余的负担。 -->
+<div class="dialog-backdrop" id="auth-dialog" hidden aria-hidden="true" data-mode="auto">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <div class="dialog-title" id="auth-title">登录以同步</div>
+        <p class="text-2 text-sm auth-lead">
+            登录后战绩会同时保存在云端，换设备也能拉回来。<br>
+            <b>不登录也完全可用</b> —— 数据只留在本机。
+        </p>
+
+        <div class="field">
+            <label class="field-label" for="auth-email">邮箱</label>
+            <input class="input" type="email" id="auth-email" autocomplete="email"
+                   inputmode="email" placeholder="you@example.com" aria-label="邮箱">
+        </div>
+
+        <div class="field">
+            <label class="field-label" for="auth-password">密码</label>
+            <input class="input" type="password" id="auth-password" autocomplete="current-password"
+                   placeholder="至少 8 位" aria-label="密码">
+            <div class="field-hint">首次使用会自动创建账号</div>
+        </div>
+
+        <div class="auth-msg" id="auth-msg" role="status" aria-live="polite"></div>
+
+        <div class="dialog-actions">
+            <button type="button" class="btn btn-ghost" data-act="account:close">取消</button>
+            <button type="button" class="btn btn-primary" id="auth-submit" data-act="account:submit">登录 / 注册</button>
+        </div>
+    </div>
+</div>
+
 <!-- ================= 高光徽章 / 成就徽章 / 胜利横幅 / Toast ================= -->
 <div class="highlight-badge" id="highlight-badge" hidden aria-hidden="true">
     <span class="highlight-icon ic-box" id="hl-icon" data-icon="star"></span>
@@ -810,13 +908,24 @@
 <script src="js/icons.js"></script>
 <script src="js/tokens.js"></script>
 <script src="js/store.js"></script>
+<!-- core/bus 必须排在 state 之前：state 落盘时会向它广播变更事件 -->
+<script src="js/core/bus.js"></script>
+<!-- core/migrate 必须排在 state 之前：state 初始化时要先跑完存档迁移 -->
+<script src="js/core/migrate.js"></script>
 <script src="js/state.js"></script>
+<!-- api / sync 只依赖 store 与 bus（不依赖 nav），排在 nav 之前没问题。
+     account.js 依赖 nav（要开对话框），所以排在 nav 之后。 -->
+<script src="js/api.js"></script>
+<script src="js/sync.js"></script>
 <!-- nav 必须在 effects / ui 之前：后两者在 IIFE 顶部就捕获 App.nav -->
 <script src="js/nav.js"></script>
 <script src="js/effects.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/avatars.js"></script>
 <script src="js/match.js"></script>
+<!-- courtside 必须排在 match.js 之后：它在 init() 里包装 App.match.render，
+     排在前面会包装到一个还不存在的对象上。 -->
+<script src="js/courtside.js"></script>
 <script src="js/grouping.js"></script>
 <script src="js/expense.js"></script>
 <script src="js/charts.js"></script>
@@ -824,6 +933,7 @@
 <script src="js/achievements.js"></script>
 <script src="js/share.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/account.js"></script>
 <script src="js/app.js"></script>
 <!-- 屏幕阅读器播报区：常驻无障碍树，视觉隐藏（不能用 display:none，否则不播报） -->
 <div class="sr-only" id="sr-announce" role="status" aria-live="polite" aria-atomic="true"></div>

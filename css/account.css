@@ -1,0 +1,111 @@
+/* ================================================================
+   account.css — 账号卡片与登录对话框
+
+   设计延续方向 C（仪表读数器）：
+     - 状态用「一个点 + 一行字」表达，不用彩色整块
+     - 四个状态色：off(灰) / ok(绿) / pending(琥珀) / error(红)
+       全部低饱和，与队伍识别色不打架
+   ================================================================ */
+
+/* ---------- 账号卡片 ---------- */
+.account-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-4);
+    margin-bottom: var(--sp-4);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge);
+}
+
+.account-card.hidden { display: none; }
+
+.acc-main {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+}
+
+/* 状态点：唯一的状态指示，底色跟随 sync 状态 */
+.acc-dot {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--fg-3);
+    transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+
+.acc-dot.tone-off { background: var(--fg-3); }
+.acc-dot.tone-ok {
+    background: var(--ok);
+    box-shadow: 0 0 0 3px var(--ok-soft);
+}
+.acc-dot.tone-pending {
+    background: var(--warn);
+    box-shadow: 0 0 0 3px var(--warn-soft);
+}
+.acc-dot.tone-error {
+    background: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-soft);
+}
+.acc-dot.tone-busy {
+    background: var(--live);
+    /* 同步中做一个呼吸效果，让"正在工作"可见 */
+    animation: accPulse 1.4s var(--ease) infinite;
+}
+
+@keyframes accPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+.acc-text { min-width: 0; flex: 1; }
+
+.acc-title {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.acc-sub {
+    margin-top: 2px;
+    font-size: var(--fs-2xs);
+    line-height: var(--lh-snug);
+    color: var(--fg-3);
+}
+
+.acc-actions {
+    display: flex;
+    gap: var(--sp-2);
+}
+
+.acc-actions .btn { flex: 1; }
+
+/* 尊重"减少动效"偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .acc-dot.tone-busy { animation: none; }
+}
+
+/* ---------- 登录对话框 ---------- */
+.auth-lead {
+    margin-bottom: var(--sp-4);
+    line-height: var(--lh-snug);
+}
+
+.auth-lead b { color: var(--fg); font-weight: var(--fw-semibold); }
+
+.auth-msg {
+    min-height: 20px;
+    margin-bottom: var(--sp-2);
+    font-size: var(--fs-2xs);
+    line-height: var(--lh-snug);
+    color: var(--fg-3);
+}
+
+.auth-msg.is-error { color: var(--danger); }
+.auth-msg.is-ok { color: var(--ok); }

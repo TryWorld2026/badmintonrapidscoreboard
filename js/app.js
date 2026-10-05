@@ -20,6 +20,7 @@ window.App = window.App || {};
         App.settings.init();
         App.avatars.init();
         App.match.init();
+        App.courtside.init();
         App.grouping.init();
         App.expense.init();
         App.stats.init();
@@ -29,6 +30,13 @@ window.App = window.App || {};
         /* 3. 恢复上次比赛状态（B2/B3 已在 match.loadMatchState 内修复）*/
         App.match.loadMatchState();
 
+        /* 3b. 账号与云同步。
+              必须在 loadMatchState 之后：sync.init() 会读本地已有的
+              比赛历史（首次登录后要把它全量上传），读太早会拿到空数组。
+              它是异步的，不阻塞首屏。 */
+        App.account.init();
+        App.sync.init();
+
         /* 4. 首次交互解锁音频（浏览器自动播放策略）*/
         document.addEventListener('pointerdown', function once() {
             App.effects.unlockAudio();
@@ -36,7 +44,14 @@ window.App = window.App || {};
         });
 
         /* 5. 进入默认 Tab（支持 manifest 快捷方式：#tab=match&sub=expense）*/
-        nav.go(readHashTarget().tab || 'score', readHashTarget().sub);
+        var target = readHashTarget();
+        nav.go(target.tab || 'score', target.sub);
+
+        /* 5b. manifest 的「场边模式」快捷方式：直接落到大字报。
+             放在 nav.go 之后，保证退出场边模式时背后已经是记分页。 */
+        if (target.courtside === '1' && App.courtside) {
+            App.courtside.open();
+        }
 
         /* 6. 新手引导 */
         if (!App.state.hasSeenOnboarding) {

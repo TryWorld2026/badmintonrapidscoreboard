@@ -5,75 +5,69 @@
    且不支持 oklch() / lab() / color-mix() / clip-path()。
    ⚠️ 同时避免使用 gap / grid / backdrop-filter / filter，
    以保证导出结果与预览一致。
-   配色跟随 VOLT TRUCK 深色演播室（三套深色渐变模板）。
+
+   方向 C · 仪表读数器：
+     - 底色是中性石墨，不是荧光深蓝
+     - 队伍识别靠「3px 识别条 + 比分色」，不靠旋转装饰块
+     - 数字用等宽体（旧版是 Impact 斜体，属小报感）
+     - 三套模板只在「底色深浅」上做区分，色相保持中性
    ================================================================ */
 
 .share-card {
     position: relative;
     width: 360px;
-    padding: 28px 26px 24px;
+    padding: 26px 24px 22px;
     overflow: hidden;
-    font-family: "Helvetica Neue", "Segoe UI", "PingFang SC",
-        "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+    font-family: "Bahnschrift", "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", "Noto Sans SC", sans-serif;
     font-size: 14px;
     line-height: 1.5;
-    color: #FFFFFF;
-    background: #10161F;
+    color: #F2F4F6;
+    background: #17191C;
     box-sizing: border-box;
 }
 
-/* 装饰斜切色块（实色叠加，不用 radial-gradient）*/
+/* 顶部一条极细的识别线：仪表语言里唯一的装饰，且承载信息（谁在左谁在右）*/
 .share-card::before {
     content: "";
     position: absolute;
-    top: -70px;
-    right: -70px;
-    width: 200px;
-    height: 200px;
-    background: rgba(212, 255, 63, 0.14);
-    transform: rotate(45deg);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #E1554A;
 }
 
-.share-card::after {
-    content: "";
-    position: absolute;
-    bottom: -90px;
-    left: -60px;
-    width: 220px;
-    height: 220px;
-    background: rgba(255, 255, 255, 0.05);
-    transform: rotate(45deg);
-}
-
-.share-card-tpl-1 { background: #10161F; background: linear-gradient(160deg, #10161F 0%, #1C2531 100%); }
-.share-card-tpl-2 { background: #0F1830; background: linear-gradient(160deg, #0F1830 0%, #233A6B 100%); }
-.share-card-tpl-3 { background: #24101C; background: linear-gradient(160deg, #24101C 0%, #5C1533 100%); }
+/* 三套模板：中性石墨的三档明度，不做色相偏移 */
+.share-card-tpl-1 { background: #17191C; }
+.share-card-tpl-2 { background: #1D2024; }
+.share-card-tpl-3 { background: #24282D; }
 
 .share-card > * { position: relative; z-index: 1; }
 
 /* ---------- 顶部品牌行 ---------- */
 .sc-head {
     overflow: hidden;
-    margin-bottom: 22px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(212, 255, 63, 0.35);
+    margin-bottom: 20px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid rgba(242, 244, 246, 0.14);
 }
 
 .sc-brand {
     float: left;
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 3px;
+    font-weight: 600;
+    letter-spacing: 2.6px;
     text-transform: uppercase;
-    color: #D4FF3F;
+    color: #E0A33E;
 }
 
 .sc-date {
     float: right;
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.65);
+    font-weight: 500;
+    letter-spacing: 0.6px;
+    color: rgba(242, 244, 246, 0.6);
 }
 
 /* ---------- 对阵区 ---------- */
@@ -90,20 +84,21 @@
 }
 
 .sc-avatar {
-    width: 54px;
-    height: 54px;
+    width: 52px;
+    height: 52px;
     margin: 0 auto 8px;
-    font-size: 28px;
-    line-height: 54px;
+    font-size: 26px;
+    line-height: 52px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(242, 244, 246, 0.06);
+    border: 1px solid rgba(242, 244, 246, 0.14);
+    border-radius: 3px;
 }
 
 .sc-name {
     font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
     line-height: 1.3;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -111,47 +106,48 @@
 }
 
 .sc-score {
-    margin-top: 4px;
-    font-family: Impact, Haettenschweiler, "Arial Narrow", "PingFang SC", sans-serif;
-    font-size: 48px;
-    font-style: italic;
-    font-weight: 400;
+    margin-top: 5px;
+    font-family: ui-monospace, "SF Mono", "Roboto Mono", Consolas, monospace;
+    font-size: 46px;
+    font-style: normal;
+    font-weight: 600;
     line-height: 1;
-    letter-spacing: 0;
+    letter-spacing: -2px;
     font-variant-numeric: tabular-nums;
-    color: #FFFFFF;
+    color: #F2F4F6;
 }
 
-.sc-team.win .sc-score { color: #FFD166; }
-.sc-team.lose .sc-score { color: rgba(255, 255, 255, 0.55); }
+/* 胜方给金，负方降调：不加粗、不发光 */
+.sc-team.win .sc-score { color: #C9A227; }
+.sc-team.lose .sc-score { color: rgba(242, 244, 246, 0.45); }
 
 .sc-vs {
     display: inline-block;
     vertical-align: top;
-    width: 44px;
-    padding-top: 42px;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    width: 40px;
+    padding-top: 40px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.6px;
     text-align: center;
-    color: #D4FF3F;
+    color: rgba(242, 244, 246, 0.4);
 }
 
 /* ---------- 局数行 ---------- */
 .sc-games {
     margin-top: 18px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    padding-top: 15px;
+    border-top: 1px solid rgba(242, 244, 246, 0.14);
     overflow: hidden;
 }
 
 .sc-games-title {
     float: left;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1.8px;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(242, 244, 246, 0.5);
 }
 
 .sc-games-list { float: right; }
@@ -159,61 +155,62 @@
 .sc-game {
     display: inline-block;
     margin-left: 6px;
-    padding: 2px 9px;
+    padding: 3px 9px;
     font-family: ui-monospace, "SF Mono", Consolas, monospace;
     font-size: 11px;
-    font-weight: 700;
-    background: rgba(212, 255, 63, 0.16);
-    border: 1px solid rgba(212, 255, 63, 0.3);
-    color: #E4FF7A;
+    font-weight: 600;
+    background: rgba(242, 244, 246, 0.07);
+    border: 1px solid rgba(242, 244, 246, 0.18);
+    border-radius: 2px;
+    color: #F2F4F6;
 }
 
 /* ---------- 高光区 ---------- */
 .sc-highlights {
-    margin-top: 16px;
+    margin-top: 15px;
 }
 
 .sc-hl-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1.8px;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 8px;
+    color: rgba(242, 244, 246, 0.5);
+    margin-bottom: 7px;
 }
 
 .sc-hl {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     font-size: 12px;
     line-height: 1.45;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(242, 244, 246, 0.88);
 }
 
-.sc-hl b { font-weight: 800; color: #D4FF3F; }
+.sc-hl b { font-weight: 600; color: #E0A33E; }
 
 /* ---------- 底部 ---------- */
 .sc-foot {
-    margin-top: 20px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    margin-top: 18px;
+    padding-top: 13px;
+    border-top: 1px solid rgba(242, 244, 246, 0.14);
     overflow: hidden;
 }
 
 .sc-foot-txt {
     float: left;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.6px;
+    color: rgba(242, 244, 246, 0.5);
 }
 
 .sc-foot-app {
     float: right;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1.6px;
     text-transform: uppercase;
-    color: #D4FF3F;
+    color: #E0A33E;
 }
 
 /* ---------- 预览容器（页面内嵌，非导出目标）---------- */
@@ -221,12 +218,12 @@
     display: flex;
     justify-content: center;
     padding: 16px;
-    background: #070A0E;
-    border: 1px solid #222C3A;
+    background: #101113;
+    border: 1px solid #2A2E33;
     overflow: auto;
 }
 
 .share-preview .share-card {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 255, 63, 0.16);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(242, 244, 246, 0.1);
     flex-shrink: 0;
 }

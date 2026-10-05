@@ -6,21 +6,20 @@ window.App = window.App || {};
     'use strict';
 
     var nav = App.nav;
-    /* 彩带配色同样从令牌层读，不再手抄一份（抄错了视觉重构后没人发现）。 */
+    /* 彩带配色同样从令牌层读，不再手抄一份（抄错了视觉重构后没人发现）。
+       方向 C 的克制原则：彩带不再用七种高饱和色乱撒，而是只用
+       「队伍色 + 状态色」共 5 色，与界面上出现的颜色严格一致。 */
     var COLORS = null;
     function palette() {
         if (!COLORS) {
             var p = App.tokens.palette({
-                brand: ['--c-brand', '#D4FF3F'],
-                teamA: ['--c-team-a', '#FF2E63'],
-                teamB: ['--c-team-b', '#00E5FF'],
-                warning: ['--c-warning', '#FFB627'],
-                success: ['--c-success', '#2EE6A8'],
-                text: ['--c-text', '#F0F4F8'],
-                silver: ['--c-silver', '#A8B3C0']
+                live: ['--live', '#E0A33E'],
+                teamA: ['--a', '#E1554A'],
+                teamB: ['--b', '#3E8FD9'],
+                gold: ['--gold', '#C9A227'],
+                ok: ['--ok', '#57B87A']
             });
-            COLORS = [p.brand, p.teamA, p.teamB, p.warning,
-                p.success, p.text, p.silver];
+            COLORS = [p.teamA, p.teamB, p.live, p.gold, p.ok];
         }
         return COLORS;
     }
@@ -131,7 +130,7 @@ window.App = window.App || {};
         if (!teamEl || prefersReduced()) return;
         var p = document.createElement('span');
         p.className = 'score-pulse';
-        p.style.background = color || App.tokens.alpha(App.tokens.get('--c-brand', '#D4FF3F'), 0.35);
+        p.style.background = color || App.tokens.alpha(App.tokens.get('--live', '#E0A33E'), 0.35);
         teamEl.appendChild(p);
         window.setTimeout(function () {
             if (p.parentNode) p.parentNode.removeChild(p);

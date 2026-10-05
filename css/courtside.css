@@ -1,0 +1,299 @@
+/* ================================================================
+   courtside.css — 场边模式（超大字报）
+
+   设计前提：手机靠在球包上、屏幕朝上、人站在 2 米外。
+   由此推导出三条硬规则：
+     1. 比分必须大 —— clamp 下限 96px，420px 宽下约 150px，
+        2 米外可读（经验值：可读高度 ≈ 距离 / 200）。
+     2. 半屏即按钮 —— 左右各占 50% 宽度、全高，闭着眼也能按中。
+     3. 零装饰 —— 场边模式下没有导航、没有卡片、没有日志。
+        只留：队名 / 比分 / 局分 / 计时 / 退出。
+
+   与主界面的关系：复用同一套令牌与队伍色，所以从场边模式切回
+   主界面不会有"换了一个 App"的割裂感。
+   ================================================================ */
+
+.courtside {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-courtside);
+    display: flex;
+    flex-direction: column;
+    background: var(--void);
+    /* 场边模式要求极高的对比度：底色比主界面更深一档 */
+    --cs-bg: #0B0C0D;
+    background: var(--cs-bg);
+    /* 防止误触时页面被拖动 / 缩放 */
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.courtside[hidden] { display: none; }
+
+/* ---------- 顶部状态带：极窄，只放最必要的信息 ---------- */
+.cs-top {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-4);
+    /* 安全区：刘海屏横屏时左右会被切掉 */
+    padding-left: max(var(--sp-4), env(safe-area-inset-left));
+    padding-right: max(var(--sp-4), env(safe-area-inset-right));
+    border-bottom: 1px solid var(--edge);
+    flex: 0 0 auto;
+}
+
+.cs-game {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+    color: var(--fg-2);
+    white-space: nowrap;
+}
+
+.cs-status {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-left: auto;
+}
+
+.cs-timer {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-semibold);
+    color: var(--fg);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+.cs-timer.paused { color: var(--fg-3); }
+
+.cs-timer-label {
+    font-size: var(--fs-3xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.16em;
+    color: var(--fg-3);
+    white-space: nowrap;
+}
+
+.cs-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap-min);
+    min-width: var(--tap-min);
+    padding: 0 var(--sp-3);
+    font-family: var(--font-ui);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.04em;
+    color: var(--fg-2);
+    background: transparent;
+    border: none;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.cs-btn:hover { background: var(--plate-2); color: var(--fg); }
+.cs-btn:focus-visible { outline: 2px solid var(--live); outline-offset: -2px; }
+
+/* ---------- 主区：左右各半屏，整块可点 ----------
+   ⚠️ 这里只能有 2 列。
+   第一版写的是 `1fr 1px 1fr`（想用中间那条 1px 做分隔线），但 .cs-board
+   只有 2 个子元素，于是乙队被放进「1px 的中间列」，整个右半屏是空的
+   （实测 sideB = 16x337，截图里右半边一片灰）。
+   分隔线改用子元素的 border-left 实现，列数回到 2。 */
+.cs-board {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 0;
+}
+
+.cs-side {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+    padding: var(--sp-4);
+    background: var(--cs-bg);
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    /* 按压反馈要立刻可见：从触摸到视觉 < 100ms */
+    transition: background var(--dur-1) var(--ease);
+    overflow: hidden;
+}
+
+/* 中缝：1px 分隔线挂在乙队一侧，不占额外列 */
+.cs-side-b { border-left: 1px solid var(--edge); }
+
+/* 队伍识别：顶部 4px 硬边（场边模式下比主界面更粗，2 米外可见） */
+.cs-side::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+.cs-side-a::before { background: var(--a); }
+.cs-side-b::before { background: var(--b); }
+
+.cs-side:focus-visible { outline: 3px solid var(--live); outline-offset: -3px; }
+
+.cs-side-a:active { background: var(--a-dim); }
+.cs-side-b:active { background: var(--b-dim); }
+
+/* 落后方整体降调（与主界面同一语义：让落后方退后，而不是让领先方发亮） */
+.cs-side:not(.leading) .cs-score { color: var(--fg-2); }
+.cs-side:not(.leading) .cs-name { color: var(--fg-3); }
+
+.cs-name {
+    font-size: clamp(0.875rem, 4.4vw, 1.5rem);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
+    color: var(--fg);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- 比分：这是整个应用最重要的一个数字 ----------
+   420px 宽 / 竖屏：约 150px
+   横屏（场边模式默认）：clamp 上限生效，约 176px
+   2 米外可读。 */
+.cs-score {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(6rem, 30vw, 11rem);
+    font-weight: var(--fw-semibold);
+    line-height: 0.82;
+    letter-spacing: -0.05em;
+    color: var(--fg);
+}
+
+.cs-side-a.leading .cs-score { color: var(--a); }
+.cs-side-b.leading .cs-score { color: var(--b); }
+
+/* 加分瞬间的脉冲：只改缩放与亮度，不做位移（避免"跳一下"看不清） */
+@keyframes csHit {
+    0% { transform: scale(1); filter: brightness(1); }
+    30% { transform: scale(1.06); filter: brightness(1.35); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+.cs-side.hit .cs-score { animation: csHit 200ms var(--ease-out); }
+
+/* ---------- 局分刻度 ---------- */
+.cs-games {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.cs-mark {
+    display: block;
+    width: clamp(28px, 7vw, 44px);
+    height: 5px;
+    border-radius: 2px;
+    background: var(--plate-3);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+}
+
+.cs-side-a .cs-mark.won { background: var(--a); box-shadow: none; }
+.cs-side-b .cs-mark.won { background: var(--b); box-shadow: none; }
+
+/* 操作提示：只在进入时短暂出现，之后不干扰 */
+.cs-tap-hint {
+    font-size: var(--fs-3xs);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.14em;
+    color: var(--fg-3);
+    opacity: 0.7;
+}
+
+/* ---------- 底部提示条（防息屏失败 / 无可撤回等）---------- */
+.cs-hint {
+    position: absolute;
+    left: 50%;
+    bottom: max(var(--sp-5), env(safe-area-inset-bottom));
+    transform: translate(-50%, 140%);
+    z-index: 2;
+    max-width: min(92%, 480px);
+    padding: var(--sp-2) var(--sp-4);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-snug);
+    text-align: center;
+    color: var(--fg);
+    background: var(--plate-3);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--edge-2);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform var(--dur-3) var(--ease-out), opacity var(--dur-3) var(--ease);
+}
+
+.cs-hint.show { transform: translate(-50%, 0); opacity: 1; }
+
+/* ---------- 横屏：把比分推到最大 ----------
+   场边模式默认锁横屏，横屏才是主形态。
+   横屏下纵向空间是稀缺资源，所以：
+     - 压缩顶部状态带
+     - 隐藏"轻点加分"提示（用户看一眼就懂了，不必常驻）
+     - 比分改用 vh 主导：手机上约 190px，占可用高度近一半
+   ⚠️ 这里必须比竖屏更大，不能更小 —— 第一版在 max-height:420px
+   上又加了一档更小的字号，结果横屏（92px）反而比竖屏（126px）小，
+   恰好把主形态做成了最差的形态。 */
+@media (orientation: landscape) {
+    .cs-top { padding-top: var(--sp-1); padding-bottom: var(--sp-1); }
+    .cs-side { gap: var(--sp-2); padding: var(--sp-2); }
+    .cs-score { font-size: clamp(5rem, 46vh, 15rem); }
+    .cs-name { font-size: clamp(0.875rem, 3.4vh, 1.5rem); }
+    .cs-tap-hint { display: none; }
+    .cs-mark { width: clamp(32px, 6vh, 56px); height: 5px; }
+}
+
+/* 极矮横屏（浏览器地址栏占位、折叠屏外屏等）：
+   只精简chrome，绝不缩小比分 —— 比分是唯一不能妥协的东西。 */
+@media (orientation: landscape) and (max-height: 380px) {
+    .cs-game, .cs-timer-label { display: none; }
+    .cs-top { padding-top: 2px; padding-bottom: 2px; }
+}
+
+/* 降低动效偏好：去掉脉冲，只保留数字变化 */
+@media (prefers-reduced-motion: reduce) {
+    .cs-side.hit .cs-score { animation: none; }
+    .cs-hint { transition: none; }
+}
+
+/* ---------- 进入场边模式时彻底锁死背后页面的滚动 ----------
+   ⚠️ 只设 overflow:hidden 不够：背后的 .app 自身有 1000+ px 高，
+   仍然会把 document.scrollHeight 撑大（实测 844×390 下
+   docScrollH=1062，而覆盖层只有 390）。表现是横屏时页面能上下拖动，
+   场边模式"看起来在漂"。所以这里直接把 .app 也一起锁掉高度。 */
+html.courtside-on,
+html.courtside-on body {
+    overflow: hidden;
+    overscroll-behavior: none;
+    height: 100%;
+}
+
+/* 背后的应用整体移出布局流：既消除滚动，也避免被屏幕阅读器重复播报 */
+html.courtside-on .app {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    /* 让背后的内容不可交互，也不被 Tab 键遍历到 */
+    visibility: hidden;
+}
+
+/* 场边模式自身仍然可见（它是 .app 的兄弟节点） */
+html.courtside-on .courtside { visibility: visible; }

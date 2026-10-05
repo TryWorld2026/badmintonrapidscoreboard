@@ -130,6 +130,31 @@ window.App = window.App || {};
         };
     }
 
+    /* ---------- 存档迁移 ----------
+       必须在读取任何状态之前跑完：迁移可能改写 match / matchHistory 的
+       结构（补 clientId 等同步字段），先读后迁会读到旧结构。
+
+       失败时不阻断启动：迁移出错只意味着"暂时还用不上云同步"，
+       不该让整个应用打不开。错误留在 state.migrationError 供设置页展示。 */
+    var migrationResult = null;
+    var migrationError = '';
+    try {
+        if (App.migrate) {
+            migrationResult = App.migrate.run();
+            if (migrationResult && migrationResult.error) {
+                migrationError = migrationResult.error;
+                if (window.console && console.warn) {
+                    console.warn('[state] 存档迁移未完成：' + migrationError);
+                }
+            }
+        }
+    } catch (e) {
+        migrationError = (e && e.message) || String(e);
+        if (window.console && console.error) {
+            console.error('[state] 存档迁移异常', e);
+        }
+    }
+
     /* ---------- 运行时状态 ---------- */
     var state = {
         match: normalizeMatch(store.readJSON(store.KEYS.MATCH_STATE, null)),
@@ -148,17 +173,70 @@ window.App = window.App || {};
         /* 路由：tab 为 4 主入口之一，sub 为该 Tab 内的二级页 */
         route: { tab: 'score', sub: '' },
         /* 弹层栈，Esc / 返回键依次关闭 */
-        overlays: []
+        overlays: [],
+        /* 迁移诊断（设置页「关于」会展示；为空表示一切正常） */
+        migrationError: migrationError,
+        migrationResult: migrationResult
     };
 
-    /* ---------- 落盘 ---------- */
-    function saveMatch() { store.writeJSON(store.KEYS.MATCH_STATE, state.match); }
-    function saveSettings() { store.writeJSON(store.KEYS.SETTINGS, state.settings); }
-    function saveStats() { store.writeJSON(store.KEYS.ACHIEVEMENT_STATS, state.stats); }
-    function saveUnlocked() { store.writeJSON(store.KEYS.UNLOCKED, state.unlocked); }
-    function saveAvatars() { store.writeJSON(store.KEYS.AVATARS, state.avatars); }
-    function saveLastGroups(v) { state.lastGroups = v; store.writeJSON(store.KEYS.LAST_GROUPS, v); }
-    function saveOnboarding() { store.writeJSON(store.KEYS.ONBOARDING, state.hasSeenOnboarding); }
+    /* ---------- 落盘 ----------
+       每一次写入都广播一条事件。这是接云同步的前提：
+       同步层需要知道「哪一类数据变了、变了多少」，而不是被动全量重绘。
+
+       事件名统一 `state:` 前缀，payload 尽量小（只带 id / 数量这类线索），
+       订阅者要完整数据就自己读 state —— 避免事件里塞大对象被长期持有。
+
+       ⚠️ 兼容性：这些函数的名字、参数、返回值一律不变。
+       30 条回归测试里有大量 `app.state.saveMatch()` 这类调用，
+       签名一动就全红。 */
+    function emitChange(kind, extra) {
+        if (App.bus) {
+            try { App.bus.emit('state:' + kind, extra || null); } catch (e) { /* 通知失败不影响落盘 */ }
+        }
+    }
+
+    function saveMatch() {
+        var ok = store.writeJSON(store.KEYS.MATCH_STATE, state.match);
+        emitChange('match');
+        return ok;
+    }
+
+    function saveSettings() {
+        var ok = store.writeJSON(store.KEYS.SETTINGS, state.settings);
+        emitChange('settings');
+        return ok;
+    }
+
+    function saveStats() {
+        var ok = store.writeJSON(store.KEYS.ACHIEVEMENT_STATS, state.stats);
+        emitChange('stats');
+        return ok;
+    }
+
+    function saveUnlocked() {
+        var ok = store.writeJSON(store.KEYS.UNLOCKED, state.unlocked);
+        emitChange('unlocked');
+        return ok;
+    }
+
+    function saveAvatars() {
+        var ok = store.writeJSON(store.KEYS.AVATARS, state.avatars);
+        emitChange('avatars');
+        return ok;
+    }
+
+    function saveLastGroups(v) {
+        state.lastGroups = v;
+        var ok = store.writeJSON(store.KEYS.LAST_GROUPS, v);
+        emitChange('lastGroups');
+        return ok;
+    }
+
+    function saveOnboarding() {
+        var ok = store.writeJSON(store.KEYS.ONBOARDING, state.hasSeenOnboarding);
+        emitChange('onboarding');
+        return ok;
+    }
 
     /* ---------- 列表类历史（带上限）---------- */
     var LIMITS = {
@@ -188,6 +266,7 @@ window.App = window.App || {};
         if (!Array.isArray(list)) list = [];
         if (list.length > LIMITS.grouping) list = list.slice(0, LIMITS.grouping);
         store.writeJSON(store.KEYS.GROUPING_HISTORY, list);
+        emitChange('groupingHistory', { count: list.length });
         return list;
     }
 
@@ -228,7 +307,12 @@ window.App = window.App || {};
     }
 
     /* 比赛历史条目规整：比分/时长转 number，日期给合法时间戳，
-       字符串日期（老数据）也能被 new Date() 正确解析。 */
+       字符串日期（老数据）也能被 new Date() 正确解析。
+
+       ⚠️ 这里是"白名单重建"，不是"逐字段清洗"：返回对象里没列出的字段
+       会被静默丢弃。core/migrate.js 给每条历史补的 clientId 就是靠
+       推送去重与冲突解决的，如果这里不带出来，迁移写了也等于白写
+       （存进去有、读出来没有）。加字段时必须同步加进这个对象。 */
     function normMatchItem(raw) {
         var d = raw.date;
         if (typeof d === 'string') {
@@ -237,6 +321,8 @@ window.App = window.App || {};
         }
         return {
             id: num(raw.id, Date.now()),
+            /* 同步标识：迁移补的，或保存时新生成的 */
+            clientId: str(raw.clientId, ''),
             teamA: str(raw.teamA, '队伍 A'),
             teamB: str(raw.teamB, '队伍 B'),
             scoreA: clamp(raw.scoreA, 0, 0, null),
@@ -247,7 +333,11 @@ window.App = window.App || {};
             duration: clamp(raw.duration, 0, 0, null),
             mode: str(raw.mode, ''),
             date: num(d, Date.now()),
-            highlights: arr(raw.highlights).map(String)
+            highlights: arr(raw.highlights).map(String),
+            /* 同步时间戳：0 表示"从未同步"。用于 LWW 冲突解决。 */
+            updatedAt: clamp(raw.updatedAt, 0, 0, null),
+            /* 软删除：云端删除后本地保留墓碑，避免被其他设备推回来 */
+            deleted: bool(raw.deleted, false)
         };
     }
 
@@ -258,6 +348,7 @@ window.App = window.App || {};
     function setMatchHistory(list) {
         if (!Array.isArray(list)) list = [];
         store.writeJSON(store.KEYS.MATCH_HISTORY, list);
+        emitChange('matchHistory', { count: list.length });
         return list;
     }
 

@@ -11,7 +11,7 @@
    js/css——实测改过 screens.css 后线上 Lighthouse 仍报旧色值，就是这个
    原因。每次动 js/css/vendor 就把版本号 +1。
    ================================================================ */
-var CACHE_NAME = 'badminton-score-v8';
+var CACHE_NAME = 'badminton-score-v10';
 
 var ASSETS = [
   './',
@@ -23,17 +23,24 @@ var ASSETS = [
   './css/components.css',
   './css/screens.css',
   './css/effects.css',
+  './css/courtside.css',
+  './css/account.css',
   './css/share-card.css',
 
   './js/icons.js',
   './js/tokens.js',
   './js/store.js',
+  './js/core/bus.js',
+  './js/core/migrate.js',
   './js/state.js',
+  './js/api.js',
+  './js/sync.js',
   './js/effects.js',
   './js/ui.js',
   './js/nav.js',
   './js/avatars.js',
   './js/match.js',
+  './js/courtside.js',
   './js/grouping.js',
   './js/expense.js',
   './js/charts.js',
@@ -41,6 +48,7 @@ var ASSETS = [
   './js/achievements.js',
   './js/share.js',
   './js/settings.js',
+  './js/account.js',
   './js/app.js',
 
   './vendor/chart.umd.min.js',

@@ -27,6 +27,12 @@
   ],
   "shortcuts": [
     {
+      "name": "场边模式",
+      "short_name": "场边",
+      "description": "超大字报，手机架场边 2 米外可读",
+      "url": "./index.html#courtside=1"
+    },
+    {
       "name": "智能分组",
       "short_name": "分组",
       "url": "./index.html#tab=match&sub=grouping"

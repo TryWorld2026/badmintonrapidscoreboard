@@ -23,7 +23,7 @@
 .panel-head-sub {
     margin-top: 2px;
     font-size: var(--fs-2xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .panel-head-actions {
@@ -43,57 +43,45 @@
     font-weight: var(--fw-bold);
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--c-text-2);
+    color: var(--fg-2);
 }
 
 .section-title::before {
     content: "";
     width: 3px;
     height: 0.9em;
-    background: var(--c-brand);
-    box-shadow: var(--glow-brand);
+    background: var(--live);
+    box-shadow: var(--sh-flat);
 }
 
 .section-desc {
     margin-bottom: var(--sp-3);
     font-size: var(--fs-2xs);
     line-height: var(--lh-snug);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 /* ================================================================
-   Tab1 — 记分板：转播 score-bug
-   左右分屏 + 中央 VS 浮标 + 底部状态条
+   Tab1 — 记分板：方向 C · 仪表读数器
+   设计前提：手机架在场边、人站在 2 米外。
+   所以：读数区（两队 + 刻度环）绝对优先，操作区次之，日志再次之。
    ================================================================ */
 .scoreboard {
     position: relative;
-    background: var(--c-bg);
-    /* 比分板纹理：球场横向细线 */
-    background-image:
-        repeating-linear-gradient(0deg,
-            rgba(255, 255, 255, 0.028) 0px,
-            rgba(255, 255, 255, 0.028) 1px,
-            transparent 1px,
-            transparent 7px);
-    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    background: var(--void);
+    /* 方向 C：不铺纹理。旧版在这里铺了球场横向细线 + 顶部三色渐变
+       （--a → --live → --b），那是「转播车」语言；仪表读数器靠
+       精确的边线与间距建立秩序，不靠装饰。 */
+    box-shadow: inset 0 0 0 1px var(--edge-2);
     overflow: hidden;
-}
-
-/* 比分板顶部伏特高压线 */
-.scoreboard::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--c-team-a) 0%, var(--c-brand) 50%, var(--c-team-b) 100%);
-    z-index: 3;
 }
 
 .scoreboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    /* 中央分隔线用背景色实现，避免子元素 border 在缩放下的 0.5px 抖动 */
+    background: var(--edge);
+    gap: 1px;
 }
 
 .score-team {
@@ -104,28 +92,31 @@
     gap: var(--sp-2);
     padding: var(--sp-5) var(--sp-3) var(--sp-4);
     text-align: center;
+    background: var(--void);
     transition: background var(--dur-2) var(--ease);
 }
 
-.score-team + .score-team { border-left: 1px solid var(--c-line); }
-
-.score-team.team-a { background: linear-gradient(180deg, var(--c-team-a-soft) 0%, transparent 62%); }
-.score-team.team-b { background: linear-gradient(180deg, var(--c-team-b-soft) 0%, transparent 62%); }
-
-/* 底部队伍色硬边（领先方高亮） */
-.score-team.leading::after {
+/* 队伍识别：顶部 3px 硬边 —— 这是界面里几乎唯一的彩色 */
+.score-team::before {
     content: "";
     position: absolute;
+    top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 2px;
-    background: currentColor;
-    box-shadow: 0 0 14px currentColor;
+    height: 3px;
 }
+.score-team.team-a::before { background: var(--a); }
+.score-team.team-b::before { background: var(--b); }
 
-.score-team.team-a.leading { color: var(--c-team-a); }
-.score-team.team-b.leading { color: var(--c-team-b); }
+/* 队伍色的极淡晕染：只在顶部 42% 处，给"这台仪器有两路输入"的暗示 */
+.score-team.team-a { background-image: linear-gradient(180deg, var(--a-dim) 0%, transparent 42%); }
+.score-team.team-b { background-image: linear-gradient(180deg, var(--b-dim) 0%, transparent 42%); }
+
+/* 落后方整体降调 —— 旧版是给领先方加发光，方向 C 反过来：
+   让落后方退后，而不是让领先方发亮。发光是廉价感的来源。 */
+.score-team:not(.leading) .score-num { color: var(--fg-2); }
+.score-team:not(.leading) .score-team-name { color: var(--fg-2); }
+.score-team:not(.leading) .dial { opacity: 0.62; }
 
 .score-team-head {
     display: flex;
@@ -135,7 +126,7 @@
     width: 100%;
 }
 
-/* 队伍 A/B 角标：切角方块 */
+/* 队伍 A/B 角标 */
 .score-team-tag {
     display: inline-flex;
     align-items: center;
@@ -144,17 +135,16 @@
     height: 22px;
     flex-shrink: 0;
     font-size: var(--fs-3xs);
-    font-weight: var(--fw-black);
+    font-weight: var(--fw-bold);
     letter-spacing: 0.06em;
-    color: var(--c-on-fill);
-    clip-path: var(--cut-xs);
-    border-radius: 0;
+    color: var(--on-dark);
+    border-radius: var(--r-xs);
 }
 
-.team-a .score-team-tag { background: var(--c-team-a); }
-.team-b .score-team-tag { background: var(--c-team-b); }
+.team-a .score-team-tag { background: var(--a); }
+.team-b .score-team-tag { background: var(--b); }
 
-/* 头像：切角方块（转播车队标） */
+/* 头像：小圆角方块，1px 边 */
 .score-team-avatar {
     display: inline-flex;
     align-items: center;
@@ -164,66 +154,108 @@
     flex-shrink: 0;
     font-size: var(--fs-lg);
     line-height: 1;
-    background: var(--c-surface-2);
-    box-shadow: inset 0 0 0 1px var(--c-line-strong);
-    clip-path: var(--cut-sm);
-    border-radius: 0;
+    background: var(--plate-2);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+    border-radius: var(--r-sm);
 }
 
-.team-a .score-team-avatar { color: var(--c-team-a); }
-.team-b .score-team-avatar { color: var(--c-team-b); }
+.team-a .score-team-avatar { color: var(--a); }
+.team-b .score-team-avatar { color: var(--b); }
 
-/* 队名：全大写微型标签输入框 */
+/* 队名：仪表标签风格（不是全大写，中文没有大小写概念，改字距区分） */
 .score-team-name {
     width: 100%;
     min-width: 0;
-    min-height: 30px;
+    /* 触摸目标下限：输入框也要可点 */
+    min-height: var(--tap-min);
     padding: var(--sp-1) var(--sp-2);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-bold);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
     text-align: center;
     background: transparent;
-    color: var(--c-text);
+    color: var(--fg);
     border: none;
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    border-radius: var(--r-xs);
+    box-shadow: inset 0 0 0 1px var(--edge);
     transition: box-shadow var(--dur-1) var(--ease);
 }
 
 .score-team-name:focus {
     outline: none;
-    box-shadow: inset 0 0 0 1px var(--c-brand), 0 0 0 3px var(--c-brand-soft);
+    box-shadow: inset 0 0 0 1px var(--live), 0 0 0 3px var(--live-soft);
 }
 
-/* ---------- 大比分：LED 记分字 ---------- */
+/* ---------- 刻度环：方向 C 的签名元素 ----------
+   比分外一圈 40 格精密刻度。用 conic-gradient 画刻度 + mask 挖空中心，
+   落后方刻度暗淡、领先方转亮 —— 用"刻度"而非"发光"表达状态。
+   纯 CSS，零图片，可随容器缩放。 */
+.dial {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(104px, 30vw, 132px);
+    aspect-ratio: 1;
+    transition: opacity var(--dur-3) var(--ease);
+}
+
+/* 刻度环本体：40 格，每格 9°，格宽 1.1° */
+.dial::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: repeating-conic-gradient(
+        from 0deg,
+        var(--dial-dim) 0deg 1.1deg,
+        transparent 1.1deg 9deg
+    );
+    -webkit-mask: radial-gradient(circle, transparent 54%, #000 56%, #000 64%, transparent 66%);
+    mask: radial-gradient(circle, transparent 54%, #000 56%, #000 64%, transparent 66%);
+    transition: background var(--dur-3) var(--ease);
+}
+
+/* 内圈细环：把数字"框"在仪表里 */
+.dial::after {
+    content: "";
+    position: absolute;
+    inset: 14%;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--edge);
+}
+
+/* 领先方：刻度转为亮色（中性灰白，不是彩色） */
+.score-team.leading .dial::before {
+    background: repeating-conic-gradient(
+        from 0deg,
+        var(--dial) 0deg 1.4deg,
+        transparent 1.4deg 9deg
+    );
+}
+
+/* ---------- 大比分：等宽数字，不斜不发光 ---------- */
 .score-num {
-    font-family: var(--font-display);
-    font-style: italic;
+    font-family: var(--font-mono);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
-    font-size: clamp(3.5rem, 20vw, 5.25rem);
-    font-weight: 400;
-    line-height: 0.92;
-    letter-spacing: 0;
-    transform: skewX(-7deg);
+    font-size: var(--fs-score);
+    font-weight: var(--fw-semibold);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    transform: none;
+    position: relative;
+    z-index: 1;
 }
 
-.team-a .score-num {
-    color: var(--c-team-a);
-    text-shadow: var(--glow-a);
-}
-.team-b .score-num {
-    color: var(--c-team-b);
-    text-shadow: var(--glow-b);
-}
+.team-a .score-num { color: var(--a); }
+.team-b .score-num { color: var(--b); }
 
 .score-num.bump { animation: scoreBump var(--dur-3) var(--ease-out); }
 
 @keyframes scoreBump {
-    0% { transform: skewX(-7deg) scale(1); }
-    35% { transform: skewX(-7deg) scale(1.12); }
-    100% { transform: skewX(-7deg) scale(1); }
+    0% { transform: scale(1); }
+    35% { transform: scale(1.09); }
+    100% { transform: scale(1); }
 }
 
 .score-team-meta {
@@ -232,68 +264,69 @@
     gap: var(--sp-1);
     min-height: 20px;
     font-size: var(--fs-3xs);
-    font-weight: var(--fw-bold);
-    letter-spacing: 0.12em;
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    color: var(--fg-3);
 }
 
-/* 发球方小灯 */
+/* 发球方小灯：实心点 + 极淡的环 */
 .serve-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--c-text-3);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    width: 6px;
+    height: 6px;
+    background: var(--fg-3);
+    border-radius: 50%;
     opacity: 0.4;
     transition: opacity var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
 }
 
 .serve-dot.on { opacity: 1; }
-.team-a .serve-dot.on { background: var(--c-team-a); box-shadow: var(--glow-ring-a); }
-.team-b .serve-dot.on { background: var(--c-team-b); box-shadow: var(--glow-ring-b); }
+.team-a .serve-dot.on { background: var(--a); box-shadow: 0 0 0 3px var(--a-dim); }
+.team-b .serve-dot.on { background: var(--b); box-shadow: 0 0 0 3px var(--b-dim); }
 
-/* ---------- 中央 VS 浮标：切角矩形 + 计时 ---------- */
-.scoreboard-vs {
-    position: absolute;
-    top: 46px;
-    left: 50%;
-    transform: translateX(-50%);
+/* ---------- 当前局读数 ----------
+   旧版是浮在比分板正中的 "VS" 荧光徽标，绝对定位 + top:52px，
+   与队名输入框在 420px 宽下必然重叠（实测截图可见）。
+   方向 C 把它降级为状态条里的一枚普通读数：不浮动、不抢焦点。 */
+.scoreboard-game {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    padding-left: var(--sp-3);
+    border-left: 1px solid var(--edge);
+}
+
+.scoreboard-game .vs-timer {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    color: var(--fg-2);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+/* ---------- 底部状态条 ----------
+   方向 C：420px 宽下把「局分 + 当前局 + 计时 + 两个操作」塞进一行会挤到
+   文字竖排（实测截图可见「暂停」「局分」被折行）。
+   仪表读数器不该挤 —— 改成两行，信息分组更清楚：
+     第一行：局分刻度 ······ 当前局
+     第二行：计时 ······ 暂停 / 撤回
+   两行总高仍在 80px 内，不额外占空间。 */
+.scoreboard-bar {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    min-width: 62px;
-    padding: var(--sp-1) var(--sp-2);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-black);
-    letter-spacing: 0.14em;
-    color: var(--c-brand-ink);
-    background: var(--c-brand);
-    box-shadow: var(--glow-brand), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    clip-path: var(--cut-sm);
-    border-radius: 0;
-    z-index: 4;
+    gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    border-top: 1px solid var(--edge);
+    background: var(--plate);
 }
 
-.scoreboard-vs .vs-timer {
-    font-family: var(--font-num);
-    font-variant-numeric: tabular-nums;
-    font-size: var(--fs-3xs);
-    font-weight: var(--fw-bold);
-    color: var(--c-brand-ink);
-    letter-spacing: 0.04em;
-    opacity: 0.75;
-}
-
-/* ---------- 底部状态条：局分 / 计时 / 操作 ---------- */
-.scoreboard-bar {
+.scoreboard-bar-top,
+.scoreboard-bar-bottom {
     display: flex;
     align-items: center;
     gap: var(--sp-3);
-    padding: var(--sp-3) var(--sp-4);
-    border-top: 1px solid var(--c-line);
-    background: var(--c-surface);
 }
 
 .games-won {
@@ -307,32 +340,31 @@
     gap: 4px;
 }
 
+/* 局分：条形刻度（比圆点更"仪器"，且与刻度环语言一致） */
 .game-dot {
-    width: 9px;
-    height: 9px;
-    background: var(--c-surface-3);
-    box-shadow: inset 0 0 0 1px var(--c-line-strong);
-    transition: background var(--dur-2) var(--ease), transform var(--dur-2) var(--ease),
-        box-shadow var(--dur-2) var(--ease);
+    width: 18px;
+    height: 3px;
+    border-radius: 1px;
+    background: var(--plate-3);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+    transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
 }
 
 .games-won-side.a .game-dot.won {
-    background: var(--c-team-a);
-    box-shadow: var(--glow-ring-a);
-    transform: scale(1.1);
+    background: var(--a);
+    box-shadow: none;
 }
 .games-won-side.b .game-dot.won {
-    background: var(--c-team-b);
-    box-shadow: var(--glow-ring-b);
-    transform: scale(1.1);
+    background: var(--b);
+    box-shadow: none;
 }
 
 .games-won-label {
     font-size: var(--fs-3xs);
-    font-weight: var(--fw-bold);
-    color: var(--c-text-3);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-weight: var(--fw-semibold);
+    color: var(--fg-3);
+    letter-spacing: 0.14em;
+    white-space: nowrap;
 }
 
 .scoreboard-timer {
@@ -343,15 +375,16 @@
 }
 
 .timer-value {
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-md);
-    font-weight: var(--fw-bold);
-    letter-spacing: 0.02em;
-    color: var(--c-text);
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.01em;
+    color: var(--fg);
+    white-space: nowrap;
 }
 
-.timer-paused { color: var(--c-text-3); }
+.timer-paused { color: var(--fg-3); }
 
 /* 本局信息条 */
 .match-info {
@@ -361,16 +394,18 @@
     flex-wrap: wrap;
     margin-bottom: var(--sp-4);
     padding: var(--sp-2) var(--sp-3);
-    background: var(--c-surface);
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    box-shadow: inset 0 0 0 1px var(--edge);
     border-radius: var(--r-sm);
     font-size: var(--fs-2xs);
-    color: var(--c-text-2);
+    color: var(--fg-2);
 }
 
 .match-info .grow { text-align: right; }
 
-/* ---------- 底部动作 Dock（仅记分页）---------- */
+/* ---------- 底部动作 Dock（仅记分页）----------
+   方向 C：这是全场最重要的两个按钮，所以给足高度（64px）。
+   「一手汗一手拍」的场景下，旧版 54px 不够稳。 */
 .dock {
     position: fixed;
     left: 0;
@@ -380,34 +415,57 @@
     display: flex;
     gap: var(--sp-2);
     padding: var(--sp-2) var(--gutter);
-    background: rgba(10, 14, 19, 0.96);
+    background: color-mix(in srgb, var(--void) 96%, transparent);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    border-top: 1px solid var(--c-line);
-    box-shadow: var(--sh-dock);
+    border-top: 1px solid var(--edge);
 }
 
 .dock[hidden] { display: none; }
 
 .score-btn {
     flex: 1;
-    min-height: 54px;
+    min-height: 64px;
     font-size: var(--fs-md);
-    font-weight: var(--fw-black);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--c-on-fill);
-    border-radius: 0;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
+    border-radius: var(--r-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
 }
 
-/* 文字色必须用深色墨水：--c-team-a #FF2E63 配白字只有 3.26:1、
-   --c-team-b #00E5FF 配白字仅 1.39:1（户外强光下等于看不见），
-   换 #0A0E13 后分别是 5.37:1 与 12.58:1，均过 WCAG AA。
-   基类 .score-btn 的 color: var(--c-on-fill) 在此被覆盖。 */
-.score-btn.team-a { --fill: var(--c-team-a); color: var(--c-brand-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-a); }
-.score-btn.team-b { --fill: var(--c-team-b); color: var(--c-brand-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--glow-b); }
-.score-btn:active { transform: scale(0.98); }
+/* 队伍识别靠「左边缘 3px 硬边 + 文字色」，不靠整块高饱和填充：
+   旧版把按钮刷成玫红/电青，是界面上最刺眼的两块。
+   实测对比度：--a #E1554A 在 --plate-2 上约 4.6:1、--b #3E8FD9 约 5.2:1，
+   均过 WCAG AA。 */
+.score-btn.team-a {
+    background: var(--plate-2);
+    color: var(--fg);
+    box-shadow: inset 3px 0 0 var(--a), inset 0 0 0 1px var(--edge);
+}
+.score-btn.team-b {
+    background: var(--plate-2);
+    color: var(--fg);
+    box-shadow: inset 3px 0 0 var(--b), inset 0 0 0 1px var(--edge);
+}
+.score-btn.team-a:hover { background: var(--plate-3); }
+.score-btn.team-b:hover { background: var(--plate-3); }
+.score-btn.team-a:active { background: var(--a-dim); }
+.score-btn.team-b:active { background: var(--b-dim); }
+
+/* 按钮里的加分符号：给"按下去会发生什么"一个明确暗示 */
+.score-btn .plus {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    line-height: 1;
+    color: var(--fg-3);
+    transition: color var(--dur-1) var(--ease);
+}
+.score-btn.team-a:active .plus { color: var(--a); }
+.score-btn.team-b:active .plus { color: var(--b); }
 
 .app.dock-on .content {
     padding-bottom: calc(var(--dock-h, 68px) + var(--tabbar-h) + var(--sp-6) + env(safe-area-inset-bottom, 0px));
@@ -428,19 +486,19 @@
     gap: var(--sp-2);
     padding: var(--sp-1) var(--sp-2);
     font-size: var(--fs-2xs);
-    border-radius: 0;
-    background: var(--c-surface-2);
+    border-radius: var(--r-sm);
+    background: var(--plate-2);
 }
 
 .point-log-item .log-score {
     margin-left: auto;
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-weight: var(--fw-bold);
 }
 
-.point-log-item.a { box-shadow: inset 3px 0 0 var(--c-team-a); }
-.point-log-item.b { box-shadow: inset 3px 0 0 var(--c-team-b); }
+.point-log-item.a { box-shadow: inset 3px 0 0 var(--a); }
+.point-log-item.b { box-shadow: inset 3px 0 0 var(--b); }
 
 /* ---------- 比赛结果弹层 ---------- */
 .result-hero {
@@ -461,7 +519,7 @@
 .result-sub {
     margin-top: var(--sp-1);
     font-size: var(--fs-sm);
-    color: var(--c-text-2);
+    color: var(--fg-2);
 }
 
 .result-score {
@@ -475,28 +533,28 @@
 .result-score-side {
     flex: 1;
     padding: var(--sp-3);
-    border-radius: 0;
+    border-radius: var(--r-sm);
     text-align: center;
-    background: var(--c-surface-2);
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate-2);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
-.result-score-side.a { box-shadow: inset 0 0 0 1px var(--c-team-a-line), inset 0 3px 0 var(--c-team-a); }
-.result-score-side.b { box-shadow: inset 0 0 0 1px var(--c-team-b-line), inset 0 3px 0 var(--c-team-b); }
+.result-score-side.a { box-shadow: inset 0 0 0 1px var(--a-edge), inset 0 3px 0 var(--a); }
+.result-score-side.b { box-shadow: inset 0 0 0 1px var(--b-edge), inset 0 3px 0 var(--b); }
 
 .result-score-side .name {
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--c-text-2);
+    color: var(--fg-2);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .result-score-side .val {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-3xl);
@@ -504,13 +562,13 @@
     line-height: 1.05;
 }
 
-.result-score-side.a .val { color: var(--c-team-a); }
-.result-score-side.b .val { color: var(--c-team-b); }
+.result-score-side.a .val { color: var(--a); }
+.result-score-side.b .val { color: var(--b); }
 
 /* 胜方：金色描边 + 顶部横条 */
 .result-score-side.win {
-    background: var(--c-gold-soft);
-    box-shadow: inset 0 0 0 2px var(--c-gold);
+    background: var(--live-soft);
+    box-shadow: inset 0 0 0 2px var(--gold);
 }
 
 .result-stats {
@@ -522,9 +580,9 @@
 
 .result-stat {
     padding: var(--sp-2);
-    background: var(--c-surface-2);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate-2);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
     text-align: center;
 }
 
@@ -533,11 +591,11 @@
     font-weight: var(--fw-bold);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .result-stat .v {
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
@@ -555,15 +613,15 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--c-surface-2);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), inset 3px 0 0 var(--c-brand);
+    background: var(--plate-2);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge), inset 3px 0 0 var(--live);
 }
 
 .highlight-item .hi-icon {
     font-size: var(--fs-xl);
     line-height: 1;
-    color: var(--c-brand);
+    color: var(--live);
 }
 
 .highlight-item .hi-title {
@@ -574,7 +632,7 @@
 .highlight-item .hi-desc {
     margin-top: 2px;
     font-size: var(--fs-2xs);
-    color: var(--c-text-2);
+    color: var(--fg-2);
 }
 
 /* ================================================================
@@ -596,9 +654,9 @@
     padding: 2px var(--sp-2);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    color: var(--c-brand);
-    background: var(--c-brand-soft);
-    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    color: var(--live);
+    background: var(--live-soft);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
     border-radius: var(--r-xs, 2px);
 }
 
@@ -610,7 +668,7 @@
     padding: var(--sp-2) 0;
 }
 
-.skill-row + .skill-row { border-top: 1px solid var(--c-line); }
+.skill-row + .skill-row { border-top: 1px solid var(--edge); }
 
 .skill-row .idx {
     display: inline-flex;
@@ -619,12 +677,12 @@
     width: 22px;
     height: 22px;
     flex-shrink: 0;
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text-3);
-    background: var(--c-surface-2);
-    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    color: var(--fg-3);
+    background: var(--plate-2);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
     border-radius: var(--r-xs, 2px);
 }
 
@@ -646,14 +704,14 @@
     height: 30px;
     flex-shrink: 0;
     font-size: var(--fs-sm);
-    color: var(--c-text-3);
+    color: var(--fg-3);
     background: none;
     border: none;
     border-radius: var(--r-xs, 2px);
     cursor: pointer;
 }
 
-.skill-row .del-btn:hover { background: var(--c-danger-soft); color: var(--c-danger); }
+.skill-row .del-btn:hover { background: var(--danger-soft); color: var(--danger); }
 
 /* 对阵卡 */
 .duel-grid {
@@ -667,9 +725,9 @@
 }
 
 .duel-card {
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     overflow: hidden;
 }
 
@@ -680,8 +738,8 @@
     padding: var(--sp-2) var(--sp-3);
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text-3);
-    background: var(--c-surface-2);
+    color: var(--fg-3);
+    background: var(--plate-2);
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
@@ -695,7 +753,7 @@
     padding: var(--sp-3);
 }
 
-.duel-side + .duel-side { border-top: 1px solid var(--c-line); }
+.duel-side + .duel-side { border-top: 1px solid var(--edge); }
 
 .duel-side-tag {
     display: inline-flex;
@@ -706,13 +764,12 @@
     flex-shrink: 0;
     font-size: var(--fs-2xs);
     font-weight: var(--fw-black);
-    color: var(--c-on-fill);
-    clip-path: var(--cut-xs);
-    border-radius: 0;
+    color: var(--on-dark);
+    border-radius: var(--r-xs);
 }
 
-.duel-side.side-a .duel-side-tag { background: var(--c-team-a); }
-.duel-side.side-b .duel-side-tag { background: var(--c-team-b); }
+.duel-side.side-a .duel-side-tag { background: var(--a); }
+.duel-side.side-b .duel-side-tag { background: var(--b); }
 
 .duel-side-names {
     flex: 1;
@@ -730,36 +787,35 @@
 .expense-hero {
     padding: var(--sp-5) var(--sp-4);
     text-align: center;
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     margin-bottom: var(--sp-4);
 }
 
 .expense-hero .label {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text-3);
+    color: var(--fg-3);
     letter-spacing: 0.16em;
     text-transform: uppercase;
 }
 
 .hero-number {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-3xl);
     font-weight: 400;
     line-height: 1.05;
     letter-spacing: 0;
-    color: var(--c-text);
-    text-shadow: 0 0 28px rgba(212, 255, 63, 0.22);
+    color: var(--fg);
 }
 
 .expense-hero .per {
     margin-top: var(--sp-1);
     font-size: var(--fs-sm);
-    color: var(--c-text-2);
+    color: var(--fg-2);
 }
 
 .split-list {
@@ -773,9 +829,9 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .split-row .who {
@@ -792,24 +848,24 @@
     width: 72px;
     height: 6px;
     flex-shrink: 0;
-    background: var(--c-surface-3);
-    border-radius: 0;
+    background: var(--plate-3);
+    border-radius: var(--r-sm);
     overflow: hidden;
 }
 
 .split-row .share-bar i {
     display: block;
     height: 100%;
-    background: var(--c-brand);
-    box-shadow: var(--glow-brand);
-    border-radius: 0;
+    background: var(--live);
+    box-shadow: var(--sh-flat);
+    border-radius: var(--r-sm);
 }
 
 .split-row .amt {
     flex-shrink: 0;
     width: 84px;
     text-align: right;
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
@@ -820,7 +876,7 @@
     flex-shrink: 0;
     text-align: right;
     font-size: var(--fs-2xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 /* 时间输入（按时间分摊） */
@@ -831,7 +887,7 @@
     padding: var(--sp-2) 0;
 }
 
-.time-row + .time-row { border-top: 1px solid var(--c-line); }
+.time-row + .time-row { border-top: 1px solid var(--edge); }
 
 .time-row .who { flex: 1; min-width: 0; font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
 
@@ -840,12 +896,12 @@
     flex-shrink: 0;
     min-height: 36px;
     padding: var(--sp-1) var(--sp-2);
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-size: var(--fs-sm);
     text-align: center;
 }
 
-.time-row .unit { flex-shrink: 0; font-size: var(--fs-2xs); color: var(--c-text-3); }
+.time-row .unit { flex-shrink: 0; font-size: var(--fs-2xs); color: var(--fg-3); }
 
 /* ================================================================
    Tab3 — 数据
@@ -865,9 +921,9 @@
 .stat-card {
     position: relative;
     padding: var(--sp-3);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     text-align: center;
     overflow: hidden;
 }
@@ -880,40 +936,40 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: var(--c-brand-line);
+    background: var(--edge-2);
 }
 
 .stat-card .k {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text-3);
+    color: var(--fg-3);
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
 .stat-card .v {
     margin-top: 2px;
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-3xl);
     font-weight: 400;
     line-height: 1.1;
-    color: var(--c-text);
+    color: var(--fg);
 }
 
 .stat-card .u {
     font-size: var(--fs-2xs);
     font-weight: var(--fw-medium);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 /* ---------- 图表 ---------- */
 .chart-card {
     padding: var(--sp-4);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     margin-bottom: var(--sp-4);
 }
 
@@ -950,9 +1006,9 @@
     align-items: center;
     gap: var(--sp-2);
     padding: var(--sp-3) var(--sp-1) var(--sp-3);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     text-align: center;
     overflow: hidden;
 }
@@ -965,17 +1021,17 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--c-line-strong);
+    background: var(--edge-2);
 }
 
-.podium-step.rank-1::before { background: var(--c-gold); box-shadow: var(--glow-brand); }
-.podium-step.rank-2::before { background: var(--c-silver); }
-.podium-step.rank-3::before { background: var(--c-bronze); }
+.podium-step.rank-1::before { background: var(--gold); box-shadow: var(--sh-flat); }
+.podium-step.rank-2::before { background: var(--silver); }
+.podium-step.rank-3::before { background: var(--bronze); }
 
-.podium-step .medal { font-size: var(--fs-2xl); line-height: 1; color: var(--c-text-2); }
-.podium-step.rank-1 .medal { color: var(--c-gold); }
-.podium-step.rank-2 .medal { color: var(--c-silver); }
-.podium-step.rank-3 .medal { color: var(--c-bronze); }
+.podium-step .medal { font-size: var(--fs-2xl); line-height: 1; color: var(--fg-2); }
+.podium-step.rank-1 .medal { color: var(--gold); }
+.podium-step.rank-2 .medal { color: var(--silver); }
+.podium-step.rank-3 .medal { color: var(--bronze); }
 
 .podium-step .pname {
     width: 100%;
@@ -989,12 +1045,12 @@
 }
 
 .podium-step .pval {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
     font-weight: 400;
-    color: var(--c-brand);
+    color: var(--live);
 }
 
 .podium-step.rank-1 { padding-top: var(--sp-5); }
@@ -1007,9 +1063,9 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .rank-row + .rank-row { margin-top: var(--sp-2); }
@@ -1021,12 +1077,12 @@
     width: 26px;
     height: 26px;
     flex-shrink: 0;
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text-3);
-    background: var(--c-surface-2);
-    box-shadow: inset 0 0 0 1px var(--c-line-strong);
+    color: var(--fg-3);
+    background: var(--plate-2);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
     border-radius: var(--r-xs, 2px);
 }
 
@@ -1043,17 +1099,17 @@
 .rank-row .rsub {
     margin-top: 2px;
     font-size: var(--fs-3xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .rank-row .rval {
     flex-shrink: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
     font-weight: 400;
-    color: var(--c-brand);
+    color: var(--live);
 }
 
 /* ---------- 能力分析 ---------- */
@@ -1073,11 +1129,10 @@
     flex-shrink: 0;
     font-size: var(--fs-2xl);
     line-height: 1;
-    color: var(--c-brand);
-    background: var(--c-brand-soft);
-    box-shadow: inset 0 0 0 1px var(--c-brand-line);
-    clip-path: var(--cut-sm);
-    border-radius: 0;
+    color: var(--live);
+    background: var(--live-soft);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+    border-radius: var(--r-sm);
 }
 
 .ability-head .nm {
@@ -1088,7 +1143,7 @@
 
 .ability-head .sl {
     font-size: var(--fs-2xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .ability-tags {
@@ -1107,9 +1162,9 @@
     font-weight: var(--fw-bold);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--c-brand);
-    background: var(--c-brand-soft);
-    box-shadow: inset 0 0 0 1px var(--c-brand-line);
+    color: var(--live);
+    background: var(--live-soft);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
     border-radius: var(--r-xs, 2px);
 }
 
@@ -1124,7 +1179,7 @@
     font-weight: var(--fw-bold);
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--c-text-2);
+    color: var(--fg-2);
 }
 
 .recent-row {
@@ -1132,9 +1187,9 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .recent-row + .recent-row { margin-top: var(--sp-2); }
@@ -1149,11 +1204,11 @@
     white-space: nowrap;
 }
 
-.recent-row .r-date { margin-top: 2px; font-size: var(--fs-3xs); color: var(--c-text-3); }
+.recent-row .r-date { margin-top: 2px; font-size: var(--fs-3xs); color: var(--fg-3); }
 
 .recent-row .r-score {
     flex-shrink: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
@@ -1166,9 +1221,9 @@
     align-items: center;
     gap: var(--sp-4);
     padding: var(--sp-4);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     margin-bottom: var(--sp-4);
 }
 
@@ -1183,16 +1238,15 @@
 
 .achv-ring .ring-bg {
     fill: none;
-    stroke: var(--c-surface-3);
+    stroke: var(--plate-3);
     stroke-width: 8;
 }
 
 .achv-ring .ring-fg {
     fill: none;
-    stroke: var(--c-brand);
+    stroke: var(--live);
     stroke-width: 8;
     stroke-linecap: butt;
-    filter: drop-shadow(0 0 6px rgba(212, 255, 63, 0.55));
     transition: stroke-dashoffset var(--dur-3) var(--ease);
 }
 
@@ -1202,7 +1256,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-sm);
     font-weight: var(--fw-black);
@@ -1220,7 +1274,7 @@
 .achv-progress .txt .d {
     margin-top: 2px;
     font-size: var(--fs-2xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .achv-grid {
@@ -1232,15 +1286,15 @@
 .achv-card {
     padding: var(--sp-3);
     text-align: center;
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .achv-card .ic {
     font-size: 28px;
     line-height: 1;
-    color: var(--c-text-3);
+    color: var(--fg-3);
     margin: 0 auto;
 }
 
@@ -1248,38 +1302,38 @@
     margin-top: var(--sp-2);
     font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .achv-card .ds {
     margin-top: 2px;
     font-size: var(--fs-3xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .achv-card .pb {
     margin-top: var(--sp-2);
     height: 4px;
-    background: var(--c-surface-3);
-    border-radius: 0;
+    background: var(--plate-3);
+    border-radius: var(--r-md);
     overflow: hidden;
 }
 
 .achv-card .pb i {
     display: block;
     height: 100%;
-    background: var(--c-line-strong);
-    border-radius: 0;
+    background: var(--edge-2);
+    border-radius: var(--r-md);
 }
 
 .achv-card.unlocked {
-    box-shadow: inset 0 0 0 1px var(--c-gold), inset 0 3px 0 var(--c-gold);
+    box-shadow: inset 0 0 0 1px var(--gold), inset 0 3px 0 var(--gold);
 }
 
-.achv-card.unlocked .ic { color: var(--c-gold); }
-.achv-card.unlocked .nm { color: var(--c-text); }
-.achv-card.unlocked .ds { color: var(--c-text-2); }
-.achv-card.unlocked .pb i { background: var(--c-gold); }
+.achv-card.unlocked .ic { color: var(--gold); }
+.achv-card.unlocked .nm { color: var(--fg); }
+.achv-card.unlocked .ds { color: var(--fg-2); }
+.achv-card.unlocked .pb i { background: var(--gold); }
 
 /* ---------- 历史记录 ---------- */
 .history-row {
@@ -1287,9 +1341,9 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .history-row + .history-row { margin-top: var(--sp-2); }
@@ -1311,12 +1365,12 @@
     gap: var(--sp-2);
     flex-wrap: wrap;
     font-size: var(--fs-3xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .history-row .h-score {
     flex-shrink: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
@@ -1338,9 +1392,9 @@
     align-items: center;
     gap: var(--sp-4);
     padding: var(--sp-4);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     margin-bottom: var(--sp-4);
     overflow: hidden;
 }
@@ -1353,7 +1407,7 @@
     right: -30px;
     width: 110px;
     height: 110px;
-    background: var(--c-brand);
+    background: var(--live);
     opacity: 0.1;
     transform: rotate(45deg);
 }
@@ -1367,11 +1421,10 @@
     flex-shrink: 0;
     font-size: var(--fs-3xl);
     line-height: 1;
-    color: var(--c-brand);
-    background: var(--c-brand-soft);
-    box-shadow: inset 0 0 0 1px var(--c-brand-line);
-    clip-path: var(--cut-sm);
-    border-radius: 0;
+    color: var(--live);
+    background: var(--live-soft);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+    border-radius: var(--r-sm);
 }
 
 .me-head .nm { font-size: var(--fs-lg); font-weight: var(--fw-black); letter-spacing: 0.04em; }
@@ -1379,7 +1432,7 @@
 .me-head .sl {
     margin-top: 2px;
     font-size: var(--fs-2xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 .me-nav { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -1390,16 +1443,16 @@
     gap: var(--sp-3);
     padding: var(--sp-3) var(--sp-4);
     text-align: left;
-    background: var(--c-surface);
+    background: var(--plate);
     border: none;
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition: background var(--dur-1) var(--ease);
 }
 
-.me-nav-item:hover { background: var(--c-surface-2); }
+.me-nav-item:hover { background: var(--plate-2); }
 
 .me-nav-item .ni-icon {
     display: inline-flex;
@@ -1409,44 +1462,62 @@
     height: 34px;
     flex-shrink: 0;
     font-size: var(--fs-md);
-    color: var(--c-brand);
-    background: var(--c-brand-soft);
-    box-shadow: inset 0 0 0 1px var(--c-brand-line);
-    clip-path: var(--cut-xs);
-    border-radius: 0;
+    color: var(--live);
+    background: var(--live-soft);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+    border-radius: var(--r-sm);
 }
 
-.me-nav-item .ni-main { flex: 1; min-width: 0; }
-.me-nav-item .ni-title { font-size: var(--fs-sm); font-weight: var(--fw-bold); }
+/* ni-main 必须是纵向布局。
+   ⚠️ 这里原先只写了 `flex: 1; min-width: 0`，没有 flex-direction。
+   .ni-title 与 .ni-sub 都是 inline，于是两者排在同一行、中间没有间距：
+   标题长的项（「头像管理」「数据备份」）因为换行看起来正常，
+   标题短的项（「设置」「关于」）就渲染成「设置比赛规则与偏好」——
+   视觉上完全读不出这是两段文字。
+   这类 bug 只在短标题上暴露，所以长时间没被发现。 */
+.me-nav-item .ni-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.me-nav-item .ni-title {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    line-height: var(--lh-snug);
+}
+
 .me-nav-item .ni-sub {
-    margin-top: 2px;
     font-size: var(--fs-2xs);
-    color: var(--c-text-3);
+    line-height: var(--lh-snug);
+    color: var(--fg-3);
 }
 
-.me-nav-item .ni-arrow { color: var(--c-text-3); font-size: var(--fs-sm); }
+.me-nav-item .ni-arrow { color: var(--fg-3); font-size: var(--fs-sm); }
 
 /* 设置子页返回条 */
 .sub-back {
     display: inline-flex;
     align-items: center;
     gap: var(--sp-2);
-    min-height: 36px;
+    min-height: var(--tap-min);
     padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-1);
     margin-bottom: var(--sp-3);
     font-size: var(--fs-xs);
-    font-weight: var(--fw-bold);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--c-text-2);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.08em;
+    color: var(--fg-2);
     background: none;
     border: none;
-    border-radius: var(--r-xs, 2px);
+    border-radius: var(--r-sm);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
 
-.sub-back:hover { background: var(--c-surface-2); color: var(--c-text); }
+.sub-back:hover { background: var(--plate-2); color: var(--fg); }
 
 /* 天气卡 */
 .weather-card {
@@ -1454,18 +1525,18 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-4);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line), var(--sh-1);
+    background: var(--plate);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
     margin-bottom: var(--sp-4);
 }
 
-.weather-card .w-icon { font-size: var(--fs-3xl); line-height: 1; color: var(--c-brand); }
+.weather-card .w-icon { font-size: var(--fs-3xl); line-height: 1; color: var(--live); }
 
 .weather-card .w-main { flex: 1; min-width: 0; }
 
 .weather-card .w-temp {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-2xl);
@@ -1473,12 +1544,12 @@
     line-height: 1.1;
 }
 
-.weather-card .w-desc { font-size: var(--fs-2xs); color: var(--c-text-2); }
+.weather-card .w-desc { font-size: var(--fs-2xs); color: var(--fg-2); }
 
 .weather-card .w-city {
     margin-top: 2px;
     font-size: var(--fs-3xs);
-    color: var(--c-text-3);
+    color: var(--fg-3);
 }
 
 /* 关于页 */
@@ -1498,11 +1569,10 @@
     width: 68px;
     height: 68px;
     font-size: 32px;
-    color: var(--c-brand-ink);
-    background: var(--c-brand);
-    clip-path: var(--cut-sm);
-    border-radius: 0;
-    box-shadow: var(--glow-brand);
+    color: var(--on-light);
+    background: var(--live);
+    border-radius: var(--r-xs);
+    box-shadow: var(--sh-flat);
 }
 
 .about-logo .nm {
@@ -1511,7 +1581,7 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
 }
-.about-logo .ver { font-size: var(--fs-2xs); color: var(--c-text-3); }
+.about-logo .ver { font-size: var(--fs-2xs); color: var(--fg-3); }
 
 .about-list { display: flex; flex-direction: column; gap: var(--sp-2); }
 
@@ -1520,17 +1590,17 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
     font-size: var(--fs-sm);
 }
 
-.about-item .k { flex: 1; color: var(--c-text-2); }
+.about-item .k { flex: 1; color: var(--fg-2); }
 
 .about-item .v {
     font-weight: var(--fw-bold);
-    font-family: var(--font-num);
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
 }
 
@@ -1538,7 +1608,7 @@
     margin-top: var(--sp-4);
     font-size: var(--fs-2xs);
     line-height: var(--lh-snug);
-    color: var(--c-text-3);
+    color: var(--fg-3);
     text-align: center;
 }
 
@@ -1558,20 +1628,20 @@
     aspect-ratio: 1;
     font-size: var(--fs-2xl);
     line-height: 1;
-    background: var(--c-surface);
+    background: var(--plate);
     border: none;
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
     cursor: pointer;
     transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.avatar-opt:hover { background: var(--c-surface-2); }
+.avatar-opt:hover { background: var(--plate-2); }
 
 .avatar-opt.active {
-    box-shadow: inset 0 0 0 2px var(--c-brand);
-    background: var(--c-brand-soft);
+    box-shadow: inset 0 0 0 2px var(--live);
+    background: var(--live-soft);
 }
 
 .avatar-opt:active { transform: scale(0.94); }
@@ -1583,9 +1653,9 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-2) var(--sp-3);
-    background: var(--c-surface);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .avatar-bound-row .ab-avatar {
@@ -1597,10 +1667,9 @@
     flex-shrink: 0;
     font-size: var(--fs-lg);
     line-height: 1;
-    background: var(--c-surface-2);
-    box-shadow: inset 0 0 0 1px var(--c-line-strong);
-    clip-path: var(--cut-xs);
-    border-radius: 0;
+    background: var(--plate-2);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+    border-radius: var(--r-sm);
 }
 
 .avatar-bound-row .ab-name {
@@ -1627,7 +1696,7 @@
     gap: var(--sp-5);
     padding: var(--sp-6);
     text-align: center;
-    background: var(--c-bg);
+    background: var(--void);
     background-image:
         repeating-linear-gradient(0deg,
             rgba(255, 255, 255, 0.022) 0px,
@@ -1641,7 +1710,7 @@
 .onboard-art {
     font-size: 60px;
     line-height: 1;
-    color: var(--c-brand);
+    color: var(--live);
 }
 
 .onboard-title {
@@ -1655,7 +1724,7 @@
     max-width: 300px;
     font-size: var(--fs-sm);
     line-height: var(--lh-snug);
-    color: var(--c-text-2);
+    color: var(--fg-2);
 }
 
 .onboard-dots {
@@ -1666,12 +1735,12 @@
 .onboard-dots i {
     width: 7px;
     height: 7px;
-    background: var(--c-line-strong);
-    border-radius: 0;
+    background: var(--edge-2);
+    border-radius: var(--r-xs);
     transition: background var(--dur-2) var(--ease), width var(--dur-2) var(--ease);
 }
 
-.onboard-dots i.on { width: 20px; background: var(--c-brand); box-shadow: var(--glow-brand); }
+.onboard-dots i.on { width: 20px; background: var(--live); box-shadow: var(--sh-flat); }
 
 .onboard-actions {
     display: flex;
@@ -1694,22 +1763,22 @@
 
 .backup-stat .bs {
     padding: var(--sp-3);
-    background: var(--c-surface-2);
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--plate-2);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
     text-align: center;
 }
 
 .backup-stat .bs .k {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    color: var(--c-text-3);
+    color: var(--fg-3);
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
 .backup-stat .bs .v {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-style: italic;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-2xl);

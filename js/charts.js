@@ -11,13 +11,15 @@ window.App = window.App || {};
        视觉重构后没人同步，图表在深色卡片上直接花掉。 */
     function palette() {
         var p = App.tokens.palette({
-            brand: ['--c-brand', '#D4FF3F'],
-            teamA: ['--c-team-a', '#FF2E63'],
-            teamB: ['--c-team-b', '#00E5FF'],
-            gold: ['--c-gold', '#FFB627'],
-            text2: ['--c-text-2', '#A3AEBC'],
-            text3: ['--c-text-3', '#8E98A7'],
-            surface: ['--c-surface', '#111721']
+            /* 键名与 fallback 都必须跟 css/tokens.css 保持一致：
+               fallback 只在样式表尚未就绪时兜底，正常路径读到的是运行时值。 */
+            brand: ['--live', '#E0A33E'],
+            teamA: ['--a', '#E1554A'],
+            teamB: ['--b', '#3E8FD9'],
+            gold: ['--gold', '#C9A227'],
+            text2: ['--fg-2', '#9BA3AC'],
+            text3: ['--fg-3', '#6C757E'],
+            surface: ['--plate', '#17191C']
         });
         /* 网格线：深色底上用极淡的同系色，比旧版 rgba(15,21,28,.07) 可见得多 */
         p.grid = App.tokens.alpha(p.text3, 0.35);

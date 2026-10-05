@@ -17,7 +17,7 @@
     top: -12px;
     width: 9px;
     height: 14px;
-    border-radius: 0;
+    border-radius: var(--r-sm);
     will-change: transform, opacity;
     animation: confettiFall linear forwards;
 }
@@ -68,10 +68,9 @@
     gap: var(--sp-2);
     padding: var(--sp-6) var(--sp-7);
     text-align: center;
-    background: var(--c-surface);
-    border-radius: 0;
-    clip-path: var(--cut);
-    box-shadow: var(--sh-3), inset 0 0 0 2px var(--c-gold);
+    background: var(--plate);
+    border-radius: var(--r-sm);
+    box-shadow: var(--sh-pop), inset 0 0 0 2px var(--gold);
     transform: translate(-50%, -50%);
 }
 
@@ -80,7 +79,7 @@
     animation: victoryIn var(--dur-3) var(--ease-out);
 }
 
-.victory-banner .vb-icon { font-size: 52px; line-height: 1; color: var(--c-gold); }
+.victory-banner .vb-icon { font-size: 52px; line-height: 1; color: var(--gold); }
 
 .victory-banner .vb-title {
     font-size: var(--fs-2xl);
@@ -94,8 +93,7 @@
     font-weight: var(--fw-bold);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--c-brand);
-    text-shadow: 0 0 20px rgba(212, 255, 63, 0.4);
+    color: var(--live);
 }
 
 @keyframes victoryIn {
@@ -123,9 +121,9 @@
 
 /* ---------- 加载骨架（图表/数据）---------- */
 .skeleton {
-    background: linear-gradient(90deg, var(--c-surface-2) 25%, var(--c-surface-3) 37%, var(--c-surface-2) 63%);
+    background: linear-gradient(90deg, var(--plate-2) 25%, var(--plate-3) 37%, var(--plate-2) 63%);
     background-size: 400% 100%;
-    border-radius: 0;
+    border-radius: var(--r-sm);
     animation: skeletonShift 1.4s var(--ease) infinite;
 }
 

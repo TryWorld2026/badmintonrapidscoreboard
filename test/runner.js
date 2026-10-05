@@ -589,12 +589,82 @@
         await fresh();
 
         await test('视觉令牌', 'D2 tokens.js 能读到 CSS 自定义属性', async function () {
-            var brand = app.tokens.get('--c-brand');
-            assert(/^#[0-9a-f]{6}$/i.test(brand), '品牌色应为 hex，实际 ' + brand);
-            eq(brand.toLowerCase(), '#d4ff3f', '品牌色值');
+            /* 这条用例防的是「JS 侧没有读令牌的通道」——旧版 charts.js 手抄了
+               一份浅色配色，视觉重构后直接在深色卡片上花掉。所以断言的重点是
+               「能读到、是合法色值、alpha() 换算正确」，而不是某个具体色号：
+               色号属于设计决策，会随视觉方向调整（v2 是 #D4FF3F，方向 C 是
+               #E0A33E），把它写死会让每次改配色都要改测试，最终被人随手放宽。 */
+            var live = app.tokens.get('--live');
+            assert(/^#[0-9a-f]{6}$/i.test(live), '行动色应为 hex，实际 ' + live);
+
+            /* 必须与样式表里的真实值一致（而不是回落到 JS 的兜底字面量）：
+               样式表没加载 / 令牌名写错时，get() 会返回 fallback，
+               那样就证明不了「通道打通了」。 */
+            var declared = win.getComputedStyle(doc.documentElement)
+                .getPropertyValue('--live').trim();
+            assert(declared, '--live 应存在于 :root');
+            eq(live.toLowerCase(), declared.toLowerCase(), '读到值应等于样式表声明值');
+
             /* alpha() 收的是色值，不是令牌名 */
-            var soft = app.tokens.alpha(brand, 0.3);
+            var soft = app.tokens.alpha(live, 0.3);
             assert(/^rgba?\(/.test(soft), 'alpha() 应产出 rgba，实际 ' + soft);
+
+            /* 队伍色也走同一条通道 */
+            var a = app.tokens.get('--a');
+            assert(/^#[0-9a-f]{6}$/i.test(a), '甲队色应为 hex，实际 ' + a);
+        });
+
+        await test('布局', '标题+副标题容器必须纵向排列（不能挤成一行）', async function () {
+            /* 防的是「只写 flex:1 不写 flex-direction」这一类布局缺陷。
+               .ni-title / .ni-sub 都是 inline，父容器不设纵向 flex 时
+               两者会排在同一行且中间无间距，短标题项直接读成一句话：
+               「设置」+「比赛规则与偏好」渲染成「设置比赛规则与偏好」。
+               长标题项因为换行看起来正常，所以这类 bug 只在部分项上暴露。 */
+            win.location.hash = '#tab=me';
+            await sleep(600);
+
+            var items = doc.querySelectorAll('.me-nav-item');
+            assert(items.length > 0, '我的页应有导航项');
+
+            var bad = [];
+            for (var i = 0; i < items.length; i++) {
+                var main = items[i].querySelector('.ni-main');
+                var title = items[i].querySelector('.ni-title');
+                var sub = items[i].querySelector('.ni-sub');
+                if (!main || !title || !sub) continue;
+
+                var dir = win.getComputedStyle(main).flexDirection;
+                if (dir !== 'column') {
+                    bad.push((title.textContent || '').trim() + ' 的容器 flex-direction=' + dir);
+                    continue;
+                }
+                /* 更硬的断言：标题底边不应低于副标题顶边（即两者不重叠） */
+                var tRect = title.getBoundingClientRect();
+                var sRect = sub.getBoundingClientRect();
+                if (sRect.top < tRect.bottom - 1) {
+                    bad.push((title.textContent || '').trim() + ' 标题与副标题重叠');
+                }
+            }
+            eq(bad.length, 0, '所有导航项标题/副标题应纵向分开，问题项：' + JSON.stringify(bad));
+
+            /* 快捷操作弹层里用的是另一套 class，同一个坑，一起锁住 */
+            var quickItems = doc.querySelectorAll('#quick-actions .list-item');
+            assert(quickItems.length > 0, '快捷操作应有列表项');
+            var bad2 = [];
+            for (var j = 0; j < quickItems.length; j++) {
+                var m2 = quickItems[j].querySelector('.list-item-main');
+                var t2 = quickItems[j].querySelector('.list-item-title');
+                var s2 = quickItems[j].querySelector('.list-item-sub');
+                if (!m2 || !t2 || !s2) continue;
+                if (win.getComputedStyle(m2).flexDirection !== 'column') {
+                    bad2.push((t2.textContent || '').trim());
+                } else {
+                    var r1 = t2.getBoundingClientRect();
+                    var r2 = s2.getBoundingClientRect();
+                    if (r2.top < r1.bottom - 1) bad2.push((t2.textContent || '').trim() + ' 重叠');
+                }
+            }
+            eq(bad2.length, 0, '快捷操作项也应纵向分开，问题项：' + JSON.stringify(bad2));
         });
 
         await test('视觉令牌', 'D1 成就徽章渲染出真 SVG 而不是图标名', async function () {
@@ -614,7 +684,441 @@
             notContains(icon.textContent, 'shuttle', '不应显示图标名');
         });
 
-        /* ---------- 6. PWA（SW1 / SW2，仅 http 通道有意义） ---------- */
+        /* ---------- 6. 场边模式（超大字报） ----------
+           这一组防的是两件最容易退化的事：
+             ① 双计分路径 —— 场边模式自己处理 pointerup、又保留 nav 的
+                委托 click，一次点击会加两分（第一版实测就是这个 bug）；
+             ② 两套状态 —— 场边模式若自己存一份比分，与主界面必然发散。 */
+        await fresh();
+        setupMatch();
+
+        await test('场边模式', '进入/退出：覆盖层与 html 类名同步，且不残留', async function () {
+            eq(app.courtside.isOpen(), false, '初始不应处于场边模式');
+            var ov = doc.getElementById('courtside');
+            assert(ov, '场边模式容器应存在');
+
+            app.courtside.open();
+            await sleep(150);
+            eq(app.courtside.isOpen(), true, '应已进入场边模式');
+            eq(ov.hidden, false, '容器应可见');
+            eq(ov.getAttribute('aria-hidden'), 'false', 'aria-hidden 应放开');
+            eq(doc.documentElement.classList.contains('courtside-on'), true, '应锁定滚动');
+
+            app.courtside.close();
+            await sleep(150);
+            eq(app.courtside.isOpen(), false, '应已退出');
+            eq(ov.hidden, true, '容器应隐藏');
+            eq(ov.getAttribute('aria-hidden'), 'true', 'aria-hidden 应还原');
+            eq(doc.documentElement.classList.contains('courtside-on'), false, '应解除滚动锁定');
+        });
+
+        await test('场边模式', '单击只加 1 分（防双计分路径）', async function () {
+            setupMatch();
+            app.courtside.open();
+            await sleep(150);
+
+            /* ⚠️ 这里必须发真实的 pointer 事件序列，不能用 el.click()。
+               第一版用例就是写的 el.click()，结果「注入双计分 bug」的变异
+               验证照样全绿 —— 因为合成 click 只走 nav 的委托处理器，
+               压根碰不到 pointerdown/pointerup 那条路径，
+               等于没测到 bug 本身。现在补全 pointerdown → pointerup → click
+               三步，与真实触摸完全一致。 */
+            var el = doc.querySelector('#cs-side-a');
+            function realTap(node) {
+                var r = node.getBoundingClientRect();
+                var opt = {
+                    bubbles: true, cancelable: true, composed: true,
+                    pointerId: 1, pointerType: 'touch', isPrimary: true,
+                    button: 0, buttons: 1,
+                    clientX: r.left + r.width / 2, clientY: r.top + r.height / 2
+                };
+                node.dispatchEvent(new win.PointerEvent('pointerdown', opt));
+                node.dispatchEvent(new win.PointerEvent('pointerup', opt));
+                /* 浏览器在 pointerup 之后还会补一次 click，必须一起模拟 */
+                node.dispatchEvent(new win.MouseEvent('click', {
+                    bubbles: true, cancelable: true,
+                    clientX: opt.clientX, clientY: opt.clientY
+                }));
+            }
+
+            var before = app.state.match.scoreA;
+            realTap(el);
+            await sleep(180);
+            eq(app.state.match.scoreA - before, 1,
+                '一次真实点按应只加 1 分；加 2 分说明 pointerup 与委托 click 重复计分');
+
+            app.courtside.close();
+            await sleep(100);
+        });
+
+        await test('场边模式', '长按撤回后，紧随的 click 不得把分加回来', async function () {
+            setupMatch();
+            app.courtside.open();
+            await sleep(150);
+
+            /* 这条用例防的是「长按撤回 → 浏览器补发 click → 又被加回来」。
+               第一版就是这个 bug：长按后 7 分变 8 分（而不是 6 分），
+               因为 pointerup 计分 + 委托 click 计分两条路径同时在跑。
+               注意不能用 el.click() 测——合成 click 不触发 pointerdown，
+               长按根本不会发生，用例会永远绿（实测变异验证证实了这一点）。 */
+            var el = doc.querySelector('#cs-side-a');
+            var r = el.getBoundingClientRect();
+            var opt = {
+                bubbles: true, cancelable: true, composed: true,
+                pointerId: 1, pointerType: 'touch', isPrimary: true,
+                button: 0, buttons: 1,
+                clientX: r.left + r.width / 2, clientY: r.top + r.height / 2
+            };
+
+            /* 先正常加 3 分（真实点按）*/
+            function realTap(node) {
+                var b = node.getBoundingClientRect();
+                var o = {
+                    bubbles: true, cancelable: true, composed: true,
+                    pointerId: 1, pointerType: 'touch', isPrimary: true,
+                    button: 0, buttons: 1,
+                    clientX: b.left + b.width / 2, clientY: b.top + b.height / 2
+                };
+                node.dispatchEvent(new win.PointerEvent('pointerdown', o));
+                node.dispatchEvent(new win.PointerEvent('pointerup', o));
+                node.dispatchEvent(new win.MouseEvent('click', {
+                    bubbles: true, cancelable: true, clientX: o.clientX, clientY: o.clientY
+                }));
+            }
+            realTap(el); await sleep(160);
+            realTap(el); await sleep(160);
+            realTap(el); await sleep(160);
+            eq(app.state.match.scoreA, 3, '前置：甲队应为 3 分');
+            eq(app.state.match.scoreHistory.length, 3, '前置：流水应为 3 条');
+
+            /* 长按：按住超过 520ms 再抬起，随后补发 click */
+            el.dispatchEvent(new win.PointerEvent('pointerdown', opt));
+            await sleep(700);
+            el.dispatchEvent(new win.PointerEvent('pointerup', opt));
+            el.dispatchEvent(new win.MouseEvent('click', {
+                bubbles: true, cancelable: true, clientX: opt.clientX, clientY: opt.clientY
+            }));
+            await sleep(200);
+
+            eq(app.state.match.scoreA, 2, '长按应撤回最后一分（3 → 2），不能被 click 加回来');
+            eq(app.state.match.scoreHistory.length, 2, '流水应剩 2 条');
+
+            app.courtside.close();
+            await sleep(100);
+        });
+
+        await test('场边模式', '反复进出后手势监听不累积（长按只撤回一次）', async function () {
+            setupMatch();
+            /* 这条用例防的是「bindGestures() 每次 open 都重挂一遍」。
+               第二版就是这个 bug：进出 5 次后，一次长按会同时触发 5 个
+               撤回定时器，3 分的长按会把分数直接打到 0（而不是 2）。
+               所以这里刻意多进几次，再验证单次长按只撤回一分。 */
+            for (var i = 0; i < 5; i++) {
+                app.courtside.open();
+                await sleep(80);
+                app.courtside.close();
+                await sleep(80);
+            }
+            app.courtside.open();
+            await sleep(150);
+
+            var el = doc.querySelector('#cs-side-a');
+            var r = el.getBoundingClientRect();
+            var opt = {
+                bubbles: true, cancelable: true, composed: true,
+                pointerId: 1, pointerType: 'touch', isPrimary: true,
+                button: 0, buttons: 1,
+                clientX: r.left + r.width / 2, clientY: r.top + r.height / 2
+            };
+
+            function tap() {
+                var b = el.getBoundingClientRect();
+                var o = {
+                    bubbles: true, cancelable: true, composed: true,
+                    pointerId: 1, pointerType: 'touch', isPrimary: true,
+                    button: 0, buttons: 1,
+                    clientX: b.left + b.width / 2, clientY: b.top + b.height / 2
+                };
+                el.dispatchEvent(new win.PointerEvent('pointerdown', o));
+                el.dispatchEvent(new win.PointerEvent('pointerup', o));
+                el.dispatchEvent(new win.MouseEvent('click', {
+                    bubbles: true, cancelable: true, clientX: o.clientX, clientY: o.clientY
+                }));
+            }
+
+            tap(); await sleep(160);
+            tap(); await sleep(160);
+            tap(); await sleep(160);
+            eq(app.state.match.scoreA, 3, '前置：甲队应为 3 分');
+
+            el.dispatchEvent(new win.PointerEvent('pointerdown', opt));
+            await sleep(700);
+            el.dispatchEvent(new win.PointerEvent('pointerup', opt));
+            el.dispatchEvent(new win.MouseEvent('click', {
+                bubbles: true, cancelable: true, clientX: opt.clientX, clientY: opt.clientY
+            }));
+            await sleep(250);
+
+            eq(app.state.match.scoreA, 2,
+                '一次长按只能撤回一分；分数被打到 0 说明监听累积了');
+            eq(app.state.match.scoreHistory.length, 2, '流水应剩 2 条');
+
+            app.courtside.close();
+            await sleep(100);
+        });
+
+        await test('场边模式', '左右两半屏都占满宽度（网格列数不能多于子元素）', async function () {
+            setupMatch();
+            app.courtside.open();
+            await sleep(250);
+
+            var board = doc.querySelector('.cs-board');
+            var a = doc.getElementById('cs-side-a').getBoundingClientRect();
+            var b = doc.getElementById('cs-side-b').getBoundingClientRect();
+            var boardW = board.getBoundingClientRect().width;
+
+            /* 防的是「.cs-board 写成 3 列（1fr 1px 1fr）但只有 2 个子元素」：
+               乙队会被塞进那 1px 的中间列，整个右半屏变空。
+               实测 bug 时 sideB 宽只有 16px，而 sideA 是 422px。 */
+            assert(a.width > boardW * 0.4,
+                '甲队半屏应占约一半宽度，实际 ' + Math.round(a.width) + '/' + Math.round(boardW));
+            assert(b.width > boardW * 0.4,
+                '乙队半屏应占约一半宽度，实际 ' + Math.round(b.width) + '/' + Math.round(boardW));
+            /* 两半应大致等宽 */
+            assert(Math.abs(a.width - b.width) < boardW * 0.1,
+                '两半应大致等宽，实际 ' + Math.round(a.width) + ' vs ' + Math.round(b.width));
+
+            app.courtside.close();
+            await sleep(100);
+        });
+
+        await test('场边模式', '读数与主界面同源（不是第二套状态）', async function () {
+            setupMatch();
+            app.courtside.open();
+            await sleep(150);
+
+            doc.querySelector('#cs-side-a').click();
+            doc.querySelector('#cs-side-a').click();
+            doc.querySelector('#cs-side-b').click();
+            await sleep(200);
+
+            var m = app.state.match;
+            eq(Number(doc.getElementById('cs-score-a').textContent), m.scoreA, '场边甲队读数');
+            eq(Number(doc.getElementById('cs-score-b').textContent), m.scoreB, '场边乙队读数');
+            /* 主界面同一时刻必须一致 */
+            eq(Number(doc.getElementById('score-a').textContent), m.scoreA, '主界面甲队读数');
+            eq(Number(doc.getElementById('score-b').textContent), m.scoreB, '主界面乙队读数');
+
+            app.courtside.close();
+            await sleep(100);
+        });
+
+        await test('场边模式', '未开始计时时拦下加分并给出可见提示', async function () {
+            await fresh();
+            /* setupMatch 默认把 timerRunning 置 true（其余用例都依赖这一点），
+               这条用例要的正是「未开始」态，所以显式改回来。
+               秒数也归零：只有「没计时且没打过」才算未开始。 */
+            setupMatch();
+            app.state.match.timerRunning = false;
+            app.state.match.seconds = 0;
+
+            app.courtside.open();
+            /* 等防息屏探测的 Promise 落地（它会写提示条），
+               否则可能盖住后面「未计时」那条提示，让用例偶发假红。 */
+            await sleep(400);
+
+            var before = app.state.match.scoreA;
+            doc.querySelector('#cs-side-a').click();
+            await sleep(200);
+            eq(app.state.match.scoreA, before, '未计时不应加分');
+
+            var hint = doc.getElementById('cs-hint');
+            assert(hint.classList.contains('show'), '应显示可见提示（场边模式下看不到 toast）');
+            assert(hint.textContent.indexOf('计时') >= 0,
+                '提示应说明要先开始计时，实际：' + hint.textContent);
+            eq(app.state.match.scoreA, before, '再次点击仍不应加分');
+
+            app.courtside.close();
+            await sleep(100);
+        });
+
+        await test('场边模式', '计分实时反映到局分刻度与领先态', async function () {
+            setupMatch();
+            app.courtside.open();
+            await sleep(150);
+
+            doc.querySelector('#cs-side-a').click();
+            await sleep(150);
+            eq(doc.getElementById('cs-side-a').classList.contains('leading'), true,
+                '甲队应标记为领先');
+            eq(doc.getElementById('cs-side-b').classList.contains('leading'), false,
+                '乙队不应标记为领先');
+
+            /* 局分刻度数量跟随赛制：三局两胜 = 2 个刻度 */
+            eq(doc.querySelectorAll('#cs-games-a .cs-mark').length, 2, '甲队局分刻度数');
+
+            app.courtside.close();
+            await sleep(100);
+        });
+
+        /* ---------- 7. 状态层基础设施（事件总线 / 存档迁移） ----------
+           这两块是接云同步的地基。地基不可靠的话，后端接上来只会更难查。 */
+        await fresh();
+
+        await test('事件总线', '订阅者按注册顺序收到事件，payload 正确传递', async function () {
+            var seen = [];
+            var off1 = app.bus.on('t:order', function (p) { seen.push('a' + p); });
+            var off2 = app.bus.on('t:order', function (p) { seen.push('b' + p); });
+
+            var n = app.bus.emit('t:order', 1);
+            eq(n, 2, '应通知到 2 个订阅者');
+            eq(seen.join(','), 'a1,b1', '应按注册顺序派发');
+
+            off1(); off2();
+            eq(app.bus.count('t:order'), 0, '退订后应清空');
+        });
+
+        await test('事件总线', '一个订阅者抛错不影响其他订阅者（隔离）', async function () {
+            var ok = false;
+            var offBad = app.bus.on('t:iso', function () { throw new Error('故意抛错'); });
+            var offGood = app.bus.on('t:iso', function () { ok = true; });
+
+            /* 旧版项目里出过「一个副作用抛错把整个状态机卡住」（B14），
+               所以这里必须验证隔离：坏订阅者不能拖垮好订阅者。
+
+               注意：总线会把隔离住的错误打进 console.error（这是对的，
+               否则故障会被静默吞掉）。但测试运行器把「控制台出现 error」
+               视为失败，所以这里临时把 console.error 静音 ——
+               否则这条用例自己会让整轮测试变红。
+               静音只包住这一次 emit，其余时间仍然正常记录，
+               真正的意外错误不会被漏掉。 */
+            var realErr = win.console.error;
+            var muted = [];
+            win.console.error = function () { muted.push([].slice.call(arguments)); };
+            try {
+                app.bus.emit('t:iso', null);
+            } finally {
+                win.console.error = realErr;
+            }
+
+            eq(ok, true, '第二个订阅者仍应收到事件');
+            assert(muted.length >= 1, '被隔离的错误应至少记录一次（不能静默吞掉）');
+
+            offBad(); offGood();
+        });
+
+        await test('事件总线', '订阅者在回调里退订不会打乱本次派发', async function () {
+            var hits = [];
+            var offB = null;
+            var offA = app.bus.on('t:mut', function () {
+                hits.push('a');
+                if (offB) offB();          /* 派发过程中退订 b */
+            });
+            offB = app.bus.on('t:mut', function () { hits.push('b'); });
+
+            app.bus.emit('t:mut', null);
+            /* 本次派发用的是快照，所以 b 仍应收到（不静默丢失） */
+            eq(hits.join(','), 'a,b', '本次派发应使用快照');
+
+            /* 但下一次就不该再有 b 了 */
+            hits.length = 0;
+            app.bus.emit('t:mut', null);
+            eq(hits.join(','), 'a', '退订应从下一次派发生效');
+
+            offA();
+        });
+
+        await test('事件总线', 'state 落盘会广播变更事件', async function () {
+            var kinds = [];
+            var off = app.bus.on('state:settings', function () { kinds.push('settings'); });
+            app.state.saveSettings();
+            await sleep(50);
+            eq(kinds.length, 1, 'saveSettings 应广播一次 state:settings');
+            off();
+
+            var matchKinds = 0;
+            var off2 = app.bus.on('state:match', function () { matchKinds++; });
+            app.state.saveMatch();
+            await sleep(50);
+            eq(matchKinds, 1, 'saveMatch 应广播一次 state:match');
+            off2();
+        });
+
+        await test('存档迁移', '迁移是幂等的：重复运行不改变结果', async function () {
+            /* 幂等性靠"确定性 id"保证：若用 Date.now()/randomUUID，
+               重跑一次就会给同一场历史生成新 id，云端会认成两条不同记录。 */
+            var r1 = app.migrate.run();
+            var before = JSON.stringify(app.state.getMatchHistory());
+            var r2 = app.migrate.run();
+            var after = JSON.stringify(app.state.getMatchHistory());
+
+            eq(r2.migrated, false, '已是最新版时不应再迁移');
+            eq(after, before, '重复运行不应改变历史数据');
+        });
+
+        await test('存档迁移', '迁移给历史补上稳定 clientId，且同输入同输出', async function () {
+            /* 手工造一份 v1 存档：没有 clientId 的两条历史 */
+            var legacy = [
+                { id: 1, teamA: '甲', teamB: '乙', scoreA: 2, scoreB: 0, date: 1700000000000 },
+                { id: 2, teamA: '丙', teamB: '丁', scoreA: 1, scoreB: 2, date: 1700000100000 }
+            ];
+            app.state.setMatchHistory(legacy);
+            app.migrate.setVersion(1);
+
+            var r = app.migrate.run();
+            eq(r.migrated, true, '应从 v1 迁移');
+            eq(r.to, app.migrate.CURRENT_VERSION, '应迁到当前版本');
+            assert(!r.error, '不应有错误：' + r.error);
+
+            var hist = app.state.getMatchHistory();
+            eq(hist.length, 2, '历史条数不应变化');
+            assert(hist[0].clientId, '第一条应补上 clientId');
+            assert(hist[1].clientId, '第二条应补上 clientId');
+            assert(hist[0].clientId !== hist[1].clientId, '两条的 clientId 应不同');
+
+            /* 同输入必须同输出：再迁一次（先把版本退回去）结果应一致 */
+            var first = hist[0].clientId;
+            app.state.setMatchHistory(legacy);
+            app.migrate.setVersion(1);
+            app.migrate.run();
+            eq(app.state.getMatchHistory()[0].clientId, first,
+                '相同输入应生成相同 clientId（否则重跑会产生重复记录）');
+        });
+
+        await test('存档迁移', '迁移前会留一份备份', async function () {
+            app.state.setMatchHistory([{ id: 9, teamA: 'A', teamB: 'B', scoreA: 1, scoreB: 0, date: 1700000000000 }]);
+            app.migrate.setVersion(1);
+            app.migrate.run();
+            var bak = app.store.readJSON('badminton.backup.v1', null);
+            assert(bak && typeof bak === 'object', '应写出 badminton.backup.v1');
+        });
+
+        await test('存档迁移', '缺步骤时不假装迁完（版本停在安全位置）', async function () {
+            /* 临时挖掉 v1→v2 这一步，模拟"发布了新版本但忘了写迁移" */
+            var saved = app.migrate._migrations[1];
+            delete app.migrate._migrations[1];
+            try {
+                app.migrate.setVersion(1);
+                var r = app.migrate.run();
+                eq(r.migrated, false, '不应报告迁移成功');
+                eq(r.to, 1, '版本应停在 1，不能假装到了最新');
+                assert(r.error && r.error.indexOf('缺少') >= 0,
+                    '应给出缺步骤的错误，实际：' + r.error);
+                eq(app.migrate.getVersion(), 1, '磁盘上的版本也应是 1');
+            } finally {
+                app.migrate._migrations[1] = saved;
+            }
+        });
+
+        await test('存档迁移', '迁移失败不阻断应用启动', async function () {
+            /* 应用此刻是正常运行的，说明迁移失败没有把启动搞挂。
+               这里验证诊断信息确实被记录下来了。 */
+            assert(app.state.migrationError !== undefined,
+                'state 应暴露 migrationError 字段');
+            eq(typeof app.state.migrationError, 'string', 'migrationError 应为字符串');
+        });
+
+        /* ---------- 8. PWA（SW1 / SW2，仅 http 通道有意义） ---------- */
         await test('PWA', 'SW 已注册且离线缓存里的 index.html 是真应用', async function () {
             if (!('serviceWorker' in win.navigator)) {
                 throw new Error('当前环境不支持 serviceWorker（file:// 下属正常，需 http 通道）');

@@ -127,10 +127,152 @@ const PX_TO_MM = 0.183;
         const cs = getComputedStyle(el);
         if (legacyRe.test(cs.color + cs.backgroundColor + cs.borderColor)) { legacy = true; break; }
       }
+
+      /* ---- 对比度（WCAG AA）----
+         为什么必须工具化：--fg-3 曾经是 #6C757E，对 --void/--plate/--plate-2
+         分别是 4.03 / 3.76 / 3.49:1，**三处全部低于** 4.5:1，
+         而它是 .micro / .field-label / .list-item-sub 这些小字的颜色。
+         代码里没有任何报错、测试全绿，只有真去算对比度才看得出来。
+         （v2.0.2 用 Lighthouse 手工查过一次，但那是"跑一次"，
+          不是"每次提交都跑"，于是很快就回退了。） */
+      const lum = (hex) => {
+        const c = hex.replace('#', '');
+        if (c.length !== 6) return null;
+        const v = [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16) / 255)
+          .map(x => x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+        return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+      };
+      const ratio = (a, b) => {
+        const l1 = lum(a), l2 = lum(b);
+        if (l1 === null || l2 === null) return null;
+        return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+      };
+      const toHex = (rgb) => {
+        const m2 = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(rgb);
+        if (!m2) return null;
+        return '#' + [1, 2, 3].map(i => parseInt(m2[i], 10).toString(16).padStart(2, '0')).join('');
+      };
+      /* 找出文字实际压在上面的背景色。
+
+         规则：先看**自身**背景；自身不透明就用它（比如 .btn-primary
+         的 --fill 琥珀底 + 深色墨水字）；自身透明或半透明则往上找
+         （比如 .tag-brand 的 rgba(...,0.16) 底，字其实压在卡片的
+         --plate-3 上）。
+
+         两个方向都踩过坑：
+           - 只看自身  -> .tag-brand 的 background 与 color 同系，
+                          算出 1.00:1 假阳性；
+           - 只看父级  -> 按钮的琥珀底被跳过，深色字压深色底，
+                          又算出 1.00:1 假阳性。 */
+      const bgOf = (el) => {
+        let n = el;
+        while (n && n.nodeType === 1) {
+          const cs = getComputedStyle(n);
+          const a = cs.backgroundColor;
+          const m3 = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(a || '');
+          if (m3) {
+            const alpha = m3[4] === undefined ? 1 : parseFloat(m3[4]);
+            if (alpha >= 0.98) return toHex(a);
+            /* 半透明：近似按"叠加在主色板上"处理，继续往上找 */
+          }
+          n = n.parentElement;
+        }
+        const rootBg = getComputedStyle(document.documentElement).backgroundColor;
+        return toHex(rootBg) || '#101113';
+      };
+
+      const lowContrast = [];
+      const seen = new Set();
+      for (const el of document.querySelectorAll('body *')) {
+        /* 只看真正承载文字的元素 */
+        const txt = Array.from(el.childNodes)
+          .filter(n => n.nodeType === 3)
+          .map(n => n.textContent.trim())
+          .join('');
+        if (!txt) continue;
+        const cs = getComputedStyle(el);
+        if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.width < 2 || rect.height < 2) continue;
+
+        const fg = toHex(cs.color);
+        const bg = bgOf(el);
+        if (!fg || !bg) continue;
+        const cr = ratio(fg, bg);
+        if (cr === null) continue;
+
+        /* AA 正文 4.5:1；≥18.66px 或 ≥14px 且粗体 可放宽到 3:1 */
+        const size = parseFloat(cs.fontSize);
+        const weight = parseInt(cs.fontWeight, 10) || 400;
+        const large = size >= 24 || (size >= 18.66 && weight >= 700);
+        const need = large ? 3 : 4.5;
+        if (cr < need) {
+          const key = fg + '|' + bg + '|' + Math.round(size) + '|' + txt.slice(0, 10);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          lowContrast.push({
+            ratio: cr.toFixed(2),
+            need: need,
+            fg, bg,
+            size: Math.round(size),
+            cls: (el.className || '').toString().slice(0, 30),
+            txt: txt.slice(0, 14),
+          });
+        }
+      }
+
+      /* ---- 滚到底之后是否被 Dock / tabbar 永久遮挡 ----
+         这条是补盲区：审计工具原来从不 scrollTo 底部，于是
+         「.app.dock-on .content」这个永不命中的选择器一直没被发现 ——
+         padding-bottom 停在 90px 而需要 139px，记分页滚到底时
+         约 49px 内容永久压在 Dock 下面。不报错、不白屏，只是点不到。
+
+         判据要用「文档总高度 - 滚动位置」换算，不能直接看
+         getBoundingClientRect().bottom —— 页面本身不滚动时
+         （.app 是 min-height:100dvh 的 flex 列，滚动发生在 window 上）
+         rect 会包含未进入视口的部分，导致把"还没滚到的内容"
+         误报成"被遮挡"。 */
+      let occlusion = null;
+      const scroller = document.scrollingElement || document.documentElement;
+      const contentEl = document.querySelector('.content') || document.body;
+
+      if (scroller) {
+        const maxScroll = scroller.scrollHeight - window.innerHeight;
+        scroller.scrollTop = maxScroll;          /* 滚到底 */
+        void scroller.offsetHeight;              /* 同步读一次布局 */
+
+        const bars = ['dock', 'tabbar']
+          .map(id => document.getElementById(id))
+          .filter(el => el && !el.hidden)
+          .map(el => ({ id: el.id, top: el.getBoundingClientRect().top }))
+          .filter(b => b.top < window.innerHeight && b.top > 0);
+
+        if (bars.length && maxScroll > 0) {
+          /* 底线 = 内容容器在滚动到底时的底边（用文档坐标算） */
+          const contentRect = contentEl.getBoundingClientRect();
+          const contentBottomInViewport = contentRect.bottom;
+          const topMostBar = Math.min(...bars.map(b => b.top));
+          /* 只有内容真的越过固定条顶边才算遮挡 */
+          const covered = Math.round(contentBottomInViewport - topMostBar);
+          const pad = parseFloat(getComputedStyle(contentEl).paddingBottom) || 0;
+          /* 留 2px 容差；padding 已经够时 contentRect.bottom 会正好落在条上方 */
+          if (covered > 2 && pad < covered + 2) {
+            occlusion = {
+              covered,
+              bar: bars.map(b => b.id).join('+'),
+              paddingBottom: pad,
+            };
+          }
+        }
+        scroller.scrollTop = 0;
+      }
+
       return {
         small,
         overflowX: document.documentElement.scrollWidth > window.innerWidth,
         legacy,
+        lowContrast,
+        occlusion,
       };
     }, { tapMin: TAP_MIN, legacySrc: LEGACY_COLORS.source });
 
@@ -142,6 +284,15 @@ const PX_TO_MM = 0.183;
     }
     if (m.overflowX) problems.push('横向溢出');
     if (m.legacy) problems.push('存在旧配色');
+    if (m.lowContrast.length) {
+      problems.push(`${m.lowContrast.length} 处对比度不足 AA: ` +
+        m.lowContrast.map(c =>
+          `${c.fg} on ${c.bg} = ${c.ratio}:1 (需 ${c.need}, ${c.size}px "${c.txt}")`).join('; '));
+    }
+    if (m.occlusion) {
+      problems.push(`滚到底被 ${m.occlusion.bar} 遮挡 ${m.occlusion.covered}px` +
+        `（padding-bottom=${m.occlusion.paddingBottom}，最低元素 .${m.occlusion.cls}）`);
+    }
     if (errs.length) problems.push('运行期错误: ' + errs[0]);
 
     rows.push({ name, problems });

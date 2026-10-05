@@ -18,7 +18,7 @@ window.App = window.App || {};
             teamB: ['--b', '#3E8FD9'],
             gold: ['--gold', '#C9A227'],
             text2: ['--fg-2', '#9BA3AC'],
-            text3: ['--fg-3', '#6C757E'],
+            text3: ['--fg-3', '#85909D'],
             surface: ['--plate', '#17191C']
         });
         /* 网格线：深色底上用极淡的同系色，比旧版 rgba(15,21,28,.07) 可见得多 */

@@ -50,7 +50,9 @@
 
 .btn-success { --fill: var(--ok); color: var(--void); }
 .btn-warning { --fill: var(--warn); color: var(--void); }
-.btn-danger { --fill: var(--danger); color: #FFFFFF; }
+/* 深墨字：白字压 #D9534F 只有 3.96:1，低于 AA 正文 4.5:1；
+   深墨是 4.77:1。也与上两条「填充按钮一律深墨字」的规则一致。 */
+.btn-danger { --fill: var(--danger); color: var(--void); }
 .btn-dark { --fill: var(--plate-3); color: var(--fg); }
 
 /* 描边按钮：1px 发丝线 */

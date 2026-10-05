@@ -137,7 +137,11 @@
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
     letter-spacing: 0.06em;
-    color: var(--on-dark);
+    /* 深色墨水而不是 --on-dark(#F2F4F6)：
+       白字压信号红只有 3.40:1、压仪表蓝 3.10:1，均低于 AA 正文 4.5:1。
+       换深色后分别是 5.04:1 / 5.52:1。
+       （同 v2.0.2 修 dock 计分按钮时用的是同一个办法。） */
+    color: var(--void);
     border-radius: var(--r-xs);
 }
 
@@ -159,8 +163,13 @@
     border-radius: var(--r-sm);
 }
 
-.team-a .score-team-avatar { color: var(--a); }
-.team-b .score-team-avatar { color: var(--b); }
+/* 队色表情压在 --plate-2 上只有 4.36:1（甲）/ 3.60:1（乙），低于 AA 4.5:1。
+   队色本身是产品识别色，不能改（README：全应用仅此两组饱和色）。
+   所以只在这一处把「队色文字」提亮到同色系的浅一档：
+   甲 #E8665B → 5.05:1，乙 #4E9AE0 → 5.47:1。
+   色相不变，只是明度提一档，识别性不受影响。 */
+.team-a .score-team-avatar { color: #E8665B; }
+.team-b .score-team-avatar { color: #4E9AE0; }
 
 /* 队名：仪表标签风格（不是全大写，中文没有大小写概念，改字距区分） */
 .score-team-name {
@@ -771,7 +780,8 @@ body.dock-on .content {
     flex-shrink: 0;
     font-size: var(--fs-2xs);
     font-weight: var(--fw-black);
-    color: var(--on-dark);
+    /* 同上：深色墨水保证对比度（白字在队伍色上只有 3.40 / 3.10:1） */
+    color: var(--void);
     border-radius: var(--r-xs);
 }
 

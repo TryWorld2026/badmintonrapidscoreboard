@@ -698,6 +698,47 @@
         /* ---------- 5. 视觉令牌（D1 / D2） ---------- */
         await fresh();
 
+        /* Dock 出现时必须给内容留出避让空间。
+           这条用例防的是「CSS 规则写了但选择器匹配不到任何元素」——
+           这类问题不报错、不白屏，只在滚到底时把内容压在 Dock 下面。
+           真实缺陷：规则写成 `.app.dock-on .content`，而 nav.js 把
+           dock-on 加在 document.body 上，.app 是 body 的子元素，
+           要求同一个元素同时具备两者 → 匹配数恒为 0。
+           实测 padding-bottom 停在 90px，而需要 162px，
+           记分页滚到底时内容被永久压住约 49px。
+
+           断言刻意分两层：先断言规则真的命中了元素（选择器正确），
+           再断言避让高度足够（数值正确）。只断言其中一个都拦不住。 */
+        await test('视觉令牌', 'D3 Dock 出现时内容底部留出避让空间', async function () {
+            win.location.hash = '#tab=score';
+            await sleep(600);
+
+            var body = doc.body;
+            assert(body.classList.contains('dock-on'), '记分页 body 应有 dock-on');
+            eq(doc.querySelectorAll('.app.dock-on .content').length, 0,
+                '旧选择器本就不该匹配（它是错的，留着是提醒）');
+            var matched = doc.querySelectorAll('body.dock-on .content').length;
+            assert(matched > 0, 'body.dock-on .content 必须命中内容容器，实际匹配 ' + matched);
+
+            var content = doc.querySelector('.content');
+            var dock = doc.getElementById('dock');
+            assert(content && dock, '内容容器与 Dock 都应存在');
+
+            var pad = parseFloat(win.getComputedStyle(content).paddingBottom) || 0;
+            /* 需要避让的高度 = 视口底部到 Dock 顶部的距离 */
+            var need = win.innerHeight - dock.getBoundingClientRect().top;
+            assert(pad >= need - 2,
+                '内容底部避让应不小于 Dock 占用高度：padding=' + pad + ' 需要=' + Math.round(need));
+
+            /* 再验一遍语义：规则真的来自 dock-on 那条，而不是别处的 padding */
+            var dockH = parseFloat(win.getComputedStyle(doc.documentElement)
+                .getPropertyValue('--dock-h')) || 0;
+            var tabH = parseFloat(win.getComputedStyle(doc.documentElement)
+                .getPropertyValue('--tabbar-h')) || 0;
+            assert(pad >= dockH + tabH,
+                'padding 应至少覆盖 dock(' + dockH + ') + tabbar(' + tabH + ')，实际 ' + pad);
+        });
+
         await test('视觉令牌', 'D2 tokens.js 能读到 CSS 自定义属性', async function () {
             /* 这条用例防的是「JS 侧没有读令牌的通道」——旧版 charts.js 手抄了
                一份浅色配色，视觉重构后直接在深色卡片上花掉。所以断言的重点是

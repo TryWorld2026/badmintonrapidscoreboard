@@ -467,7 +467,14 @@
 .score-btn.team-a:active .plus { color: var(--a); }
 .score-btn.team-b:active .plus { color: var(--b); }
 
-.app.dock-on .content {
+/* Dock 出现时给内容底部留出避让空间。
+   选择器必须匹配 body —— nav.js 把 dock-on 加在 document.body 上，
+   而 .app 是 body 里的子元素。写成 `.app.dock-on` 要求同一个元素
+   同时具备两者，规则永远不会命中（实测 querySelectorAll 匹配数为 0），
+   于是 padding-bottom 一直停在 base.css 的 90px，
+   而实际需要 --dock-h 80 + tabbar 58 + sp-6 24 = 162px，
+   记分页滚到底时内容被 Dock 永久压住约 49px。 */
+body.dock-on .content {
     padding-bottom: calc(var(--dock-h, 68px) + var(--tabbar-h) + var(--sp-6) + env(safe-area-inset-bottom, 0px));
 }
 

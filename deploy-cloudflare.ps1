@@ -1,4 +1,4 @@
-﻿# 部署到 Cloudflare Pages（直传）
+# 部署到 Cloudflare Pages（直传）
 #
 # 只发生产资产：test/、test.html、README*、LICENSE、REFACTOR_NOTES.md
 # 一律不进公网产物。.wrangler/ 是 wrangler 的本地缓存，已在 .gitignore。
@@ -55,12 +55,42 @@ $count = (Get-ChildItem $stage -Recurse -File).Count
 Write-Host "暂存 $count 个文件 -> $stage"
 
 # ---- 4. 上传前硬校验 ------------------------------------------------------
-# 当前应有：css 6 + js 17 + vendor 2 + images 4 + 根目录 5 = 34
-# （根目录 5 = index.html / manifest.json / sw.js / _headers / robots.txt）
-$MIN = 30
-if ($count -lt $MIN) {
-    throw "只暂存了 $count 个文件，少于 $MIN。中止上传——否则会部署出缺 js/css 的坏产物。"
+# 逐目录断言，而不是只数总数。
+#
+# 为什么不能用总数下限：曾经用 $MIN = 30，而实际有 42 个文件——
+# 丢掉整个 css/（剩 34）、整个 vendor/（剩 40）、整个 images/（剩 38）、
+# 丢掉 js/core/（剩 40）全部都能"过关"。而这个断言存在的唯一理由，
+# 正是拦住"某个目录没复制进去"这种坏产物（见文件头注释：
+# 曾经部署出"只有 index.html"的版本，所有 js/css 被 SPA 兜底改写成 HTML，
+# 页面白屏但状态码全是 200）。
+#
+# 所以这里对每个目录分别计数并与期望值比对：任何一处对不上都中止上传。
+# 新增 js/css 文件时改下面的期望值——忘了改会被断言拦下，
+# 这正是想要的：宁可部署失败，也不要发出坏产物。
+$expected = [ordered]@{
+    'css'    = 8     # tokens/base/components/screens/effects/courtside/account/share-card
+    'js'     = 23    # 21 个顶层 + core/bus.js + core/migrate.js
+    'vendor' = 2     # chart.umd.min.js / html2canvas.min.js
+    'images' = 4     # icon-192 / icon-512 / apple-touch-icon / favicon.svg
 }
+$expectedFiles = @('index.html', 'manifest.json', 'sw.js', '_headers', 'robots.txt')
+
+$mismatch = @()
+foreach ($d in $expected.Keys) {
+    $dir = Join-Path $stage $d
+    $n = if (Test-Path $dir) { (Get-ChildItem $dir -Recurse -File).Count } else { 0 }
+    if ($n -ne $expected[$d]) { $mismatch += "$d/ 期望 $($expected[$d]) 实际 $n" }
+}
+$expectedTotal = ($expected.Values | Measure-Object -Sum).Sum + $expectedFiles.Count
+if ($count -ne $expectedTotal) {
+    $mismatch += "总数 期望 $expectedTotal 实际 $count"
+}
+
+if ($mismatch.Count -gt 0) {
+    throw ("暂存内容与预期不符，中止上传：`n  " + ($mismatch -join "`n  ") +
+           "`n（若确实新增/删除了 js/css 文件，请同步更新本脚本的 `$expected）")
+}
+Write-Host "资产清单校验通过：$count 个文件，逐目录数量与预期一致"
 
 # ---- 5. 上传 --------------------------------------------------------------
 wrangler pages deploy $stage --project-name=badminton-score --branch=main --commit-dirty=true

@@ -166,6 +166,23 @@ window.App = window.App || {};
         return App.state.settings.bestOfThree ? 2 : 1;
     }
 
+    /* 整场比赛是否已经结束。
+       刻意用「由局分推导」而不是内存标志位：
+       endGame 只把 timerRunning 置 false，并没有锁住计分。
+       于是关掉结果弹层、再点一次「开始」、误触一次加分，
+       checkGameEnd 会立刻再次成立、gamesWonA 从 2 变成 3，
+       结果弹层二次弹出；继续点可以一路涨到十几。
+       而 state.js 的 normalizeMatch 把 gamesWon 钳在 0..2，
+       刷新后界面显示 2、存档里是 3+，界面与数据静默分叉。
+
+       标志位不落盘，刷新即失效，同样的路径照样能复现；
+       从局分推导则在刷新后依然成立。 */
+    function isMatchOver() {
+        var m = App.state.match;
+        var need = gamesNeeded();
+        return m.gamesWonA >= need || m.gamesWonB >= need;
+    }
+
     function updateGamesWonDisplay() {
         var m = App.state.match;
         /* 单局模式只画 1 个点，别再画 3 个 */
@@ -252,6 +269,14 @@ window.App = window.App || {};
         var m = App.state.match;
         if (!m.timerRunning) {
             ui.notify('请先点击「开始比赛」按钮开始计时！', '提示');
+            return;
+        }
+
+        /* 整场已结束就不再接受加分。
+           否则会重复结算：局分溢出到 3、4、5…，
+           结果弹层反复弹出，并且与刷新后的钳位值静默不一致。 */
+        if (isMatchOver()) {
+            ui.notify('本场比赛已结束。如需继续，请先「重置比赛」或「重置本局」', '比赛已结束');
             return;
         }
 

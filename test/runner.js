@@ -263,6 +263,64 @@
             assert(app.state.match.timerRunning === false, '2-0 后应结束');
         });
 
+        /* 赛后误触不得重复结算。
+           复现路径（全部走真实 UI 路径，实测可触发）：
+             打完两局 2:0 → Esc 关结果弹层 → 点「开始」→ 误触一次加分。
+           endGame 只把 timerRunning 置 false，并没有锁住计分，
+           于是 checkGameEnd 立刻再次成立、gamesWonA 从 2 变 3，
+           结果弹层二次弹出；继续点可以一路涨到十几。
+           而 state.js 的 normalizeMatch 把 gamesWon 钳在 0..2 ——
+           刷新后界面显示 2、存档里是 3+，界面与数据静默分叉。 */
+        await test('计分规则', 'A1b 整场结束后不再接受加分：局分不溢出、弹层不二次弹出', async function () {
+            setupMatch({ bestOfThree: true });
+            scoreTo('a', 21);
+            scoreTo('a', 21);
+            var m = app.state.match;
+            eq(m.gamesWonA, 2, '甲应赢 2 局');
+            eq(m.timerRunning, false, '整场结束后计时器应停止');
+
+            /* 模拟用户关掉结果弹层后重新点「开始」再误触加分 */
+            app.match.closeResultSheet();
+            await sleep(400);                 // closeSheet 有 340ms 退场动画
+            app.match.toggleTimer();          // 真实按钮路径：match:timer
+            eq(app.state.match.timerRunning, true, '重新开始计时应生效');
+
+            app.match.updateScore('a', 1);    // 真实按钮路径：match:score
+            eq(app.state.match.gamesWonA, 2, '已结束的比赛不应再加分（局分不得溢出）');
+            eq(app.state.match.gamesWonB, 0, '乙局分不应变化');
+
+            /* 再多点几次，确认不会累积 */
+            app.match.updateScore('a', 1);
+            app.match.updateScore('a', 1);
+            eq(app.state.match.gamesWonA, 2, '连续误触也不应让局分增长');
+
+            /* 结果弹层不应被二次弹出 */
+            await sleep(400);
+            assert(doc.getElementById('result-sheet').hasAttribute('hidden'),
+                '结果弹层不应二次弹出');
+        });
+
+        /* 刷新后守卫依然成立：标志位式的实现会在 reload 后失效，
+           从局分推导的实现不会。这条锁住「刷新后仍然不能加分」。 */
+        await test('计分规则', 'A1c 刷新后守卫仍生效（不依赖内存标志位）', async function () {
+            setupMatch({ bestOfThree: true });
+            scoreTo('a', 21);
+            scoreTo('a', 21);
+            eq(app.state.match.gamesWonA, 2, '甲应赢 2 局');
+
+            await fresh();   // 清 localStorage 后重载，模拟重新打开页面
+            /* fresh() 清了存档，这里重新摆一场已结束的比赛 */
+            setupMatch({ bestOfThree: true });
+            var mm = app.state.match;
+            mm.gamesWonA = 2;
+            mm.timerRunning = true;
+            mm.scoreA = 21;
+            mm.scoreB = 15;
+            app.match.render();
+            app.match.updateScore('a', 1);
+            eq(app.state.match.gamesWonA, 2, '由局分推导的守卫在重载后仍应拦住加分');
+        });
+
         await test('计分规则', 'A4 平局不制造假大逆转：1-1 → 10-1 不报', async function () {
             setupMatch();
             var seen = spyHighlights();

@@ -16,7 +16,7 @@
 <h3>🚀 The Ultimate Scoring & Management System for Badminton Lovers</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-2.0.1-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
+  <img src="https://img.shields.io/badge/Version-3.0.0-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-27F05C?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License">
   <img src="https://img.shields.io/badge/Adaptive-All_Platforms-00D9FF?style=for-the-badge&logo=skype&logoColor=white" alt="Platform">
 </p>

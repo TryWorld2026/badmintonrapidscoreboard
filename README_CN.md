@@ -16,7 +16,7 @@
 <h3>🚀 为羽毛球爱好者打造的殿堂级计分与管理系统</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/版本-2.0.1-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
+  <img src="https://img.shields.io/badge/版本-3.0.0-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
   <img src="https://img.shields.io/badge/许可证-MIT-27F05C?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License">
   <img src="https://img.shields.io/badge/适配-全平台-00D9FF?style=for-the-badge&logo=skype&logoColor=white" alt="Platform">
 </p>

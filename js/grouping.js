@@ -31,7 +31,38 @@ window.App = window.App || {};
         updateSkillInputs();
     }
 
-    /* 实力输入行（均衡模式用）*/
+    /* 实力输入行（均衡模式用）。
+
+       ⚠️ 每次重建 innerHTML 都会丢掉用户已选的等级。
+       旧实现把默认值写死成 `v === 3 ? ' selected'`，于是名单任何一次
+       编辑（增删一人、改一行字）都会把**全部**球员重置为 3 级；
+       而 readSkills() 在行数不匹配时也回退全 3 ——
+       「实力均衡」这个主打功能因此事实上不可用（实测：设 5 级 →
+       编辑名单 → 全部变回 3）。
+
+       修法：按「球员名 → 等级」记住已选值，重建后回填。
+       按名字而不是下标，因为增删球员会让下标整体位移。
+
+       关键细节：采集时不能拿「当前名单」去配对 DOM，因为
+       removePlayer 是**先改名单、再重建 DOM** 的 —— 那一刻 DOM 里还是
+       旧的一批行，而 readPlayers() 已经返回新名单，两者错位会让等级
+       串到别人头上（实测：A5/B1/C2 删掉 B 后，C 会拿到 1 而不是 2）。
+       所以用 builtFor 记住「当前 DOM 是按哪份名单建的」，采集时以它为准。 */
+    var skillByName = {};
+    var builtFor = [];
+
+    /* 从当前 DOM 采集一次。配对基准是 builtFor，不是当前名单。 */
+    function captureSkills() {
+        var sels = Array.prototype.slice.call(
+            document.querySelectorAll('#skill-inputs .skill-select'));
+        for (var i = 0; i < sels.length; i++) {
+            var name = builtFor[i];
+            if (name === undefined) continue;
+            var v = parseInt(sels[i].value, 10);
+            if (v >= 1 && v <= 5) skillByName[name] = v;
+        }
+    }
+
     function updateSkillInputs() {
         var box = $('skill-inputs');
         if (!box) return;
@@ -39,30 +70,42 @@ window.App = window.App || {};
         if (!players.length) {
             box.innerHTML = '';
             box.classList.add('hidden');
+            builtFor = [];
             return;
         }
+        /* 先把用户当前的设置收进 skillByName，再重建 DOM */
+        captureSkills();
+
         box.classList.remove('hidden');
         box.innerHTML = players.map(function (p, i) {
+            var cur = skillByName[p] || 3;
             return '<div class="skill-row">' +
                 '<span class="idx">' + (i + 1) + '</span>' +
                 '<input type="text" class="input name-input" value="' + ui.escapeHtml(p) + '" readonly>' +
                 '<select class="select skill-select" data-act-input="grouping:skill" data-index="' + i + '" aria-label="' +
                 ui.escapeHtml(p) + ' 的实力等级">' +
                 [1, 2, 3, 4, 5].map(function (v) {
-                    return '<option value="' + v + '"' + (v === 3 ? ' selected' : '') + '>' + v + ' 级</option>';
+                    return '<option value="' + v + '"' + (v === cur ? ' selected' : '') + '>' + v + ' 级</option>';
                 }).join('') +
                 '</select>' +
                 '<button type="button" class="del-btn" data-act="grouping:remove-player" data-index="' + i +
                 '" aria-label="删除 ' + ui.escapeHtml(p) + '"><span class="ic-box" data-icon="close"></span></button>' +
                 '</div>';
         }).join('');
+        /* DOM 现在对应的就是这批人 */
+        builtFor = players.slice();
     }
 
     function readSkills() {
         var players = readPlayers();
         var sels = Array.prototype.slice.call(document.querySelectorAll('#skill-inputs .skill-select'));
         if (sels.length !== players.length) return players.map(function () { return 3; });
-        return sels.map(function (s) { return parseInt(s.value, 10) || 3; });
+        /* 读的时候顺手记下来，后续重建才能回填 */
+        return sels.map(function (s, i) {
+            var v = parseInt(s.value, 10) || 3;
+            skillByName[players[i]] = v;
+            return v;
+        });
     }
 
     function quickAddPlayer(name) {
@@ -316,7 +359,15 @@ window.App = window.App || {};
         nav.on('grouping:quick-add', function (el) { quickAddPlayer(el.getAttribute('data-value')); });
         nav.on('grouping:remove-player', removePlayer);
         nav.on('grouping:reuse', reuse);
-        nav.on('grouping:skill', function () { /* 实时生效，读取时统一取 */ });
+        /* 选完等级立刻记进 skillByName：不依赖「重建时再采集」，
+           因为重建只发生在名单变化时，而这期间 DOM 里可能已被改过。
+           配对基准用 builtFor（这份 DOM 是按它建的），不用当前名单。 */
+        nav.on('grouping:skill', function (el) {
+            var i = parseInt(el.getAttribute('data-index'), 10);
+            var v = parseInt(el.value, 10);
+            var name = builtFor[i];
+            if (name !== undefined && v >= 1 && v <= 5) skillByName[name] = v;
+        });
         nav.on('grouping:players-input', function () { updatePlayerCount(); });
     }
 
@@ -329,6 +380,8 @@ window.App = window.App || {};
         rotationGrouping: rotationGrouping,
         displayGroups: displayGroups,
         exportGroups: exportGroups,
-        clearGroups: clearGroups
+        clearGroups: clearGroups,
+        /* 供回归测试断言「界面上的等级确实被读成了算法输入」 */
+        readSkills: readSkills
     };
 })(window.App);

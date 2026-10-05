@@ -844,6 +844,122 @@
                 '应取最近 6 个月，实际 ' + labels.join(','));
         });
 
+        /* ---------- 3c. 智能分组的实力等级（G1） ----------
+           「实力均衡」靠每个球员的 1–5 级输入工作。等级存在 DOM 里，
+           而输入行会在名单变化时整段重建 —— 重建丢值就等于功能失效。 */
+        await fresh();
+
+        function gotoGrouping(players) {
+            win.location.hash = '#tab=match&sub=grouping';
+            return sleep(600).then(function () {
+                var ta = doc.getElementById('players-list');
+                ta.value = players.join('\n');
+                /* 走真实路径：名单输入会触发 updatePlayerCount -> updateSkillInputs */
+                ta.dispatchEvent(new win.Event('input', { bubbles: true }));
+                return sleep(150);
+            });
+        }
+
+        function skillValues() {
+            var sels = doc.querySelectorAll('#skill-inputs .skill-select');
+            return Array.prototype.map.call(sels, function (s) { return s.value; });
+        }
+
+        function setSkill(idx, v) {
+            var sels = doc.querySelectorAll('#skill-inputs .skill-select');
+            sels[idx].value = String(v);
+            /* 必须派发 input 而不是 change：nav.js 把 data-act-input
+               挂在 input 监听上（change 那条只认 data-act）。
+               浏览器改 select 时两者都会发，但只有 input 能走到
+               grouping:skill 处理器 —— 派错事件会让这条用例
+               绕开真实接线、从重建时的兜底采集里蒙混过关。 */
+            sels[idx].dispatchEvent(new win.Event('input', { bubbles: true }));
+        }
+
+        await test('智能分组', 'G1 编辑名单不重置实力等级（原来会全部退回 3 级）', async function () {
+            await gotoGrouping(['甲', '乙', '丙', '丁']);
+            eq(skillValues().length, 4, '应有 4 行实力输入');
+            eq(skillValues().join(','), '3,3,3,3', '初始应都是 3 级');
+
+            setSkill(0, 5); setSkill(1, 1); setSkill(2, 4); setSkill(3, 2);
+            eq(skillValues().join(','), '5,1,4,2', '设置后应记下 5/1/4/2');
+
+            /* 再编辑一次名单（加一个人）—— 这是会触发重建的真实操作 */
+            var ta = doc.getElementById('players-list');
+            ta.value = '甲\n乙\n丙\n丁\n戊';
+            ta.dispatchEvent(new win.Event('input', { bubbles: true }));
+            await sleep(200);
+
+            eq(skillValues().join(','), '5,1,4,2,3',
+                '重建后原 4 人的等级必须保住，新人默认 3；实际 ' + skillValues().join(','));
+        });
+
+        await test('智能分组', 'G1b 删人不串位：按名字保留等级，而不是按下标', async function () {
+            await fresh();
+            await gotoGrouping(['甲', '乙', '丙']);
+            setSkill(0, 5); setSkill(1, 1); setSkill(2, 2);
+            eq(skillValues().join(','), '5,1,2', '设置后应记下 5/1/2');
+
+            /* 走真实按钮：删掉中间那个「乙」 */
+            var del = doc.querySelectorAll('#skill-inputs [data-act="grouping:remove-player"]')[1];
+            assert(del, '应有删除按钮');
+            del.click();
+            await sleep(250);
+
+            var ta = doc.getElementById('players-list');
+            eq(ta.value.split('\n').join(','), '甲,丙', '名单应剩甲、丙');
+            eq(skillValues().join(','), '5,2',
+                '丙应保住自己的 2 级（而不是拿到乙的 1 级）；实际 ' + skillValues().join(','));
+        });
+
+        /* 这条专门锁「data-act-input 的接线」：
+           select 同时会发 input 与 change，但 nav.js 只把 data-act-input
+           挂在 input 监听上（change 那条只认 data-act）。
+           所以在真实浏览器里改 select 是能走到 grouping:skill 的；
+           若哪天有人把 select 换成只发 change 的写法，或者把
+           监听从 input 挪走，等级就会**只在名单重建时才被采集到** ——
+           表现是「选完等级直接点生成」不生效。 */
+        await test('智能分组', 'G1c 改等级走真实 input 事件即可生效（不依赖名单重建）', async function () {
+            await fresh();
+            await gotoGrouping(['甲', '乙', '丙', '丁']);
+            setSkill(0, 5); setSkill(1, 1);
+            /* 不碰名单、不触发重建，直接生成 —— 等级必须在 */
+            var groups = app.grouping.balancedGrouping(
+                ['甲', '乙', '丙', '丁'], app.grouping.readSkills());
+            var g5 = groups.filter(function (g) {
+                return g.some(function (p) { return p.skill === 5; });
+            })[0];
+            assert(g5, '5 级球员应出现在分组结果里');
+            assert(g5.some(function (p) { return p.skill === 1; }),
+                '5 级应与 1 级同组（说明等级真的读到了，而不是全回落 3）');
+        });
+
+        await test('智能分组', 'G1d readSkills 与界面一致，均衡分组强弱搭配', async function () {
+            await fresh();
+            await gotoGrouping(['强', '弱', '中', '平']);
+            setSkill(0, 5); setSkill(1, 1); setSkill(2, 3); setSkill(3, 3);
+
+            eq(app.grouping.readSkills().join(','), '5,1,3,3',
+                'readSkills 应与界面一致');
+
+            var players = ['强', '弱', '中', '平'];
+            var skills = [5, 1, 3, 3];
+            var groups = app.grouping.balancedGrouping(players, skills);
+            eq(groups.length, 2, '4 人应分成 2 组');
+
+            /* 每组应「强配弱」：5 级与 1 级同组，组内合计接近 */
+            var sums = groups.map(function (g) {
+                return g.reduce(function (s, p) { return s + p.skill; }, 0);
+            });
+            assert(Math.abs(sums[0] - sums[1]) <= 1,
+                '两组实力合计应接近，实际 ' + sums.join(' vs '));
+            var top = groups.filter(function (g) {
+                return g.some(function (p) { return p.skill === 5; });
+            })[0];
+            assert(top && top.some(function (p) { return p.skill === 1; }),
+                '最强的 5 级应与最弱的 1 级同组');
+        });
+
         /* ---------- 4. 弹层（A6） ---------- */
         await fresh();
 

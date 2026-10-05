@@ -1,10 +1,10 @@
 /* ================================================================
    match.js — 比赛计分（规则与旧版一致）
    - updateScore / undoScore：需 timerRunning（旧版即如此）
-   - checkSideChange：21→11 / 15→8 / 11→6 / custom→floor(t/2)+1
-   - checkGameEnd：deuce 30 分封顶，或达到目标分且领先 2 分
+   - checkSideChange：领先方到 floor(target/2)+1（21→11 / 15→8 / 11→6）
+   - checkGameEnd：deuce 封顶随目标分推导（21 分制 = 30），或达到目标分且领先 2 分
    - endGame：三局两胜由 settings.bestOfThree 决定（2 胜出），单局则 1 胜出
-   - 高光：加分赛 / 赛点 / 落后 5 分以上反超
+   - 高光：加分赛（双方到 target-1）/ 赛点 / 落后 5 分以上反超
    ================================================================ */
 window.App = window.App || {};
 (function (App) {
@@ -141,14 +141,14 @@ window.App = window.App || {};
         var box = $('match-info');
         if (!box) return;
         var modeName = s.gameMode === 'custom' ? ('自定义 ' + s.targetScore) : s.gameMode + ' 分制';
-        /* 「加分赛」开关的实际语义只是「是否 30 分封顶」——关掉后依然要求
+        /* 「加分赛」开关的实际语义只是「是否封顶」——关掉后依然要求
            领先 2 分（否则 21-20 就结束，不符合规则）。旧标签写成
            「加分赛开 / 加分赛关」会让人以为关掉就是先到目标分即胜，
-           这里改成如实描述差异。 */
+           这里改成如实描述差异。封顶分随目标分走，不再写死 30。 */
         box.innerHTML =
             '<span class="tag tag-brand">' + ui.escapeHtml(modeName) + '</span>' +
             '<span class="tag">' + (s.bestOfThree ? '三局两胜' : '单局') + '</span>' +
-            '<span class="tag">' + (s.deuceMode ? '30 分封顶' : '无封顶') + '</span>' +
+            '<span class="tag">' + (s.deuceMode ? deuceCap() + ' 分封顶' : '无封顶') + '</span>' +
             '<span class="grow text-3">目标 ' + App.state.targetScore() + ' 分</span>';
     }
 
@@ -340,31 +340,48 @@ window.App = window.App || {};
        ================================================================ */
     /* 换边提醒：越过阈值即报，且每局只报一次。
        旧代码是 total === N 精确相等，跳分（改分、异常数据、中途开提醒）
-       会整局漏掉；三个 target 分支算出来的 switchPoint 本来就相同，合并成一条。 */
+       会整局漏掉；三个 target 分支算出来的 switchPoint 本来就相同，合并成一条。
+
+       ⚠️ 判据必须是「领先方得分」而不是「双方之和」。
+       BWF 规则是「领先方先到 11 分时交换场地」（21 分制），
+       用双方之和会让 6-5（合计 11）就弹提示，而真正的时机是 11-0 ~ 11-9。
+       间隔分随目标分走：21→11、15→8、11→6。 */
     function checkSideChange() {
         if (!App.state.settings.sideChangeAlert) return;
         var m = App.state.match;
-        var total = m.scoreA + m.scoreB;
+        var leading = Math.max(m.scoreA, m.scoreB);
         var target = App.state.targetScore();
         var switchPoint = Math.floor(target / 2) + 1;
 
-        if (total >= switchPoint && !sideChangeAlerted) {
+        if (leading >= switchPoint && !sideChangeAlerted) {
             sideChangeAlerted = true;
-            ui.notify('双方得分之和达到 ' + switchPoint + ' 分，请交换场地！', '换边提醒');
+            ui.notify('领先方达到 ' + switchPoint + ' 分，请交换场地！', '换边提醒');
         }
     }
 
     /* ================================================================
        本局结束判定
        ================================================================ */
+    /* 加分赛（deuce）封顶分。
+       BWF 21 分制封顶 30 分（即 20 平后先到 30 者胜），
+       封顶随目标分走：15 分制 → 21，11 分制 → 15。
+       旧代码写死 30，于是 custom 目标 50 分时会在 30-29 被强制结束本局
+       （实测：target=50、比分 29-29、甲再得 1 分 -> 30-29 直接判本局结束）。 */
+    function deuceCap() {
+        var target = App.state.targetScore();
+        /* 21 分制的官方封顶是 30，其余按「目标分 + 目标分的一半」推导 */
+        return target === 21 ? 30 : Math.ceil(target * 1.5);
+    }
+
     function checkGameEnd() {
         var m = App.state.match;
         var s = App.state.settings;
         var target = App.state.targetScore();
+        var cap = deuceCap();
         var gameEnded = false;
 
         if (s.deuceMode) {
-            if (m.scoreA >= 30 || m.scoreB >= 30) {
+            if (m.scoreA >= cap || m.scoreB >= cap) {
                 gameEnded = true;
             } else if ((m.scoreA >= target || m.scoreB >= target) && Math.abs(m.scoreA - m.scoreB) >= 2) {
                 gameEnded = true;
@@ -503,12 +520,16 @@ window.App = window.App || {};
         var s = App.state.settings;
         var target = App.state.targetScore();
 
-        if (s.deuceMode && m.scoreA >= 20 && m.scoreB >= 20) {
+        /* 加分赛触发点：双方都到「目标分 - 1」。
+           21 分制 → 20 平，15 分制 → 14 平，11 分制 → 10 平。
+           旧代码写死 20，于是 11/15 分制永远不触发加分赛高光，
+           连带 checkHadDeuce() 恒为假、「加分赛专家」成就永久无法解锁。 */
+        if (s.deuceMode && m.scoreA >= target - 1 && m.scoreB >= target - 1) {
             if (highlightMoments.filter(function (h) {
                 return h.type === 'deuce' && h.currentGame === m.currentGame;
             }).length === 0) {
                 recordHighlight('deuce', '进入加分赛！');
-                ui.showHighlight('sliders', '加分赛！', '双方比分 20 平，进入加分赛！');
+                ui.showHighlight('sliders', '加分赛！', '双方比分 ' + (target - 1) + ' 平，进入加分赛！');
             }
         }
 

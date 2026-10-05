@@ -377,6 +377,101 @@
             app.ui.notify = function () { };
         });
 
+        /* 换边判据必须是「领先方得分」，不是「双方之和」。
+           BWF：21 分制在领先方先到 11 分时交换场地。
+           旧代码用 scoreA+scoreB >= 11，于是 6-5（合计 11）就弹提示，
+           而真正的时机 11-0 ~ 11-9 反而因为提前报过而不报了。 */
+        await test('计分规则', 'A10b 换边看领先方而非双方之和：6-5 不报、11-5 才报', async function () {
+            await fresh();
+            setupMatch();
+            var calls = [];
+            app.ui.notify = function (msg, title) {
+                if (String(title).indexOf('换边') >= 0) calls.push(msg);
+            };
+            /* 6-5：双方之和 11，但领先方只有 6 —— 不该报 */
+            scoreTo('a', 6); scoreTo('b', 5);
+            eq(calls.length, 0, '6-5（合计 11）不应提醒换边');
+
+            /* 一路打到领先方 11 分 —— 这才是 BWF 的时机 */
+            scoreTo('a', 11);
+            eq(calls.length, 1, '领先方到 11 分应提醒换边');
+            app.ui.notify = function () { };
+        });
+
+        /* 11 分制：领先方到 6 分换边（floor(11/2)+1 = 6） */
+        await test('计分规则', 'A10c 11 分制换边点是 6 分', async function () {
+            await fresh();
+            setupMatch({ gameMode: '11', targetScore: 11 });
+            var calls = [];
+            app.ui.notify = function (msg, title) {
+                if (String(title).indexOf('换边') >= 0) calls.push(msg);
+            };
+            scoreTo('a', 5); scoreTo('b', 5);
+            eq(calls.length, 0, '5-5 时领先方只有 5，不应提醒');
+            scoreTo('a', 6);
+            eq(calls.length, 1, '11 分制领先方到 6 分应提醒换边');
+            app.ui.notify = function () { };
+        });
+
+        /* 封顶分必须随目标分推导，不能写死 30。
+           旧代码 custom 目标 50 分时会在 30-29 被强制结束本局
+           （实测：29-29 后甲再得 1 分 -> 30-29 直接判本局结束）。 */
+        await test('计分规则', 'A12 封顶随目标分走：custom 50 分制不在 30 分结束', async function () {
+            await fresh();
+            setupMatch({ gameMode: 'custom', targetScore: 50, bestOfThree: true });
+            var m = app.state.match;
+            m.scoreA = 29; m.scoreB = 29;
+            app.match.render();
+            app.match.updateScore('a', 1);          // 30-29
+            eq(app.state.match.gamesWonA, 0, '50 分制在 30-29 不应结束本局');
+            eq(app.state.match.currentGame, 1, '应仍在第 1 局');
+
+            /* 继续打到 50-48（领先 2 分）才该结束 */
+            var mm = app.state.match;
+            mm.scoreA = 49; mm.scoreB = 48;
+            app.match.render();
+            app.match.updateScore('a', 1);          // 50-48
+            eq(app.state.match.gamesWonA, 1, '50-48 领先 2 分应结束本局');
+        });
+
+        /* 21 分制的官方封顶仍是 30 分，不能被推导逻辑改坏 */
+        await test('计分规则', 'A12b 21 分制封顶仍是 30 分', async function () {
+            await fresh();
+            setupMatch({ gameMode: '21', targetScore: 21 });
+            var m = app.state.match;
+            m.scoreA = 29; m.scoreB = 29;
+            app.match.render();
+            app.match.updateScore('a', 1);          // 30-29
+            eq(app.state.match.gamesWonA, 1, '21 分制 30-29 应结束本局（30 分封顶）');
+        });
+
+        /* 加分赛触发点必须随目标分走，不能写死 20。
+           旧代码 11/15 分制永远不触发加分赛高光，
+           连带 checkHadDeuce() 恒为假、「加分赛专家」成就永久无法解锁。 */
+        await test('计分规则', 'A13 11 分制 10 平触发加分赛（原写死 20 导致永不触发）', async function () {
+            await fresh();
+            setupMatch({ gameMode: '11', targetScore: 11, bestOfThree: false });
+            var seen = spyHighlights();
+            scoreTo('a', 10); scoreTo('b', 10);      // 10 平
+            eq(seen.filter(function (h) { return h.title === '加分赛！'; }).length, 1,
+                '11 分制 10 平应触发加分赛');
+            contains(summary(), '加分赛', '高光摘要');
+
+            /* 打完这一局，确认成就判定也认得出来 */
+            scoreTo('a', 12); scoreTo('b', 11); scoreTo('a', 13);   // 13-11
+            eq(app.match.checkHadDeuce(), true, '11 分制也应能解锁「加分赛专家」');
+        });
+
+        /* 15 分制：14 平触发 */
+        await test('计分规则', 'A13b 15 分制 14 平触发加分赛', async function () {
+            await fresh();
+            setupMatch({ gameMode: '15', targetScore: 15, bestOfThree: false });
+            var seen = spyHighlights();
+            scoreTo('a', 14); scoreTo('b', 14);
+            eq(seen.filter(function (h) { return h.title === '加分赛！'; }).length, 1,
+                '15 分制 14 平应触发加分赛');
+        });
+
         await test('计分规则', '加分赛成就能解锁：20-20 后 checkHadDeuce() 为真', async function () {
             await fresh();
             setupMatch();

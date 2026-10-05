@@ -141,15 +141,25 @@ a {
     flex-direction: column;
 }
 
+/* 顶栏。
+
+   刘海/状态栏：index.html 用了 viewport-fit=cover，而 iOS 主屏快捷方式
+   （apple-mobile-web-app-status-bar-style: black-translucent）下页面会
+   延伸到状态栏底下。原来只有固定 height，没有 top inset，
+   于是独立模式下顶栏被状态栏/刘海压住（"记分"标题和左侧按钮被切）。
+   补 padding-top 并把 height 加上 inset —— 用 max() 而不是直接相加，
+   是为了在普通浏览器（inset 为 0）时保持原高度不变。 */
 .appbar {
     position: sticky;
     top: 0;
     z-index: var(--z-sticky);
-    height: var(--appbar-h);
+    height: calc(var(--appbar-h) + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
     display: flex;
     align-items: center;
     gap: var(--sp-3);
-    padding: 0 var(--gutter);
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
     background: color-mix(in srgb, var(--void) 92%, transparent);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);

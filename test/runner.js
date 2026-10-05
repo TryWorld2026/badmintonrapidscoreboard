@@ -1095,6 +1095,47 @@
                 'padding 应至少覆盖 dock(' + dockH + ') + tabbar(' + tabH + ')，实际 ' + pad);
         });
 
+        /* iOS 刘海 / 状态栏。
+           index.html 用了 viewport-fit=cover，而 iOS 主屏快捷方式下
+           （apple-mobile-web-app-status-bar-style: black-translucent）
+           页面延伸到状态栏底下。若顶栏不补 top inset，
+           独立模式里「记分」标题和左侧按钮会被状态栏/灵动岛压住。
+
+           桌面浏览器里 env(safe-area-inset-top) 恒为 0，所以不能断言
+           「值 > 0」；要断言的是**规则里真的引用了这个变量** ——
+           少了它，在真机上就是被切，而在 CI 里永远看不出来。 */
+        await test('视觉令牌', 'D4 刘海安全区已接进顶栏/提示条/场边模式', async function () {
+            var cssText = '';
+            var links = doc.querySelectorAll('link[rel="stylesheet"]');
+            for (var i = 0; i < links.length; i++) {
+                var href = links[i].getAttribute('href') || '';
+                try {
+                    var xhr = new win.XMLHttpRequest();
+                    xhr.open('GET', href, false);
+                    xhr.send(null);
+                    cssText += xhr.responseText;
+                } catch (e) { /* 单个文件读不到不影响其他 */ }
+            }
+            assert(cssText.length > 1000, '应能读到样式表内容，实际 ' + cssText.length + ' 字符');
+
+            assert(cssText.indexOf('env(safe-area-inset-top') >= 0,
+                '样式表里应至少有一处 env(safe-area-inset-top)：没有的话刘海机型顶栏会被状态栏压住');
+
+            /* 顶栏本身必须吃到 top inset */
+            var appbarRule = /\.appbar\s*\{[^}]*\}/.exec(cssText);
+            assert(appbarRule, '应能找到 .appbar 规则');
+            assert(appbarRule[0].indexOf('safe-area-inset-top') >= 0,
+                '.appbar 必须使用 safe-area-inset-top（独立模式下否则被状态栏遮挡）');
+
+            /* 顶栏高度不能因此变成 0 或丢失原有高度 */
+            var appbarH = parseFloat(win.getComputedStyle(doc.documentElement)
+                .getPropertyValue('--appbar-h')) || 0;
+            assert(appbarH > 0, '--appbar-h 应存在且为正，实际 ' + appbarH);
+            var realH = doc.querySelector('.appbar').getBoundingClientRect().height;
+            assert(realH >= appbarH - 1,
+                '顶栏实际高度不应小于 --appbar-h：' + realH + ' vs ' + appbarH);
+        });
+
         await test('视觉令牌', 'D2 tokens.js 能读到 CSS 自定义属性', async function () {
             /* 这条用例防的是「JS 侧没有读令牌的通道」——旧版 charts.js 手抄了
                一份浅色配色，视觉重构后直接在深色卡片上花掉。所以断言的重点是

@@ -490,7 +490,9 @@
    不用荧光整块填充。位置在顶栏之下，短暂出现后自动消失。 */
 .toast {
     position: fixed;
-    top: calc(var(--appbar-h) + var(--sp-3));
+    /* 必须带上 safe-area-inset-top：顶栏在刘海机型上会额外增高，
+       这里只算 --appbar-h 的话提示条会压住顶栏。 */
+    top: calc(var(--appbar-h) + env(safe-area-inset-top, 0px) + var(--sp-3));
     left: 50%;
     z-index: var(--z-toast);
     width: min(calc(100% - var(--sp-8)), 420px);
@@ -557,7 +559,8 @@
 /* ---------- 高亮徽章（赛点 / 加分赛 / 逆转）---------- */
 .highlight-badge {
     position: fixed;
-    top: calc(var(--appbar-h) + var(--sp-3));
+    /* 同 .toast：顶栏在刘海机型上会额外增高 */
+    top: calc(var(--appbar-h) + env(safe-area-inset-top, 0px) + var(--sp-3));
     left: 50%;
     z-index: var(--z-highlight);
     display: flex;

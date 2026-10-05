@@ -38,7 +38,10 @@
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-2) var(--sp-4);
-    /* 安全区：刘海屏横屏时左右会被切掉 */
+    /* 安全区：刘海屏横屏时左右会被切掉；
+       竖屏时顶部会被状态栏/灵动岛压住（场边模式是全屏覆盖层，
+       .courtside 的 inset:0 让它一直顶到屏幕物理边缘）。 */
+    padding-top: max(var(--sp-2), env(safe-area-inset-top));
     padding-left: max(var(--sp-4), env(safe-area-inset-left));
     padding-right: max(var(--sp-4), env(safe-area-inset-right));
     border-bottom: 1px solid var(--edge);

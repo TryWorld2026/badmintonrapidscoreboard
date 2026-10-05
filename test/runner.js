@@ -511,6 +511,58 @@
             eq(it.teamA, '队伍 A', '坏队名应回落默认值');
         });
 
+        /* 白名单重建是"返回对象里没列出的字段会被静默丢弃"。
+           synced 与 clientId 都栽在这上面：
+             - synced 被丢 -> sync.js 的入队闸门 `if (m.synced) return`
+               恒不成立，每次历史变更都把整段历史重新入队重推；
+               而服务端 matches.ts 无条件用 Date.now() 覆盖 updated_at，
+               配合「到达时间 LWW」，旧数据会把新数据盖掉。
+             - clientId 被丢 -> core/migrate.js 给进行中比赛补的
+               clientId 一读一写即抹掉，而版本号已推进到 2、
+               迁移永不重跑，等于迁移白写。
+           这两条锁住它们读回来还在。 */
+        await test('存档规整', 'A11b 白名单重建不丢同步字段：synced / clientId / updatedAt', async function () {
+            win.localStorage.setItem('matchHistory', JSON.stringify([
+                { id: 1, clientId: 'c-1', teamA: '甲', teamB: '乙',
+                  scoreA: 2, scoreB: 1, gamesWonA: 2, gamesWonB: 1,
+                  gameScores: '21-15,18-21,21-19', duration: 1800, mode: '21',
+                  date: 1700000000000, highlights: [],
+                  updatedAt: 1234567890, synced: true, deleted: false }
+            ]));
+            var it2 = app.state.getMatchHistory()[0];
+            eq(it2.synced, true, 'synced 必须在白名单里，否则去重闸门永久失效');
+            eq(it2.clientId, 'c-1', 'clientId 必须保留（推送去重与冲突解决都靠它）');
+            eq(it2.updatedAt, 1234567890, 'updatedAt 必须保留');
+
+            /* 缺省值：老数据没有 synced，应回落 false 而不是 undefined */
+            win.localStorage.setItem('matchHistory', JSON.stringify([{ id: 2, clientId: 'c-2' }]));
+            eq(app.state.getMatchHistory()[0].synced, false, '缺 synced 应回落 false');
+
+            /* normalizeMatch（进行中的比赛）同样不能丢 clientId */
+            var nm = app.state.normalizeMatch({ clientId: 'live-1', scoreA: 3 });
+            eq(nm.clientId, 'live-1', 'normalizeMatch 必须保留迁移补的 clientId');
+            eq(app.state.normalizeMatch({}).clientId, '', '缺 clientId 应回落空串');
+        });
+
+        /* 端到端：写一条 synced:true 的记录，模拟 sync.js 的入队判定，
+           确认它真的被跳过（而不是只看字段在不在）。 */
+        await test('存档规整', 'A11c 已同步记录不再入队（sync.js 闸门端到端）', async function () {
+            win.localStorage.setItem('matchHistory', JSON.stringify([
+                { id: 1, clientId: 'done-1', teamA: '甲', teamB: '乙',
+                  scoreA: 1, scoreB: 0, date: 1700000000000, synced: true },
+                { id: 2, clientId: 'new-2', teamA: '甲', teamB: '乙',
+                  scoreA: 0, scoreB: 1, date: 1700000001000, synced: false }
+            ]));
+            /* 复刻 sync.js:354-361 的判定逻辑 */
+            var wouldEnqueue = app.state.getMatchHistory().filter(function (m) {
+                if (!m.clientId) return false;
+                if (m.synced) return false;
+                return true;
+            }).map(function (m) { return m.clientId; });
+            eq(wouldEnqueue.length, 1, '只有未同步的那条应入队');
+            eq(wouldEnqueue[0], 'new-2', '入队的应是 synced=false 的那条');
+        });
+
         await test('存档规整', '脏数据全部优雅降级，不抛异常、不污染原型', async function () {
             var samples = [null, undefined, 'x', 42, true, [], [1, 2],
                 { __proto__: { polluted: 1 } }, { scoreA: {} },

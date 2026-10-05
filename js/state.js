@@ -99,7 +99,13 @@ window.App = window.App || {};
             teamNameB: str(raw.teamNameB, d.teamNameB),
             scoreHistory: objs(raw.scoreHistory),
             gameScoresHistory: arr(raw.gameScoresHistory),
-            timerRunning: bool(raw.timerRunning, d.timerRunning)
+            timerRunning: bool(raw.timerRunning, d.timerRunning),
+            /* 同步标识：core/migrate.js 的 v1→v2 迁移给进行中的比赛补过
+               clientId（用于「一场比赛跨设备继续」）。它曾经不在这里，
+               于是 loadMatchState 一读、saveMatch 一写就把它抹掉，
+               而版本号已推进到 2、迁移永不重跑 —— 迁移写了等于白写。
+               与 normMatchItem 的 clientId 是同一类问题（见下方注释）。 */
+            clientId: str(raw.clientId, '')
         };
     }
 
@@ -337,7 +343,14 @@ window.App = window.App || {};
             /* 同步时间戳：0 表示"从未同步"。用于 LWW 冲突解决。 */
             updatedAt: clamp(raw.updatedAt, 0, 0, null),
             /* 软删除：云端删除后本地保留墓碑，避免被其他设备推回来 */
-            deleted: bool(raw.deleted, false)
+            deleted: bool(raw.deleted, false),
+            /* 已同步标记。sync.js 的入队闸门读它做去重
+               （「synced=true 的记录不必再推」）。
+               它曾经不在这里 —— 于是闸门恒不成立，每次历史变更都把
+               整段历史重新入队重推；而服务端 matches.ts 无条件用
+               Date.now() 覆盖 updated_at，配合「到达时间 LWW」，
+               旧数据会把新数据盖掉。 */
+            synced: bool(raw.synced, false)
         };
     }
 

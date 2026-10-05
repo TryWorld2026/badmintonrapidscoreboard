@@ -1,0 +1,60 @@
+# ================================================================
+# wrangler.toml — Cloudflare Workers 配置
+#
+# 一键自部署（README 里的三条命令就是这些）：
+#   1. wrangler d1 create badminton
+#      → 把返回的 database_id 填到下面
+#   2. wrangler d1 execute badminton --remote --file=./migrations/0001_init.sql
+#   3. wrangler secret put JWT_SECRET   （生成一个 32+ 字符的随机串）
+#      wrangler deploy
+# ================================================================
+
+name = "badminton-score-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+# nodejs_compat 让部分 Node API 可用；本项目实际只用 WebCrypto，
+# 但保留它可以让用户少踩"某个依赖跑不起来"的坑。
+compatibility_flags = ["nodejs_compat"]
+
+# ---------- 环境变量 ----------
+[vars]
+ENVIRONMENT = "production"
+# ⚠️ JWT_SECRET 绝不能写在这里（会进版本库）。
+# 用 `wrangler secret put JWT_SECRET` 配置。
+#
+# CORS 白名单：逗号分隔的完整 origin，不要写 "*"。
+# 带 cookie 的刷新请求在 "*" 下会被浏览器直接拒绝。
+CORS_ORIGINS = "https://badminton.tryworld.com.cn,https://badminton-score.pages.dev,https://tryworld2026.github.io"
+
+# ---------- D1 数据库 ----------
+[[d1_databases]]
+binding = "DB"
+database_name = "badminton"
+# 运行 `wrangler d1 create badminton` 后把 id 填到这里。
+# 留占位符会让 wrangler 直接报错——这是刻意的：
+# 宁可启动失败，也不要静默连到一个不存在的库。
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+# ---------- KV（限流计数）----------
+# 可选。不配也能跑，只是失去限流保护（见 middleware/auth.ts 的降级逻辑）。
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# ---------- R2（后续存头像 / 分享图）----------
+# 当前代码未使用，先留绑定占位，方便按需启用。
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "badminton-assets"
+
+# ---------- 可观测性 ----------
+[observability]
+enabled = true
+
+# ---------- 本地开发 ----------
+[env.development]
+[env.development.vars]
+ENVIRONMENT = "development"
+# 本地开发放行 localhost（middleware 里已有兜底，这里再写一份更明确）
+CORS_ORIGINS = "http://localhost:8000,http://127.0.0.1:8000,http://localhost:8899,http://127.0.0.1:8899"

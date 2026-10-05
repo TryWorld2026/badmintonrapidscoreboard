@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方向 A · 编辑设计 / 纸质裁判卡</title>
+<style>
+/* ============================================================
+   方向 A — EDITORIAL / 纸质裁判记分卡
+   设计逻辑：把"记分板"当成一张印刷品来做，而不是一块电子屏。
+   - 底色是纸（暖白 #FAF8F4），不是演播室黑
+   - 唯一点缀色是羽毛球的"球头软木棕"，取自器材本身
+   - 数字用衬线体，像体育年鉴里的战绩表
+   - 分隔靠"线"和"留白"，不靠卡片阴影和发光
+   - 没有一处渐变、没有一处霓虹、没有一处切角
+   ============================================================ */
+:root{
+  --paper:#FAF8F4;      /* 纸 */
+  --paper-2:#F3F0EA;    /* 次级纸面 */
+  --ink:#1A1917;        /* 墨（不用纯黑）*/
+  --ink-2:#57514A;
+  --ink-3:#8C857C;
+  --rule:#DFDAD1;       /* 发丝线 */
+  --rule-2:#C9C2B6;
+  --cork:#A8632F;       /* 球头软木棕 —— 唯一点缀 */
+  --cork-soft:#F0E4D8;
+  --a:#8C2F39;          /* 甲：深酒红（球衣红）*/
+  --b:#1F4A5C;          /* 乙：深墨青 */
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Songti SC","Source Han Serif SC","Noto Serif SC",serif;
+  --sans:"Optima","Segoe UI Variable Text","Segoe UI","PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  min-height:100vh;
+  display:flex;justify-content:center;
+  padding:0 0 40px;
+}
+.phone{
+  width:100%;max-width:420px;
+  background:var(--paper);
+  border-left:1px solid var(--rule);
+  border-right:1px solid var(--rule);
+  min-height:100vh;
+  position:relative;
+}
+
+/* ---------- 顶栏：像刊物刊头 ---------- */
+.masthead{
+  padding:22px 22px 0;
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.masthead-meta{
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:7px;
+}
+.masthead h1{
+  font-family:var(--serif);
+  font-size:27px;font-weight:400;letter-spacing:-.01em;
+  line-height:1.1;
+}
+.masthead h1 em{font-style:italic;color:var(--cork)}
+.masthead-actions{display:flex;gap:4px;margin-top:4px}
+.icon-btn{
+  width:36px;height:36px;display:grid;place-items:center;
+  background:none;border:1px solid transparent;border-radius:50%;
+  color:var(--ink-2);cursor:pointer;transition:.18s;
+}
+.icon-btn:hover{border-color:var(--rule-2);color:var(--ink)}
+.icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* 双规则线：印刷品的经典分隔 */
+.rule-double{
+  margin:16px 22px 0;height:5px;
+  border-top:2px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+}
+
+/* ---------- 本场信息 ---------- */
+.fixture{
+  padding:13px 22px;display:flex;align-items:center;gap:10px;
+  font-size:10.5px;color:var(--ink-3);letter-spacing:.13em;text-transform:uppercase;
+  border-bottom:1px solid var(--rule);
+}
+.fixture b{color:var(--ink);font-weight:600;letter-spacing:.06em}
+.fixture .dot{width:3px;height:3px;border-radius:50%;background:var(--rule-2)}
+
+/* ---------- 比分主体 ---------- */
+.boards{display:grid;grid-template-columns:1fr 1px 1fr;align-items:stretch}
+.boards .spine{background:var(--rule)}
+
+.side{padding:26px 18px 22px;text-align:center;position:relative}
+.side-tag{
+  font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:12px;
+}
+.side-tag.serving{color:var(--cork)}
+.side-name{
+  font-family:var(--serif);font-size:17px;letter-spacing:.01em;
+  color:var(--ink);margin-bottom:18px;line-height:1.3;
+}
+/* 数字：衬线体 + 表格化宽度，像年鉴 */
+.score{
+  font-family:var(--serif);
+  font-size:86px;line-height:.82;font-weight:400;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.045em;
+}
+.side.a .score{color:var(--a)}
+.side.b .score{color:var(--b)}
+/* 领先方：一条短下划线，而不是发光 */
+.side.leading .score::after{
+  content:"";display:block;height:2px;background:currentColor;
+  width:42%;margin:9px auto 0;opacity:.5;
+}
+.side-games{
+  margin-top:16px;font-size:10px;letter-spacing:.2em;
+  color:var(--ink-3);text-transform:uppercase;
+}
+.side-games .g{display:inline-block;width:11px;height:11px;margin:0 1.5px;vertical-align:-1px}
+.side-games .g svg{width:11px;height:11px}
+.side-games .g.won{color:var(--cork)}
+
+/* ---------- 控制条 ---------- */
+.controls{
+  display:grid;grid-template-columns:1fr 1fr;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+}
+.scorer{
+  padding:20px 16px;background:none;border:0;cursor:pointer;
+  font-family:var(--serif);font-size:19px;color:var(--ink);
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  transition:background .16s;
+}
+.scorer + .scorer{border-left:1px solid var(--rule)}
+.scorer:hover{background:var(--paper-2)}
+.scorer:active{background:var(--cork-soft)}
+.scorer .hint{font-family:var(--sans);font-size:9.5px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+
+.toolrow{
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid var(--rule);
+}
+.timer{
+  flex:1;padding:14px 22px;display:flex;align-items:baseline;gap:10px;
+}
+.timer-val{
+  font-family:var(--serif);font-size:23px;font-variant-numeric:tabular-nums;
+  letter-spacing:.01em;
+}
+.timer-val.paused{color:var(--ink-3)}
+.timer-lbl{font-size:9.5px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase}
+.tool{
+  padding:15px 17px;background:none;border:0;border-left:1px solid var(--rule);
+  color:var(--ink-2);cursor:pointer;font-family:var(--sans);
+  font-size:11px;letter-spacing:.1em;transition:.16s;
+}
+.tool:hover{background:var(--paper-2);color:var(--ink)}
+
+/* ---------- 流水：真正像一张记分卡 ---------- */
+.log{padding:22px}
+.sec-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:12px;
+}
+.sec-head h2{
+  font-family:var(--serif);font-size:15px;font-weight:400;
+  letter-spacing:.01em;
+}
+.sec-head span{font-size:9.5px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+.log-table{width:100%;border-collapse:collapse;font-size:13px}
+.log-table tr{border-bottom:1px solid var(--rule)}
+.log-table td{padding:9px 0;vertical-align:middle}
+.log-table .no{width:30px;color:var(--ink-3);font-size:11px;font-variant-numeric:tabular-nums}
+.log-table .who{font-family:var(--serif)}
+.log-table .who.a{color:var(--a)}
+.log-table .who.b{color:var(--b)}
+.log-table .pts{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:12.5px}
+.log-table .pts b{color:var(--ink);font-weight:600}
+
+.actions{padding:0 22px 30px;display:flex;gap:10px}
+.btn{
+  flex:1;padding:12px;font-family:var(--sans);font-size:12.5px;
+  letter-spacing:.04em;border:1px solid var(--rule-2);background:none;
+  color:var(--ink-2);cursor:pointer;transition:.16s;
+}
+.btn:hover{border-color:var(--ink);color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.btn.primary:hover{background:#000}
+
+/* 编辑说明：标注这套方向在讲什么 */
+.note{
+  margin:0 22px 30px;padding:14px;background:var(--paper-2);
+  border-left:2px solid var(--cork);
+  font-size:11.5px;line-height:1.75;color:var(--ink-2);
+}
+.note b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="masthead">
+    <div>
+      <div class="masthead-meta">第 2 局 · 21 分制 · 三局两胜</div>
+      <h1>羽球<em>记分</em></h1>
+    </div>
+    <div class="masthead-actions">
+      <button class="icon-btn" aria-label="数据"><svg viewBox="0 0 24 24"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg></button>
+      <button class="icon-btn" aria-label="分享"><svg viewBox="0 0 24 24"><path d="M12 15.2V3.8"/><path d="M8 7.6 12 3.6l4 4"/><path d="M5 13.6v5.6h14v-5.6"/></svg></button>
+    </div>
+  </div>
+
+  <div class="rule-double"></div>
+
+  <div class="fixture">
+    <b>甲 陈</b><span class="dot"></span><b>乙 林</b>
+    <span style="margin-left:auto">18:42</span>
+  </div>
+
+  <div class="boards">
+    <div class="side a leading">
+      <div class="side-tag serving">◉ 发球</div>
+      <div class="side-name">陈骁</div>
+      <div class="score">14</div>
+      <div class="side-games">
+        <span class="g won"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="7"/></svg></span>
+        <span class="g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="7"/></svg></span>
+        局分 1
+      </div>
+    </div>
+    <div class="spine"></div>
+    <div class="side b">
+      <div class="side-tag">客</div>
+      <div class="side-name">林知远</div>
+      <div class="score">11</div>
+      <div class="side-games">
+        <span class="g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="7"/></svg></span>
+        <span class="g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="7"/></svg></span>
+        局分 0
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="scorer">甲队得分<span class="hint">Tap</span></button>
+    <button class="scorer">乙队得分<span class="hint">Tap</span></button>
+  </div>
+
+  <div class="toolrow">
+    <div class="timer">
+      <span class="timer-val">23:14</span>
+      <span class="timer-lbl">进行中</span>
+    </div>
+    <button class="tool">暂停</button>
+    <button class="tool">撤回</button>
+  </div>
+
+  <div class="log">
+    <div class="sec-head">
+      <h2>本局得分记录</h2>
+      <span>最近 6 条</span>
+    </div>
+    <table class="log-table">
+      <tr><td class="no">06</td><td class="who a">陈骁</td><td class="pts">13 → <b>14</b></td></tr>
+      <tr><td class="no">05</td><td class="who b">林知远</td><td class="pts">10 → <b>11</b></td></tr>
+      <tr><td class="no">04</td><td class="who a">陈骁</td><td class="pts">12 → <b>13</b></td></tr>
+      <tr><td class="no">03</td><td class="who a">陈骁</td><td class="pts">11 → <b>12</b></td></tr>
+      <tr><td class="no">02</td><td class="who b">林知远</td><td class="pts">9 → <b>10</b></td></tr>
+      <tr><td class="no">01</td><td class="who a">陈骁</td><td class="pts">10 → <b>11</b></td></tr>
+    </table>
+  </div>
+
+  <div class="actions">
+    <button class="btn">重置本局</button>
+    <button class="btn primary">保存本场</button>
+  </div>
+
+  <div class="note">
+    <b>方向 A · 编辑设计</b><br>
+    把记分板当作一张<b>印刷品</b>而非电子屏。暖白纸底、衬线数字、双规则线、大量留白；
+    唯一点缀色取自<b>羽毛球球头的软木棕</b>——颜色来自器材本身，不是随便挑的。
+    零渐变、零霓虹、零阴影、零圆角卡片。适合想要"沉静、有年份感、耐看"的人。
+  </div>
+
+</div>
+</body>
+</html>

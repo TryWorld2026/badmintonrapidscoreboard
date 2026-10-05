@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>三套设计方向对比 · 羽毛器计分板</title>
+<style>
+  :root{--bg:#15171A;--fg:#F0F2F4;--fg2:#9BA3AC;--line:#2A2E33}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font:14px/1.6 "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;padding:40px 32px 64px}
+  h1{font-size:24px;font-weight:600;letter-spacing:.01em;margin-bottom:6px}
+  .sub{color:var(--fg2);font-size:13.5px;margin-bottom:36px;max-width:900px;line-height:1.8}
+  .grid{display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap}
+  .col{flex:1 1 300px;min-width:280px}
+  .lbl{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .tag{font-size:19px;font-weight:700;letter-spacing:.02em}
+  .tag.A{color:#C9A227}.tag.B{color:#7FB069}.tag.C{color:#E1554A}
+  .desc{font-size:12px;color:var(--fg2)}
+  img{width:100%;display:block;border-radius:8px;border:1px solid var(--line);box-shadow:0 10px 34px rgba(0,0,0,.5)}
+  .note{margin-top:14px;font-size:12.5px;color:var(--fg2);line-height:1.85}
+  .note b{color:var(--fg)}
+  code{background:#1E2126;padding:1px 5px;border-radius:3px;font-size:12px}
+</style>
+</head>
+<body>
+<h1>三套设计方向 · 同一份内容，三种设计语言</h1>
+<div class="sub">
+都是「陈骁 14 : 11 林知远，第 2 局，21 分制」这同一场球。只换设计语言，方便你横向比较。<br>
+点开每张图可放大看细节。决定后我按选中的方向重做完整界面。
+</div>
+<div class="grid">
+  <div class="col">
+    <div class="lbl"><span class="tag A">A</span><span class="desc">编辑设计 / 纸质裁判记分卡</span></div>
+    <img src="A-editorial.png" alt="方向 A">
+    <div class="note">
+      <b>浅色、克制、有年份感。</b>暖白纸底 + 衬线数字 + 双规则线。<br>
+      点缀色取自<b>羽毛球球头的软木棕</b>。零渐变、零霓虹、零阴影。<br>
+      <b>最适合：</b>想要沉静、耐看、像体育年鉴。
+    </div>
+  </div>
+  <div class="col">
+    <div class="lbl"><span class="tag B">B</span><span class="desc">墨绿球场 / 器械质感</span></div>
+    <img src="B-court.png" alt="方向 B">
+    <div class="note">
+      <b>仍是深色，但把荧光换成金属光。</b>墨绿黑底 + 黄铜暖金 + 软木棕。<br>
+      队伍色改为<b>苔绿 vs 陶土</b>，低饱和、互不抢戏。<br>
+      <b>最适合：</b>球馆光线暗，但受够了"电竞感"。
+    </div>
+  </div>
+  <div class="col">
+    <div class="lbl"><span class="tag C">C</span><span class="desc">仪表读数器 / 场边场景</span></div>
+    <img src="C-instrument.png" alt="方向 C">
+    <div class="note">
+      <b>从使用场景倒推。</b>手机架场边、人站 2 米外，所以数字 70px、按键可盲按。<br>
+      签名是比分外的<b>精密刻度环</b>；全屏彩色只有两条 3px 识别条。<br>
+      <b>最适合：</b>真正在场上打球，一瞥要能看清。
+    </div>
+  </div>
+</div>
+</body>
+</html>

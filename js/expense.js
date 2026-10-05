@@ -69,6 +69,60 @@ window.App = window.App || {};
     }
 
     /* ---------- 计算 ---------- */
+
+    /* 把一组「任意精度」的份额规整成「分为单位的整数，且合计恰好等于总额」。
+
+       为什么需要它：amounts 是 totalAmount * r / totalRatio 这类除法的结果，
+       天然带循环小数。旧实现只在显示时 .toFixed(2)，于是
+       100 元 3 人均摊会显示 33.33 × 3 = 99.99 —— 账单差 1 分，
+       而这一分钱要么让发起人垫、要么谁都对不上账。
+
+       做法是最大余额法：先各自向下取整到分，再把差额按小数部分从大到小
+       依次补给前面几位。这样：
+         - 合计恒等于总额（不会有尾差）
+         - 每人最多比理论值多 1 分（不会出现「有人多摊几块」的观感）
+         - 同样输入得到同样结果（不依赖随机、不依赖遍历顺序之外的东西）
+
+       返回值是「分」为单位的整数数组，调用方负责 /100 展示。 */
+    function splitToCents(amounts, totalAmount) {
+        var n = amounts.length;
+        if (!n) return [];
+
+        var totalCents = Math.round(totalAmount * 100);
+        var cents = [];
+        var remainders = [];
+        var i;
+        var sum = 0;
+
+        for (i = 0; i < n; i++) {
+            var exact = amounts[i] * 100;
+            var floorC = Math.floor(exact + 1e-9);   /* 避免 0.1*3 的浮点误差落到下一分 */
+            cents.push(floorC);
+            remainders.push({ idx: i, rem: exact - floorC });
+            sum += floorC;
+        }
+
+        /* 把差额补出去。正常情况下差额是 0..n-1 分 */
+        var diff = totalCents - sum;
+        remainders.sort(function (a, b) {
+            if (b.rem !== a.rem) return b.rem - a.rem;
+            return a.idx - b.idx;                     /* 稳定：同余数按下标 */
+        });
+        for (i = 0; i < remainders.length && diff > 0; i++) {
+            cents[remainders[i].idx] += 1;
+            diff--;
+        }
+
+        /* 极端情况下（浮点或脏输入导致 diff 仍不为 0）把所有差额压到第一个人身上，
+           宁可有人多摊一点，也不要让账单合计对不上。 */
+        if (diff !== 0) cents[0] += diff;
+
+        return cents;
+    }
+
+    /* 分 -> 元，供展示 */
+    function centsToYuan(c) { return c / 100; }
+
     function calculate() {
         var typeEl = $('expense-type');
         var totalEl = $('total-amount');
@@ -137,6 +191,11 @@ window.App = window.App || {};
         } else {
             amounts = participants.map(function () { return perPerson; });
         }
+
+        /* 规整到分：保证份额之和恰好等于总额（旧实现会差 1 分）。
+           规整后的值同时用于展示、历史与导出，避免三个出口各算各的。 */
+        var cents = splitToCents(amounts, totalAmount);
+        amounts = cents.map(centsToYuan);
 
         /* hero 大数字 */
         var hero = $('expense-hero-total');
@@ -270,6 +329,11 @@ window.App = window.App || {};
             perPerson = item.total / (participants.length || 1);
             amounts = participants.map(function () { return perPerson; });
         }
+
+        /* 详情页必须走与计算页同一套规整，否则两边差一分钱：
+           计算页显示 33.33/33.33/33.34，详情页显示 33.33/33.33/33.33。
+           规整口径只允许有一个。 */
+        amounts = splitToCents(amounts, Number(item.total) || 0).map(centsToYuan);
 
         var sum = $('expense-detail-summary');
         if (sum) {

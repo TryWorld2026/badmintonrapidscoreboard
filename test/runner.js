@@ -770,6 +770,77 @@
             eq(app.state.getExpenseHistory().length, 2, '改总额后应存第 2 条');
         });
 
+        /* 份额之和必须恰好等于总额。
+           旧实现只在显示时 .toFixed(2)，100 元 3 人均摊显示
+           33.33 × 3 = 99.99 —— 账单差 1 分，谁都对不上账。
+           修法是最大余额法：先各自向下取整到分，再把差额按小数部分
+           从大到小补给前面几位。 */
+        await test('费用分摊', 'A9 均摊份额之和恒等于总额（100 元 3 人不再差 1 分）', async function () {
+            await fresh();
+            await gotoExpense();
+            fillExpense(100, '张三\n李四\n王五', null);
+
+            var shown = Array.prototype.map.call(
+                doc.querySelectorAll('#expense-split-list .amt'),
+                function (e) { return parseFloat(e.textContent.replace('¥', '')); });
+            eq(shown.length, 3, '应有 3 条份额');
+            var sum = shown.reduce(function (s, x) { return s + x; }, 0);
+            eq(Math.round(sum * 100) / 100, 100, '份额之和应恰好等于总额，实际 ' + sum);
+            /* 三份应接近均分：33.33 / 33.33 / 33.34 之类 */
+            shown.forEach(function (x) {
+                assert(Math.abs(x - 100 / 3) < 0.02, '每份应接近 33.33，实际 ' + x);
+            });
+        });
+
+        /* 一组除不尽的金额，逐个断言合计恒等于总额（防回归到「只在显示层 toFixed」） */
+        await test('费用分摊', 'A9b 各种除不尽的总额，份额之和都等于总额', async function () {
+            var cases = [
+                [100, 3], [100, 6], [100, 7], [0.1, 3], [1, 3],
+                [999.99, 7], [123.45, 8], [10, 3], [88.88, 6]
+            ];
+            for (var ci = 0; ci < cases.length; ci++) {
+                var total = cases[ci][0], n = cases[ci][1];
+                await fresh();
+                await gotoExpense();
+                var names = [];
+                for (var k = 0; k < n; k++) names.push('P' + (k + 1));
+                fillExpense(total, names.join('\n'), null);
+
+                var amts = Array.prototype.map.call(
+                    doc.querySelectorAll('#expense-split-list .amt'),
+                    function (e) { return parseFloat(e.textContent.replace('¥', '')); });
+                eq(amts.length, n, total + ' 元 ' + n + ' 人：应有 ' + n + ' 条份额');
+                var s = amts.reduce(function (a, b) { return a + b; }, 0);
+                eq(Math.round(s * 100) / 100, total,
+                    total + ' 元 ' + n + ' 人：份额之和应等于总额，实际 ' + s);
+            }
+        });
+
+        /* 详情页必须与计算页口径一致 —— 两个出口各算各的就会出现
+           「计算页 33.34、详情页 33.33」这种对不上。 */
+        await test('费用分摊', 'A9c 详情页金额与计算页一致', async function () {
+            await fresh();
+            await gotoExpense();
+            app.state.setExpenseHistory([]);
+            fillExpense(100, '张三\n李四\n王五', null);
+
+            var before = Array.prototype.map.call(
+                doc.querySelectorAll('#expense-split-list .amt'),
+                function (e) { return e.textContent.trim(); });
+
+            var btn = doc.querySelector('[data-act="expense:detail"]');
+            assert(btn, '详情按钮应存在');
+            btn.click();
+            await sleep(400);
+
+            var after = Array.prototype.map.call(
+                doc.querySelectorAll('#expense-detail-list .amt'),
+                function (e) { return e.textContent.trim(); });
+            eq(after.join(','), before.join(','),
+                '详情页份额应与计算页完全一致，计算页 ' + before.join(',') +
+                ' 详情页 ' + after.join(','));
+        });
+
         /* ---------- 3b. 统计与图表（历史排序 / 最近 N 场） ----------
            matchHistory 的约定是「新在前」（state.js 的 pushMatchHistory 用 unshift）。
            凡是「取最近 N 条」的地方，遍历方向与收集方式必须配成对，

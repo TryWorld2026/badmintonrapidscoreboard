@@ -74,7 +74,12 @@ window.App = window.App || {};
             monthlyData[key] = (monthlyData[key] || 0) + 1;
         });
 
-        var labels = Object.keys(monthlyData).slice(-6);
+        /* 取最近 6 个月。
+           键是按「新 → 旧」插入的（matchHistory 新在前），
+           所以 Object.keys() 的顺序是倒的：直接 slice(-6) 取到的是
+           **最旧**的 6 个月，而且 X 轴时间倒序。
+           实测：8 个月数据下标签为 2025-06…2025-01，应为 2025-03…2025-08。 */
+        var labels = Object.keys(monthlyData).sort().slice(-6);
         var data = labels.map(function (l) { return monthlyData[l]; });
 
         charts.monthly = new window.Chart(ctx, {

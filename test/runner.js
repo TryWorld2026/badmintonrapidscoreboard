@@ -770,6 +770,80 @@
             eq(app.state.getExpenseHistory().length, 2, '改总额后应存第 2 条');
         });
 
+        /* ---------- 3b. 统计与图表（历史排序 / 最近 N 场） ----------
+           matchHistory 的约定是「新在前」（state.js 的 pushMatchHistory 用 unshift）。
+           凡是「取最近 N 条」的地方，遍历方向与收集方式必须配成对，
+           否则会静默取到最旧的 N 条 —— 不报错，只是把趋势讲反。 */
+        await fresh();
+
+        /* 造一份按「新在前」存放的历史：日期递增，下标 0 是最新 */
+        function seedHistory(days) {
+            var list = [];
+            for (var i = days.length - 1; i >= 0; i--) {   // 倒着 push 得到新在前
+                list.push({
+                    id: i + 1, clientId: 'h' + (i + 1),
+                    teamA: '我/搭档', teamB: '对手' + (i + 1),
+                    scoreA: 2, scoreB: 0, gamesWonA: 2, gamesWonB: 0,
+                    gameScores: '21-10,21-12', duration: 1800, mode: '21',
+                    date: new Date(2026, 0, days[i]).getTime(),
+                    highlights: [], updatedAt: 0, synced: false, deleted: false
+                });
+            }
+            app.state.setMatchHistory(list);
+        }
+
+        await test('统计', 'E1 能力分析「最近 5 场」取的是最新而非最旧', async function () {
+            /* 7 场：1 号到 7 号，最新是 7 号 */
+            seedHistory([1, 2, 3, 4, 5, 6, 7]);
+            eq(app.state.getMatchHistory().length, 7, '历史应有 7 场');
+            eq(new Date(app.state.getMatchHistory()[0].date).getDate(), 7, '下标 0 应是最新（7 号）');
+
+            win.location.hash = '#tab=data&sub=ability';
+            await sleep(700);
+            var sel = doc.getElementById('ability-player-select');
+            assert(sel, '能力分析应有球员选择器');
+            sel.value = '我';
+            app.stats.renderPlayerAbility();
+            await sleep(200);
+
+            var dates = [];
+            var rows = doc.querySelectorAll('#ability-recent .recent-row .r-date');
+            for (var i = 0; i < rows.length; i++) dates.push(rows[i].textContent.trim());
+
+            eq(dates.length, 5, '应显示 5 场');
+            /* 最新在前：7、6、5、4、3 */
+            var expect = ['2026/1/7', '2026/1/6', '2026/1/5', '2026/1/4', '2026/1/3'];
+            eq(dates.join('|'), expect.join('|'),
+                '「最近 5 场」应为最新的 5 场（新在前），实际 ' + dates.join('|'));
+        });
+
+        await test('统计', 'E2 月度图取最近 6 个月且时间轴升序', async function () {
+            /* 8 个月，最新在前 */
+            var months = [8, 7, 6, 5, 4, 3, 2, 1];
+            var list = months.map(function (m) {
+                return {
+                    id: m, clientId: 'm' + m, teamA: '甲', teamB: '乙',
+                    scoreA: 1, scoreB: 0, gamesWonA: 1, gamesWonB: 0,
+                    gameScores: '', duration: 60, mode: '21',
+                    date: new Date(2025, m - 1, 15).getTime(),
+                    highlights: [], updatedAt: 0, synced: false, deleted: false
+                };
+            });
+            app.state.setMatchHistory(list);
+            app.stats.renderHistory();
+            await sleep(800);
+
+            var chart = win.Chart && win.Chart.getChart
+                ? win.Chart.getChart(doc.getElementById('monthlyChart')) : null;
+            assert(chart, '月度图应已创建');
+            var labels = chart.data.labels.slice();
+            eq(labels.length, 6, '应只显示 6 个月');
+            var sorted = labels.slice().sort();
+            eq(labels.join(','), sorted.join(','), 'X 轴应升序（时间从左到右）');
+            eq(labels.join(','), '2025-03,2025-04,2025-05,2025-06,2025-07,2025-08',
+                '应取最近 6 个月，实际 ' + labels.join(','));
+        });
+
         /* ---------- 4. 弹层（A6） ---------- */
         await fresh();
 

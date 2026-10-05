@@ -371,7 +371,13 @@ window.App = window.App || {};
             if (isA) { totalScoreFor += m.scoreA; totalScoreAgainst += m.scoreB; }
             else { totalScoreFor += m.scoreB; totalScoreAgainst += m.scoreA; }
 
-            recent.unshift({
+            /* 用 push 而不是 unshift。
+               matchHistory 是新在前（state.js 的 pushMatchHistory 用 unshift），
+               这里的 forEach 从新到旧遍历，再 unshift 会把顺序翻转成旧在前，
+               于是下面的 slice(0, 5) 取到的是**最早**的 5 场，
+               而不是「最近 5 场」——用户看到的能力趋势是反的。
+               实测：7 场递增日期显示 1/1…1/5，应为 1/7…1/3。 */
+            recent.push({
                 date: fmtDate(m.date, 'date'),
                 won: won,
                 score: m.scoreA + ' : ' + m.scoreB,

@@ -216,7 +216,7 @@ node tools/test-all.mjs
 部署脚本的逐目录期望值与实际一致。这四类问题都「不报错、测试全绿、线上才出事」。
 
 也可以单独跑：`node tools/run-tests.js`（前端 61 条）、`node tools/audit-tokens.js`、
-`node tools/audit-ui.js`、`cd server && node tools/test-api.mjs`（后端 95 条）、
+`node tools/audit-ui.js`、`cd server && node tools/test-api.mjs`（后端 97 条）、
 `node tools/test-sync.mjs`（联调 37 条）。
 
 ### 方式 B：浏览器里看
@@ -232,7 +232,7 @@ python -m http.server 8899
 用例覆盖计分规则、存档规整、费用分摊、智能分组、统计与图表、弹层、视觉令牌、
 场边模式、事件总线、存档迁移、布局约束与 PWA，每条都对应一处**真实修复过的缺陷**。
 
-当前 **前端 61 / 后端 95 / 联调 37**，合计 **193 条断言全绿**。每条用例都做过
+当前 **前端 61 / 后端 97 / 联调 37**，合计 **195 条断言全绿**。每条用例都做过
 **双向变异验证**——故意把对应缺陷改回去，确认用例真的会红。这不是形式主义：
 开发过程中就有 4 条用例第一版**测不出对应的 bug**（合成 `click` 碰不到 `pointerdown` 路径；
 令牌审计漏扫新加的 CSS 文件；变异脚本锚点用了 LF 而目标是 CRLF；测试自己漏调保存函数），

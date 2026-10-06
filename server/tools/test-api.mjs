@@ -111,6 +111,16 @@ console.log('健康检查');
   const ready = await c.call('GET', '/api/ready');
   ok(ready.status === 200 || ready.status === 503, 'GET /api/ready 有明确状态码');
   ok(ready.data && ready.data.checks, 'ready 返回依赖检查明细');
+
+  /* 真实密钥运行时必须是 auth: ok。
+     反向的那一半（占位符密钥必须报 misconfigured）无法在同一个进程里测，
+     因为密钥是启动时注入的 —— 那条靠 CI/本地用占位符起一次服务来验证，
+     已验证过：修复前 /ready 返回 200 + auth:ok（错），修复后 503。
+     这里至少锁住「健康检查与真实校验同源」这个契约：
+     checks.auth 只能是 ok 或 misconfigured，且二者与 status 一致。 */
+  eq(ready.data.checks.auth, 'ok', '真实密钥下 checks.auth 应为 ok');
+  ok(ready.data.status === 'ok' || ready.data.status === 'degraded',
+    'ready 的 status 只能是 ok / degraded');
 }
 
 /* ---------- 1. 注册 / 登录 ---------- */

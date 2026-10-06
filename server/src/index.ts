@@ -16,6 +16,7 @@ import {
   securityHeaders, type Env,
 } from './lib/http';
 import { requireUser, checkRate, ruleFor } from './middleware/auth';
+import { assertSecretUsable } from './lib/tokens';
 import * as auth from './routes/auth';
 import * as matches from './routes/matches';
 import * as clubs from './routes/clubs';
@@ -72,11 +73,16 @@ const ROUTES: Route[] = [
         checks.database = 'fail';
         ok = false;
       }
-      if (!env.JWT_SECRET || env.JWT_SECRET.length < 32) {
+      /* 用 tokens.ts 的同一套校验，而不是在这里重写一遍长度判断。
+         重写的坏处实测过：/ready 只判长度，于是 .env.example 里那个
+         52 字符的占位符会被报成 auth: ok —— 探活说没问题，
+         而实际签发令牌时才会炸。健康检查必须与真实校验同源。 */
+      try {
+        assertSecretUsable(env.JWT_SECRET);
+        checks.auth = 'ok';
+      } catch (e) {
         checks.auth = 'misconfigured';
         ok = false;
-      } else {
-        checks.auth = 'ok';
       }
       return json({ status: ok ? 'ok' : 'degraded', checks }, ok ? 200 : 503);
     },

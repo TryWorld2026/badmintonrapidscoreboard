@@ -55,12 +55,34 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
+/* 已知的占位符：这些都是「显而易见的假值」，必须拒绝。
+   为什么要显式列出来：只判长度是不够的 —— server/.env.example 里那个
+   占位符 `replace-me-with-a-random-string-of-at-least-32-chars`
+   本身就超过 32 字符，会顺利通过长度检查。而 .env.example 的注释
+   却写着「长度不足 32，启动时会被 lib/tokens.ts 拒绝」——
+   文档承诺的安全行为其实并不成立。
+   （真要在生产上用占位符当密钥，攻击者猜都不用猜。） */
+const KNOWN_PLACEHOLDERS = [
+  'replace-me-with-a-random-string-of-at-least-32-chars',
+  'changeme', 'change-me', 'your-secret-here', 'secret', 'placeholder',
+];
+
 function requireSecret(secret: string | undefined): string {
+  assertSecretUsable(secret);
+  return secret as string;
+}
+
+/* 供 /ready 探活复用。
+   刻意导出：健康检查若自己重写一遍校验，就会与真实校验漂移 ——
+   实测过 /ready 只判长度，把占位符报成 auth: ok。 */
+export function assertSecretUsable(secret: string | undefined): void {
   if (!secret || secret.length < 32) {
     /* 密钥太短等于没有签名。宁可启动失败，也不要带着弱密钥上线。 */
     throw new ConfigError('JWT_SECRET 未配置或长度不足 32 字符');
   }
-  return secret;
+  if (KNOWN_PLACEHOLDERS.indexOf(secret.trim().toLowerCase()) >= 0) {
+    throw new ConfigError('JWT_SECRET 仍是示例里的占位符，请生成一个真正的随机串');
+  }
 }
 
 /* ---------- 签发 ---------- */

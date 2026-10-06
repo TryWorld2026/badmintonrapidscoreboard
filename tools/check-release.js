@@ -64,7 +64,7 @@ if (!vMatch) {
   else if (idxVer[1] !== V) fail(`index.html about-version = ${idxVer[1]}，与 settings.js 的 ${V} 不一致`);
   else pass(`index.html about-version = ${idxVer[1]}`);
 
-  for (const f of ['README.md', 'README_CN.md']) {
+  for (const f of ['README.md', 'README.zh-CN.md']) {
     const m = /shields\.io\/badge\/(?:Version|版本)-([\d.]+)-/.exec(read(f));
     if (!m) fail(`${f} 里找不到版本徽章`);
     else if (m[1] !== V) fail(`${f} 徽章 = ${m[1]}，与 settings.js 的 ${V} 不一致`);

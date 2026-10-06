@@ -5,7 +5,7 @@
   <a href="README.md">
     <img src="https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=google-translate&logoColor=white" alt="English">
   </a>
-  <a href="README_CN.md">
+  <a href="README.zh-CN.md">
     <img src="https://img.shields.io/badge/Language-中文-red?style=for-the-badge&logo=google-translate&logoColor=white" alt="中文">
   </a>
 </p>

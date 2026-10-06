@@ -762,6 +762,67 @@ body.dock-on .content {
 
 .duel-card-head .vs-tag { margin-left: auto; }
 
+/* ---------- 轮换赛制：轮次说明 + 谁在轮休 ----------
+   为什么要显式展示：算法不透明的话球友会觉得不公平
+   （「凭什么他刚打完又上」）。所以把「已打几局 / 是否轮休」
+   直接写出来，而不是只丢一组对阵让人猜。 */
+.rotation-meta {
+    margin-bottom: var(--sp-4);
+}
+
+.rotation-round {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--fg);
+    margin-bottom: var(--sp-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.rotation-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
+}
+
+.rotation-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--plate-2);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 0 1px var(--edge);
+}
+
+/* 轮休的人整体降调：不是「被排除」，是这一轮歇着 */
+.rotation-row.is-bench {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--edge-2);
+}
+
+.rotation-name {
+    font-size: var(--fs-2xs);
+    color: var(--fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rotation-row.is-bench .rotation-name { color: var(--fg-3); }
+
+.rotation-state {
+    font-size: var(--fs-3xs);
+    color: var(--fg-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.rotation-hint {
+    font-size: var(--fs-3xs);
+    color: var(--fg-3);
+    line-height: var(--lh-snug);
+}
+
 .duel-side {
     display: flex;
     align-items: center;

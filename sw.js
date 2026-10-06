@@ -11,7 +11,7 @@
    js/css——实测改过 screens.css 后线上 Lighthouse 仍报旧色值，就是这个
    原因。每次动 js/css/vendor 就把版本号 +1。
    ================================================================ */
-var CACHE_NAME = 'badminton-score-v13';
+var CACHE_NAME = 'badminton-score-v14';
 
 var ASSETS = [
   './',

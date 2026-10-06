@@ -221,6 +221,23 @@ const PX_TO_MM = 0.183;
         }
       }
 
+      /* ---- 图标名是否都存在 ----
+         hydrate() 遇到不存在的名字会**静默跳过**（`if (!REG[name]) continue`），
+         于是打错一个字母，界面上就是那个位置空着 —— 没有报错、没有警告。
+         写「反馈问题」按钮时误把 pencil 写成 edit 就是这种情况，
+         而且没有任何现有检查能发现。加一条：页面里出现的 data-icon
+         必须在图标库里注册过。 */
+      const badIcons = [];
+      const iconSeen = new Set();
+      for (const el of document.querySelectorAll('[data-icon],[data-icon-done]')) {
+        const n = el.getAttribute('data-icon') || el.getAttribute('data-icon-done');
+        if (!n) continue;
+        const key = el.closest('[data-tab],[data-me],.courtside') ? n : n;
+        if (iconSeen.has(key)) continue;
+        iconSeen.add(key);
+        if (window.App && window.App.icons && !window.App.icons.has(n)) badIcons.push(n);
+      }
+
       /* ---- 滚到底之后是否被 Dock / tabbar 永久遮挡 ----
          这条是补盲区：审计工具原来从不 scrollTo 底部，于是
          「.app.dock-on .content」这个永不命中的选择器一直没被发现 ——
@@ -273,6 +290,7 @@ const PX_TO_MM = 0.183;
         legacy,
         lowContrast,
         occlusion,
+        badIcons: [...new Set(badIcons)],
       };
     }, { tapMin: TAP_MIN, legacySrc: LEGACY_COLORS.source });
 
@@ -292,6 +310,9 @@ const PX_TO_MM = 0.183;
     if (m.occlusion) {
       problems.push(`滚到底被 ${m.occlusion.bar} 遮挡 ${m.occlusion.covered}px` +
         `（padding-bottom=${m.occlusion.paddingBottom}，最低元素 .${m.occlusion.cls}）`);
+    }
+    if (m.badIcons && m.badIcons.length) {
+      problems.push(`${m.badIcons.length} 个图标名未注册（会静默渲染成空白）: ${m.badIcons.join(', ')}`);
     }
     if (errs.length) problems.push('运行期错误: ' + errs[0]);
 

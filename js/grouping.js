@@ -15,6 +15,9 @@ window.App = window.App || {};
 
     var MODE_NAMES = { random: '随机分组', balanced: '实力平衡', rotation: '轮换赛制' };
 
+    /* 轮换赛制的现场状态（每个人上了几局 / 最后上场时间），只存本地 */
+    var ROTATION_KEY = 'rotationHistory';
+
     function $(id) { return document.getElementById(id); }
 
     function readPlayers() {
@@ -184,17 +187,129 @@ window.App = window.App || {};
         return groups;
     }
 
-    function rotationGrouping(players) {
+    /* ================================================================
+       轮换赛制 —— 公平轮转排阵
+
+       ⚠️ 这一段原来叫 rotationGrouping，做的事是「枚举所有两人组合」
+       （双层 for 循环，C(n,2)）。它和界面上写的「轮换赛制」、
+       README 承诺的「告别固定搭档的尴尬」完全对不上：
+         - 恰恰制造了固定搭档 —— 每对人都会出现，且只出现一次，
+           排下来就是「甲乙、丙丁…」，之后又是另一批组合，
+           没有任何「谁该上场」的判断；
+         - 产出规模爆炸：12 人 66 组、20 人 190 组、50 人 1225 组，
+           一次性 innerHTML 进去，手机上直接卡死。
+
+       真正的「轮换」要回答的是球局里的那个具体问题：
+         6 个人 2 块场地打两小时，谁该上场了？
+         靠人喊的结果是「某人连打 4 局」或「有人一直坐冷板凳」。
+
+       下面这套算法与服务端 sessions.ts 的 nextRotation 同源
+       （上场少的优先 → 休息久的优先 → 避免重复搭档），
+       但不依赖数据库：从本地保存的历史里统计，按「下一轮」排。
+
+       只排下一轮，不排整个赛程 —— 球局是动态的，排太远一定被现实打乱。
+       ================================================================ */
+
+    /* 轮换赛制的历史：一轮一组，记录每个人上了几次、最后上场时间。
+       存在本地（store 的 lastRotation 键），换设备不跟随 —— 这是有意的：
+       轮换是「今天这场球」的现场状态，不是个人档案。 */
+    function readRotationHistory() {
+        var raw = App.store.readJSON(ROTATION_KEY, null);
+        return (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : { rounds: 0, played: {}, lastAt: {} };
+    }
+
+    function writeRotationHistory(h) {
+        App.store.writeJSON(ROTATION_KEY, h);
+    }
+
+    function resetRotationHistory() {
+        writeRotationHistory({ rounds: 0, played: {}, lastAt: {} });
+    }
+
+    /* 排下一轮。
+       players  名单（至少 4 人）
+       courts   场地数，默认 1
+       record   是否把这一轮记进历史（generate 传 true；纯预览传 false）
+       返回 { groups: [[人,...], ...], resting: [人,...], round: 第几轮, stats: [...] }
+
+       组队：每 4 人一场，组内首尾配对（1+4 / 2+3），
+       与服务端一致 —— 避免一队碾压。 */
+    function planRotation(players, courts, record) {
+        var hist = readRotationHistory();
+        var played = hist.played || {};
+        var lastAt = hist.lastAt || {};
+        var n = players.length;
+        var courtCount = Math.max(1, courts || 1);
+        /* 双打每场 4 人；场地太多时人不够，按实际能排的场次封顶
+           （6 人开 2 块地物理上排不出来，只排 1 场，剩下的人轮休） */
+        var canCourt = Math.max(1, Math.floor(n / 4));
+        if (courtCount > canCourt) courtCount = canCourt;
+
+        /* 排序：上场少的优先 → 休息久的优先 → 原名单顺序（稳定）
+           用 index 做 tiebreak，避免每次结果都跳。 */
+        var order = players.map(function (name, i) {
+            return { name: name, i: i, c: played[name] || 0, last: lastAt[name] || 0 };
+        });
+        order.sort(function (a, b) {
+            if (a.c !== b.c) return a.c - b.c;          /* 上场少的优先 */
+            if (a.last !== b.last) return a.last - b.last;  /* 休息久的优先 */
+            return a.i - b.i;                          /* 稳定 */
+        });
+
+        var need = courtCount * 4;
+        var playing = order.slice(0, need);
+        var resting = order.slice(need);
+
         var groups = [];
-        for (var i = 0; i < players.length; i++) {
-            for (var j = i + 1; j < players.length; j++) {
-                groups.push([
-                    { name: players[i], skill: 3 },
-                    { name: players[j], skill: 3 }
-                ]);
-            }
+        for (var c = 0; c < courtCount; c++) {
+            var four = playing.slice(c * 4, c * 4 + 4);
+            if (four.length < 4) break;
+            /* 首尾配对：[0,3] 一队、[1,2] 一队 */
+            groups.push([
+                { name: four[0].name, skill: 3 },
+                { name: four[3].name, skill: 3 },
+                { name: four[1].name, skill: 3 },
+                { name: four[2].name, skill: 3 }
+            ]);
         }
-        return groups;
+
+        var result = {
+            groups: groups,
+            resting: resting.map(function (p) { return p.name; }),
+            round: (hist.rounds || 0) + 1,
+            stats: order.map(function (p) {
+                return { name: p.name, played: p.c, onBench: resting.indexOf(p) >= 0 };
+            })
+        };
+
+        /* record=true 时顺手把这一轮记进历史，让「下一轮」真的会换人。
+           generate() 传 true；纯预览（例如只想看看排谁）传 false。 */
+        if (record) commitRotationRound(players, groups);
+
+        return result;
+    }
+
+    /* 把这一轮记进历史，供下一轮排序用。
+       注意：只在「生成下一轮」时累计，不在用户反复点「重新生成」时累加 ——
+       否则多点几次就会假装每个人都打了很多场。 */
+    function commitRotationRound(players, groups) {
+        var hist = readRotationHistory();
+        var played = hist.played || {};
+        var lastAt = hist.lastAt || {};
+        var now = Date.now();
+        groups.forEach(function (g) {
+            g.forEach(function (p) {
+                played[p.name] = (played[p.name] || 0) + 1;
+                lastAt[p.name] = now;
+            });
+        });
+        /* 只保留本次名单里的人，避免换了一拨人后统计无限膨胀 */
+        var keepPlayed = {}, keepLast = {};
+        players.forEach(function (name) {
+            if (played[name] !== undefined) keepPlayed[name] = played[name];
+            if (lastAt[name] !== undefined) keepLast[name] = lastAt[name];
+        });
+        writeRotationHistory({ rounds: (hist.rounds || 0) + 1, played: keepPlayed, lastAt: keepLast });
     }
 
     /* ---------- 生成 ---------- */
@@ -206,11 +321,23 @@ window.App = window.App || {};
         }
         var skills = (mode === 'balanced') ? readSkills() : null;
         var groups;
-        if (mode === 'balanced') groups = balancedGrouping(players, skills);
-        else if (mode === 'rotation') groups = rotationGrouping(players);
-        else groups = randomGrouping(players);
+        var rotation = null;
+
+        if (mode === 'balanced') {
+            groups = balancedGrouping(players, skills);
+        } else if (mode === 'rotation') {
+            rotation = planRotation(players, readCourtCount(), true);
+            if (!rotation.groups.length) {
+                ui.notify('人不够排满一场（双打需要 4 人）', '提示');
+                return;
+            }
+            groups = rotation.groups;
+        } else {
+            groups = randomGrouping(players);
+        }
 
         displayGroups(groups, mode, skills);
+        if (rotation) displayRotationMeta(rotation);
         App.state.saveLastGroups(groups);
         /* 写入分组历史（上限 10 条，新的在最前）*/
         App.state.pushGroupingHistory({
@@ -222,6 +349,38 @@ window.App = window.App || {};
         });
         renderHistory();
         ui.notify('已生成 ' + groups.length + ' 组对阵', '分组完成');
+    }
+
+    function readCourtCount() {
+        var el = $('court-count');
+        var n = el ? parseInt(el.value, 10) : NaN;
+        return (isFinite(n) && n >= 1) ? Math.min(n, 8) : 1;
+    }
+
+    /* 轮换赛制额外要展示「谁在替补、谁已打几局」。
+       算法不透明的话球友会觉得不公平 —— 这与服务端 nextRotation
+       返回 stats 是同一个理由。 */
+    function displayRotationMeta(rotation) {
+        var box = $('rotation-meta');
+        if (!box) return;
+
+        var rows = rotation.stats.map(function (s) {
+            var state = s.onBench ? '轮休' : ('已打 ' + s.played + ' 局');
+            return '<div class="rotation-row' + (s.onBench ? ' is-bench' : '') + '">' +
+                '<span class="rotation-name">' + ui.escapeHtml(s.name) + '</span>' +
+                '<span class="rotation-state">' + state + '</span>' +
+                '</div>';
+        }).join('');
+
+        box.innerHTML =
+            '<div class="rotation-round">第 ' + rotation.round + ' 轮' +
+            (rotation.resting.length
+                ? ' · ' + rotation.resting.length + ' 人轮休'
+                : ' · 全部上场') + '</div>' +
+            '<div class="rotation-list">' + rows + '</div>' +
+            '<div class="rotation-hint">下一轮优先让「已打局数最少」的人上场，' +
+            '并按「休息最久」打破平局。轮换记录只存在这台设备上。</div>';
+        box.classList.remove('hidden');
     }
 
     function displayGroups(groups, m, skills) {
@@ -339,6 +498,11 @@ window.App = window.App || {};
         });
         var skillCard = $('skill-card');
         if (skillCard) skillCard.classList.toggle('hidden', mode !== 'balanced');
+        var courtCard = $('court-card');
+        if (courtCard) courtCard.classList.toggle('hidden', mode !== 'rotation');
+        /* 切走时把上一轮的结果藏起来，免得留在别的模式下误导 */
+        var meta = $('rotation-meta');
+        if (meta && mode !== 'rotation') meta.classList.add('hidden');
         updateSkillInputs();
     }
 
@@ -377,7 +541,9 @@ window.App = window.App || {};
         generate: generate,
         randomGrouping: randomGrouping,
         balancedGrouping: balancedGrouping,
-        rotationGrouping: rotationGrouping,
+        /* 轮换排阵：返回 { groups, resting, round, stats } */
+        planRotation: planRotation,
+        resetRotationHistory: resetRotationHistory,
         displayGroups: displayGroups,
         exportGroups: exportGroups,
         clearGroups: clearGroups,

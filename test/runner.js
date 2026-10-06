@@ -1031,6 +1031,169 @@
                 '最强的 5 级应与最弱的 1 级同组');
         });
 
+        /* ---------- 3d. 轮换赛制（G2） ----------
+           原来的 rotationGrouping 是「枚举所有两人组合」：
+             - 与界面上的「轮换赛制」、README 承诺的「告别固定搭档」完全对不上
+               （它恰恰制造固定搭档，且没有任何「谁该上场」的判断）
+             - 产出 C(n,2)：12 人 66 组、20 人 190 组、50 人 1225 组，
+               一次性 innerHTML 进去手机直接卡死
+           现在是「上场少的优先 → 休息久的优先」的公平轮转，
+           与服务端 sessions.ts 的 nextRotation 同源。 */
+
+        function setRotationMode() {
+            var btn = doc.querySelector('[data-act="grouping:mode"][data-mode="rotation"]');
+            assert(btn, '应有轮换赛制模式按钮');
+            btn.click();
+        }
+
+        await test('智能分组', 'G2 轮换赛制：每人上场次数均衡（而不是枚举所有组合）', async function () {
+            await fresh();
+            app.grouping.resetRotationHistory();
+
+            /* 8 人 2 场地：每轮 8 人全上，没法体现轮休。
+               用 6 人 2 场地 —— 双打每场 4 人，2 块地要 8 人，
+               6 人只够排 1 场，另外 2 人轮休，正好验证「谁该上场」。
+               record=true 让每轮真正记进历史，下一轮才会换人。 */
+            var players = ['甲', '乙', '丙', '丁', '戊', '己'];
+            var counts = {};
+            var seenLineups = [];
+
+            for (var r = 0; r < 6; r++) {
+                var plan = app.grouping.planRotation(players, 2, true);
+                eq(plan.groups.length, 1, '第 ' + (r + 1) + ' 轮：6 人只够 1 场双打');
+                plan.groups.forEach(function (g) {
+                    eq(g.length, 4, '双打每场 4 人');
+                    g.forEach(function (p) { counts[p.name] = (counts[p.name] || 0) + 1; });
+                });
+                eq(plan.resting.length, 2, '6 人 1 场应有 2 人轮休');
+                /* 记下这一轮的上场名单，用于断言「确实在轮换」 */
+                seenLineups.push(plan.groups.map(function (g) {
+                    return g.map(function (p) { return p.name; }).sort().join('');
+                }).sort().join('|'));
+            }
+
+            eq(Object.keys(counts).length, 6, '每个人都应有上场记录');
+            var vals = Object.keys(counts).map(function (k) { return counts[k]; });
+            var maxD = Math.max.apply(null, vals) - Math.min.apply(null, vals);
+            /* 6 轮 × 4 人次 = 24 人次，人均 4；极差不应超过 1 */
+            assert(maxD <= 1,
+                '每人上场次数应均衡，极差 ' + maxD + '，实际 ' + JSON.stringify(counts));
+
+            /* 关键：出场名单必须变化过，否则「轮换」名不副实 */
+            var uniq = {};
+            seenLineups.forEach(function (s) { uniq[s] = true; });
+            assert(Object.keys(uniq).length > 1,
+                '轮换赛制每轮应换人，实际 6 轮只有 ' + Object.keys(uniq).length + ' 种阵容');
+        });
+
+        await test('智能分组', 'G2b 轮换赛制：轮休者优先在下一轮上场', async function () {
+            await fresh();
+            app.grouping.resetRotationHistory();
+
+            var players = ['甲', '乙', '丙', '丁', '戊', '己'];
+            var r1 = app.grouping.planRotation(players, 2, true);
+            var bench1 = r1.resting.slice().sort();
+            eq(bench1.length, 2, '第 1 轮应有 2 人轮休');
+
+            var r2 = app.grouping.planRotation(players, 2, true);
+            /* 上一轮轮休的两人，这一轮上场次数为 0，
+               应该被优先排上（上场次数少者优先） */
+            var onNext = {};
+            r2.groups.forEach(function (g) {
+                g.forEach(function (p) { onNext[p.name] = true; });
+            });
+            eq(onNext[bench1[0]], true,
+                '第 1 轮轮休的「' + bench1[0] + '」应在第 2 轮上场');
+            eq(onNext[bench1[1]], true,
+                '第 1 轮轮休的「' + bench1[1] + '」应在第 2 轮上场');
+        });
+
+        await test('智能分组', 'G2c 轮换赛制：场地数与人数不匹配时不产生残缺场次', async function () {
+            await fresh();
+            app.grouping.resetRotationHistory();
+
+            /* 6 人开 3 块地 -> 只够 1 场（4 人），不能出现「半场上 3 人」 */
+            var plan = app.grouping.planRotation(['甲','乙','丙','丁','戊','己'], 3, false);
+            eq(plan.groups.length, 1, '6 人最多排 1 场完整双打');
+            eq(plan.groups[0].length, 4, '每场必须是 4 人');
+            eq(plan.resting.length, 2, '其余 2 人轮休');
+
+            /* 4 人 1 场地 -> 刚好一场，无人轮休 */
+            app.grouping.resetRotationHistory();
+            var p2 = app.grouping.planRotation(['甲','乙','丙','丁'], 1, false);
+            eq(p2.groups.length, 1, '4 人 1 场地应排 1 场');
+            eq(p2.resting.length, 0, '4 人 1 场地不应有人轮休');
+
+            /* 8 人 2 场地 -> 正好 2 场，无人轮休 */
+            app.grouping.resetRotationHistory();
+            var p3 = app.grouping.planRotation(
+                ['甲','乙','丙','丁','戊','己','庚','辛'], 2, false);
+            eq(p3.groups.length, 2, '8 人 2 场地应排 2 场');
+            eq(p3.resting.length, 0, '8 人 2 场地无人轮休');
+        });
+
+        await test('智能分组', 'G2d 轮换赛制：UI 走真实路径，且轮次说明可见', async function () {
+            await fresh();
+            /* 8 人 2 场地，才能真实排出 2 张卡 */
+            await gotoGrouping(['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛']);
+            app.grouping.resetRotationHistory();
+            setRotationMode();
+            await sleep(120);
+
+            /* 场地卡只在这个模式下出现 */
+            assert(!doc.getElementById('court-card').classList.contains('hidden'),
+                '轮换赛制下应显示场地数卡片');
+            doc.getElementById('court-count').value = '2';
+            doc.getElementById('court-count').dispatchEvent(new win.Event('change', { bubbles: true }));
+            await sleep(120);
+
+            /* 走真实按钮生成 */
+            doc.querySelector('[data-act="grouping:generate"]').click();
+            await sleep(200);
+
+            /* 轮次说明要能看到「第 N 轮」 */
+            var meta = doc.getElementById('rotation-meta');
+            assert(!meta.classList.contains('hidden'), '应显示轮次说明');
+            var txt = meta.textContent || '';
+            assert(txt.indexOf('第 1 轮') >= 0, '应标明第几轮，实际：' + txt.slice(0, 40));
+
+            /* 每组必须是 4 人（界面上真实的 DOM） */
+            var cards = doc.querySelectorAll('#group-results .duel-card');
+            eq(cards.length, 2, '8 人 2 场地应有 2 张场次卡');
+            cards.forEach(function (c, i) {
+                eq(c.querySelectorAll('.duel-side').length, 4,
+                    '第 ' + (i + 1) + ' 张卡应有 4 人');
+            });
+
+            /* 再点一次生成，轮次应递增 */
+            doc.querySelector('[data-act="grouping:generate"]').click();
+            await sleep(200);
+            assert((meta.textContent || '').indexOf('第 2 轮') >= 0,
+                '再点一次应变成第 2 轮，实际：' + (meta.textContent || '').slice(0, 40));
+        });
+
+        await test('智能分组', 'G2e 换名单后轮换统计不会错位', async function () {
+            await fresh();
+            await gotoGrouping(['甲', '乙', '丙', '丁']);
+            app.grouping.resetRotationHistory();
+            setRotationMode();
+            await sleep(120);
+
+            doc.querySelector('[data-act="grouping:generate"]').click();
+            await sleep(150);
+            /* 换成另一拨人 */
+            var ta = doc.getElementById('players-list');
+            ta.value = '王一\n王二\n王三\n王四';
+            ta.dispatchEvent(new win.Event('input', { bubbles: true }));
+            await sleep(150);
+
+            app.grouping.planRotation(['王一', '王二', '王三', '王四'], 1, true);
+            /* 提交后统计里不该残留上一拨人 */
+            var raw = win.localStorage.getItem('rotationHistory');
+            assert(raw === null || raw.indexOf('甲') < 0,
+                '换名单后轮换历史不应残留上一拨人，实际：' + raw);
+        });
+
         /* ---------- 4. 弹层（A6） ---------- */
         await fresh();
 

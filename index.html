@@ -173,8 +173,19 @@
                         <button type="button" class="pick-card" data-act="grouping:mode" data-mode="rotation">
                             <span class="pick-icon ic-box" data-icon="rotate"></span>
                             <span class="pick-name">轮换赛制</span>
-                            <span class="pick-desc">全组合</span>
+                            <span class="pick-desc">公平轮休</span>
                         </button>
+                    </div>
+                </div>
+
+                <div class="card hidden" id="court-card">
+                    <div class="card-title">场地数<span class="title-extra">双打每场 4 人</span></div>
+                    <div class="field">
+                        <select class="select" id="court-count" aria-label="场地数">
+                            <option value="1">1 块（4 人上场）</option>
+                            <option value="2">2 块（8 人上场）</option>
+                            <option value="3">3 块（12 人上场）</option>
+                        </select>
                     </div>
                 </div>
 
@@ -204,6 +215,7 @@
                 </div>
 
                 <div id="group-results-section" class="hidden">
+                    <div id="rotation-meta" class="card rotation-meta hidden"></div>
                     <div class="section-title">对阵结果</div>
                     <div class="stat-grid mb-4" id="group-stats"></div>
                     <div class="duel-grid" id="group-results"></div>
@@ -613,6 +625,20 @@
                     <div class="about-item"><span class="k">已解锁成就</span><span class="v" id="about-achievements">0 / 12</span></div>
                 </div>
                 <p class="about-note">纯本地应用，无账号、无后端、离线可用。<br>换设备请使用「数据备份」导出 JSON。</p>
+                <div class="btn-row mt-4">
+                    <a class="btn btn-outline" id="feedback-link"
+                       href="https://github.com/TryWorld2026/badmintonrapidscoreboard/issues/new"
+                       target="_blank" rel="noopener noreferrer">
+                        <span class="ic-box" data-icon="pencil"></span>反馈问题
+                    </a>
+                    <a class="btn btn-outline" id="star-link"
+                       href="https://github.com/TryWorld2026/badmintonrapidscoreboard"
+                       target="_blank" rel="noopener noreferrer">
+                        <span class="ic-box" data-icon="star"></span>去 GitHub 点个 Star
+                    </a>
+                </div>
+                <p class="about-note">用出问题、想要哪个功能，直接开个 issue 就行。<br>
+                    本应用不收集任何数据，也没有埋点 —— 你的使用记录只有你自己看得到。</p>
             </div>
         </section>
     </main>

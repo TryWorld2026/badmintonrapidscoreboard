@@ -71,7 +71,7 @@ Integrated with Chart.js to track cumulative win rate, win/loss split, monthly v
 
 ### 👥 Smart Scheduling
 **Fair Grouping Algorithm**  
-Supports Random, Balanced, and Rotation modes. Say goodbye to the awkwardness of "fixed partners".
+Supports Random, Balanced, and Rotation modes. Rotation picks the next round's lineup — whoever has played least goes on, and you can see at a glance who is resting.
 
 </td>
 <td width="33%">

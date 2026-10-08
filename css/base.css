@@ -476,6 +476,14 @@ a {
     box-shadow: var(--lift), inset 0 1px 0 var(--edge);
 }
 
+/* 末张卡片不留外边距。
+   .tab-panel 既没有内边距也没有边框，末张卡片的 margin-bottom
+   会穿透它逃进 .content，变成一段「看不见的高度」。
+   而 .content 底部本就有避让 Dock + Tab Bar 的内边距，
+   这 16px 纯属重复 —— 实测 390×844 打起来时内容被顶到 795.86px，
+   可用高度只有 794px，于是「一屏读完」在计分过程中破功 2px。 */
+.card:last-child { margin-bottom: 0; }
+
 .card-title {
     display: flex;
     align-items: center;

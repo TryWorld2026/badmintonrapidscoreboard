@@ -16,7 +16,7 @@
 <h3>🚀 The Ultimate Scoring & Management System for Badminton Lovers</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-3.0.0-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
+  <img src="https://img.shields.io/badge/Version-4.0.0-6839E8?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-27F05C?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License">
   <img src="https://img.shields.io/badge/Adaptive-All_Platforms-00D9FF?style=for-the-badge&logo=skype&logoColor=white" alt="Platform">
 </p>
@@ -47,8 +47,8 @@ This is more than just a scoreboard; it's a comprehensive ecosystem for managing
 <td width="33%">
 
 ### 💎 Pure Aesthetics
-**Instrument Readout**  
-Neutral graphite surfaces with a precision tick-ring. Saturated colour is reserved exclusively for team identity.
+**Night Court**  
+The whole scoreboard is a court: the centre line is the net, the outer edges are the sidelines, and the leading side receives a pool of its own team colour.
 
 </td>
 <td width="33%">
@@ -98,6 +98,7 @@ Data lives in your browser's LocalStorage by default. No account required, and s
 ### 🏸 Professional Scoring System
 - **Real-time Timer**: Precisely record the duration of every match.
 - **Undo Mechanism**: Step back through the point log to undo accidental score touches.
+- **Round timeline**: every point becomes a bar — the x-axis is the rally number, bar height is the score after that rally, and a rule marks the round where the sides changed. Momentum, streaks and turning points in one glance.
 - **Auto-Judgment**: Handles Deuce up to 30 points, strictly following BWF rules.
 - **Victory FX**: Stunning full-screen effects and achievement unlock notifications.
 
@@ -105,7 +106,7 @@ Data lives in your browser's LocalStorage by default. No account required, and s
 - **Multiple Modes**: Random, Skill-Balanced (strong-weak pairing), and Round Robin.
 - **Expense Calculator**: Set totals, split by head, or use custom ratios. Copy results with one click.
 
-### 📺 Courtside Mode (new in v3)
+### 📺 Courtside Mode
 - **Giant readout**: scores scale to 179px in landscape — roughly 2.2 m of comfortable reading distance.
 - **Half-screen buttons**: each side is a full-height tap target, so you can hit it without looking.
 - **Gestures**: tap to score, long-press (>520ms) to undo the last point.
@@ -125,15 +126,30 @@ One purpose-built dark theme, tuned for a dim gym — there is no theme picker.
 
 **The design premise**: the phone is propped courtside, the player stands 2 metres away, one hand sweaty, the other holding a racket. Every rule below follows from that.
 
-- 🌑 **Neutral graphite**: `#101113` base with three layered surfaces. Not pure black (depth would be lost), not fluorescent (glare under gym lighting).
-- 🎯 **Team identity**: signal red `#E1554A` vs instrument blue `#3E8FD9` — the **only** saturated colours in the UI, and only where teams are concerned.
-- ⭕ **Tick-ring signature**: a 40-tick precision ring around each score, pure CSS (`conic-gradient` + `mask`). The leading side's ticks brighten while the trailing side dims — **state is expressed through the ring, not through glow**.
-- 🔢 **Numerals first**: monospace with `tabular-nums` for scores and timers, so digits don't jitter as they change.
+The design language is **"NIGHT COURT"**, and it follows from five rules:
+
+1. **Light is not a border.** Every surface is "two gradient stops + a top inner highlight", never "a flat fill + a 1px stroke". On a dark background a 1px grey line is invisible, and an invisible boundary is no boundary at all — which is exactly where v3's "instrument readout" language failed: once `--sh-flat` became `none`, every panel collapsed into one dead grey slab.
+2. **One protagonist.** The score is the only oversized element in the app. Every label is ≤11px with widened tracking, and never competes with the numerals.
+3. **Two lines define a match.** The centre line is the net (a bright line with dark gutters either side, drawn with `box-shadow`); the outer edges are the sidelines. Team colour appears only on lines, numerals and light pools — never as decoration.
+4. **A match has one shape.** The point feed became a **round timeline**: the x-axis is the rally number, bar height is the score after that rally, and a single rule marks the round where the sides changed. You read momentum and turning points at a glance instead of reading a list of "10 → 11".
+5. **Motion serves scoring only.** A point lands the numeral in (one frame of white flash, then a hard drop from 1.07 to 1 — no bounce), while a neutral band of light sweeps across the scoring side. Every other interaction is ≤120ms or absent.
+
+- 🌑 **Night-court green**: `#0A0D0C` base, `#0B0F0E` board, three layered surfaces. Not pure black (team colours overshoot blue on pure black), not fluorescent (glare under gym lighting).
+- 🎯 **Team identity**: shuttle-cork red `#FF5A47` vs court blue `#4FA8E8` — the **only** saturated colours in the UI, and only on sidelines, scores and light pools.
+- 🟡 **Amber means exactly one thing**: **in progress**. It used to double as the "selected" state, so "this match is live" and "this button is selected" looked identical; selection is now expressed with ivory or a light pool.
+- 🔢 **Numerals first**: `tabular-nums` for scores and timers, so digits don't jitter as they change.
+- 🔤 **The font ships with the app**: scores use **Barlow Semi Condensed** (SIL OFL, bundled — 3 weights, 68 KB total). Three hard reasons: at 140px its digits are 74.9px wide, 4% narrower than the DIN it replaced (a half-court is only 194px, so a narrower face means a larger score); it carries `tnum`, so digits don't jitter as they change; and its OFL licence permits redistribution.
+  Chinese still uses system faces (PingFang SC / Noto Sans SC) with the `unicode-range` pinned to Latin — which is why 68 KB covers the whole UI instead of a multi-megabyte CJK subset.
+- 🟢 **Leading is shown by light**: the leading side receives a pool of its own team colour and its sideline brightens, while the trailing side is the same white ink dimmed to 62%. No outlines, no glowing icons, no colour swap.
 - ♿ **Accessibility**: every touch target ≥ 44×44 (verified across 11 views, zero exceptions), WCAG AA contrast throughout, with focus trapping and screen-reader announcements.
 
 ### Deliberately removed
 
-The previous version (v2) spoke a "broadcast truck" language: `#D4FF3F` high-voltage fluorescent, `clip-path` chamfers, scanlines, italic Impact numerals, glowing outlines. All of it was removed in v3 — fluorescent colour is the single biggest source of cheapness, and stacking decoration is not the same thing as having texture.
+v2 spoke a "broadcast truck" language: `#D4FF3F` high-voltage fluorescent, `clip-path` chamfers, scanlines, italic Impact numerals, glowing outlines — all removed in v3.
+
+v3 then over-corrected: in the name of "no glow" it switched every shadow off and replaced them with 1px hairlines, so the panels vanished into the dark background. v4 puts the light back, but only one kind of light: a single key light from above. The same pass removed v3's **tick ring** — those 40 precision ticks around each score were handsome, but they mapped to no real rule and were pure decoration. That space now carries the game progress line, whose tick sits on the actual side-change point (11 in a 21-point game, 8 in a 15-point game, 6 in an 11-point game).
+
+The full v4 design system, the point-by-point reconciliation table and the implementation corrections are recorded in [`docs/redesign-v4/index.html`](docs/redesign-v4/index.html) (open it directly in a browser).
 
 ---
 
@@ -170,6 +186,7 @@ Built on the **"Vanilla First"** principle, achieving powerful features with min
 - **Core**: HTML5, CSS3 (Modern Flex & Grid), ES6+ JavaScript
 - **Charts**: [Chart.js](https://www.chartjs.org/) - Powerful data visualization
 - **Rendering**: [html2canvas](https://html2canvas.hertzen.com/) - High-quality share card generation
+- **Fonts**: Barlow Semi Condensed (SIL OFL, bundled — see `fonts/`)
 - **Storage**: LocalStorage — 10 keys, all on-device
 
 ---

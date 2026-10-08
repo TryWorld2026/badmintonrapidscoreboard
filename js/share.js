@@ -24,6 +24,7 @@ window.App = window.App || {};
 
         var d = data;
         var aWin = (d.scoreA || 0) > (d.scoreB || 0);
+        var bWin = (d.scoreB || 0) > (d.scoreA || 0);
 
         var games = (d.games || []).map(function (g) {
             return '<span class="sc-game">' + esc(g) + '</span>';
@@ -36,20 +37,24 @@ window.App = window.App || {};
             }).join('') + '</div>'
             : '';
 
-        card.className = 'share-card share-card-tpl-' + tpl;
+        /* win-a / win-b 决定顶部那条 3px 识别线的颜色（胜方队色）。
+           平局时两个类都不加，线退成中性发丝线 ——
+           「没有胜方」这件事也要如实画出来，不能默认染成甲队色。 */
+        card.className = 'share-card share-card-tpl-' + tpl +
+            (aWin ? ' win-a' : (bWin ? ' win-b' : ''));
         card.innerHTML =
             '<div class="sc-head">' +
             '<span class="sc-brand">BADMINTON SCOREBOARD</span>' +
             '<span class="sc-date">' + esc(d.dateText || '') + '</span>' +
             '</div>' +
             '<div class="sc-teams">' +
-            '<div class="sc-team ' + (aWin ? 'win' : 'lose') + '">' +
+            '<div class="sc-team side-a ' + (aWin ? 'win' : 'lose') + '">' +
             '<div class="sc-avatar">' + esc(d.avatarA || '🏸') + '</div>' +
             '<div class="sc-name">' + esc(d.teamA || '') + '</div>' +
             '<div class="sc-score">' + (d.scoreA || 0) + '</div>' +
             '</div>' +
             '<div class="sc-vs">VS</div>' +
-            '<div class="sc-team ' + (!aWin ? 'win' : 'lose') + '">' +
+            '<div class="sc-team side-b ' + (bWin ? 'win' : 'lose') + '">' +
             '<div class="sc-avatar">' + esc(d.avatarB || '🏸') + '</div>' +
             '<div class="sc-name">' + esc(d.teamB || '') + '</div>' +
             '<div class="sc-score">' + (d.scoreB || 0) + '</div>' +
@@ -60,7 +65,7 @@ window.App = window.App || {};
             highlights +
             '<div class="sc-foot">' +
             '<span class="sc-foot-txt">时长 ' + esc(d.durationText || '00:00') + '</span>' +
-            '<span class="sc-foot-app">VOLT 极速计分板</span>' +
+            '<span class="sc-foot-app">羽毛球极速计分板</span>' +
             '</div>';
 
         /* 模板按钮高亮 */

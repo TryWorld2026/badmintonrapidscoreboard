@@ -7,17 +7,19 @@ window.App = window.App || {};
 
     var nav = App.nav;
     /* 彩带配色同样从令牌层读，不再手抄一份（抄错了视觉重构后没人发现）。
-       方向 C 的克制原则：彩带不再用七种高饱和色乱撒，而是只用
-       「队伍色 + 状态色」共 5 色，与界面上出现的颜色严格一致。 */
+       v4 的克制原则：彩带不用七种高饱和色乱撒，只用
+       「队伍色 + 状态色」共 5 色，与界面上出现的颜色严格一致。
+       ⚠️ 这里的回落字面量必须与 css/tokens.css 保持一致 ——
+          样式表未就绪时它们是唯一来源。 */
     var COLORS = null;
     function palette() {
         if (!COLORS) {
             var p = App.tokens.palette({
-                live: ['--live', '#E0A33E'],
-                teamA: ['--a', '#E1554A'],
-                teamB: ['--b', '#3E8FD9'],
-                gold: ['--gold', '#C9A227'],
-                ok: ['--ok', '#57B87A']
+                live: ['--live', '#F2C14E'],
+                teamA: ['--a', '#FF5A47'],
+                teamB: ['--b', '#4FA8E8'],
+                gold: ['--gold', '#D8B26A'],
+                ok: ['--ok', '#4FC08A']
             });
             COLORS = [p.teamA, p.teamB, p.live, p.gold, p.ok];
         }
@@ -125,16 +127,18 @@ window.App = window.App || {};
         }, 3000);
     }
 
-    /* ---------- 得分脉冲 ---------- */
-    function scorePulse(teamEl, color) {
+    /* ---------- 得分扫光 ----------
+       一道中性的白光扫过得分方半场。刻意不带队色：
+       队色已经出现在边线、数字、光池三处，再给动效上色就成了第四次，
+       而「彩色闪一下」正是廉价感的来源（v3 的实心扩散圆就是这么来的）。 */
+    function scoreSweep(teamEl) {
         if (!teamEl || prefersReduced()) return;
-        var p = document.createElement('span');
-        p.className = 'score-pulse';
-        p.style.background = color || App.tokens.alpha(App.tokens.get('--live', '#E0A33E'), 0.35);
-        teamEl.appendChild(p);
+        var s = document.createElement('span');
+        s.className = 'score-sweep';
+        teamEl.appendChild(s);
         window.setTimeout(function () {
-            if (p.parentNode) p.parentNode.removeChild(p);
-        }, 560);
+            if (s.parentNode) s.parentNode.removeChild(s);
+        }, 600);
     }
 
     /* ---------- 数字跳动 ---------- */
@@ -209,7 +213,7 @@ window.App = window.App || {};
         confetti: confetti,
         fireworks: fireworks,
         victoryBanner: victoryBanner,
-        scorePulse: scorePulse,
+        scoreSweep: scoreSweep,
         bumpScore: bumpScore,
         shake: shake,
         vibrate: vibrate,

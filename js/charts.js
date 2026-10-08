@@ -13,13 +13,13 @@ window.App = window.App || {};
         var p = App.tokens.palette({
             /* 键名与 fallback 都必须跟 css/tokens.css 保持一致：
                fallback 只在样式表尚未就绪时兜底，正常路径读到的是运行时值。 */
-            brand: ['--live', '#E0A33E'],
-            teamA: ['--a', '#E1554A'],
-            teamB: ['--b', '#3E8FD9'],
-            gold: ['--gold', '#C9A227'],
-            text2: ['--fg-2', '#9BA3AC'],
-            text3: ['--fg-3', '#85909D'],
-            surface: ['--plate', '#17191C']
+            brand: ['--live', '#F2C14E'],
+            teamA: ['--a', '#FF5A47'],
+            teamB: ['--b', '#4FA8E8'],
+            gold: ['--gold', '#D8B26A'],
+            text2: ['--fg-2', '#A9B2AD'],
+            text3: ['--fg-3', '#8A948E'],
+            surface: ['--plate', '#101513']
         });
         /* 网格线：深色底上用极淡的同系色，比旧版 rgba(15,21,28,.07) 可见得多 */
         p.grid = App.tokens.alpha(p.text3, 0.35);

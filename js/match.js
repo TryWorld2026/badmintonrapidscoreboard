@@ -40,6 +40,15 @@ window.App = window.App || {};
     function scoreA() { return App.state.match.scoreA; }
     function scoreB() { return App.state.match.scoreB; }
 
+    /* 三位数比分要降一档字号。
+       CSS 算不出「这个数字有几位」，所以在这里按位数打标。
+       自定义目标分把封顶推到 149（99 × 1.5），三位数是真实会出现的，
+       不是理论情况 —— 不处理的话 420px 视口下半场会被顶宽、整页横向溢出。 */
+    function setScoreDigits(el, val) {
+        var n = Math.abs(Math.floor(num(val, 0)));
+        el.classList.toggle('digits-3', n >= 100);
+    }
+
     /* ================================================================
        渲染
        ================================================================ */
@@ -47,8 +56,8 @@ window.App = window.App || {};
         var m = App.state.match;
         var sa = $('score-a');
         var sb = $('score-b');
-        if (sa) sa.textContent = m.scoreA;
-        if (sb) sb.textContent = m.scoreB;
+        if (sa) { sa.textContent = m.scoreA; setScoreDigits(sa, m.scoreA); }
+        if (sb) { sb.textContent = m.scoreB; setScoreDigits(sb, m.scoreB); }
 
         var na = $('team-a-name');
         var nb = $('team-b-name');
@@ -74,6 +83,7 @@ window.App = window.App || {};
 
         updateGamesWonDisplay();
         renderLeading();
+        renderProgress();
         renderPointLog();
         renderMatchInfo();
     }
@@ -86,41 +96,162 @@ window.App = window.App || {};
         if (tb) tb.classList.toggle('leading', m.scoreB > m.scoreA);
     }
 
+    /* ----------------------------------------------------------------
+       比分进度线
+
+       旧版比分外面套了一个 40 格 conic-gradient 刻度环。它看起来很精密，
+       但承载的信息是假的：40 格不映射任何真实规则 —— 21 分制的目标分、
+       11 分间歇、30 分封顶，没有一个是 40 的约数。
+
+       换成一条真正的读数：柱长 = 本局得分 / 目标分，
+       刻度 = 换边点（21→11 / 15→8 / 11→6）。
+       这是「仪表」这个词本来的意思。
+
+       不显示百分比：这条线是相对刻度的读数，不是进度条。
+       ---------------------------------------------------------------- */
+    function renderProgress() {
+        var m = App.state.match;
+        var target = Math.max(1, num(App.state.targetScore(), 21));
+        var switchAt = Math.floor(target / 2) + 1;
+        var switchPct = Math.min(100, (switchAt / target) * 100);
+
+        [['prog-a', m.scoreA, m.teamNameA], ['prog-b', m.scoreB, m.teamNameB]].forEach(function (row) {
+            var el = $(row[0]);
+            if (!el) return;
+            var sc = Math.max(0, num(row[1], 0));
+            var pct = Math.min(100, (sc / target) * 100);
+            var bar = el.querySelector('i');
+            if (bar) bar.style.width = pct.toFixed(1) + '%';
+            el.style.setProperty('--switch', switchPct.toFixed(1) + '%');
+            el.setAttribute('aria-label', row[2] + ' ' + sc + ' / ' + target + ' 分');
+        });
+    }
+
+    /* ----------------------------------------------------------------
+       本局回合时间轴
+
+       把 scoreHistory 压成一条可读的条码：一回合一根柱子。
+         颜色 = 谁得分（甲 --a / 乙 --b）
+         高度 = 该回合结束时**该方**的比分 / 目标分
+         最右一根 = 当前分，带光柱
+         贯穿线 = 换边点
+       连得几分、什么时候被追平，一瞥即得 —— 这是旧版文字流水
+       做不到、而「看比赛」真正需要的那件事。
+
+       数据源与旧版完全一致（App.state.match.scoreHistory），
+       脏数据防护也原样保留：oldScore / newScore 必须是有限数字。
+       ---------------------------------------------------------------- */
+    var TIMELINE_MAX = 40;
+
     function renderPointLog() {
         var box = $('point-log');
         if (!box) return;
-        var h = App.state.match.scoreHistory;
-        if (!h.length) {
-            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="list"></div>' +
-                '<div class="empty-title">还没有得分</div>' +
-                '<div class="empty-hint">点击「开始比赛」后用底部按钮加分</div></div>';
-            return;
-        }
-        var html = '';
-        var shown = 0;
-        for (var i = h.length - 1; i >= 0 && shown < 40; i--) {
+        var m = App.state.match;
+        var target = Math.max(1, num(App.state.targetScore(), 21));
+        var h = m.scoreHistory;
+        var count = $('point-log-count');
+
+        /* 脏条目单独跳过，不能让它把整条时间轴搞死。
+           真实条目的 oldScore / newScore 一定是有限数字，其余一律视为脏数据。 */
+        var items = [];
+        for (var i = 0; i < h.length; i++) {
             var it = h[i];
-            /* 坏条目（老数据 / 手改过的存档）单独跳过，不能让它把整张流水表搞死。
-               真实条目的 oldScore / newScore 一定是有限数字，其余一律视为脏数据。 */
             if (!it || typeof it !== 'object') continue;
             if (it.oldScore == null || it.newScore == null) continue;
             if (!isFinite(it.oldScore) || !isFinite(it.newScore)) continue;
-            shown++;
-            var isA = it.team === 'a';
-            var nm = isA ? App.state.match.teamNameA : App.state.match.teamNameB;
-            html += '<div class="point-log-item ' + (isA ? 'a' : 'b') + '">' +
-                '<span>' + ui.escapeHtml(nm) + '</span>' +
-                '<span class="log-score">' + ui.escapeHtml(String(it.oldScore)) +
-                ' → ' + ui.escapeHtml(String(it.newScore)) + '</span>' +
-                '</div>';
+            items.push(it);
         }
-        if (!shown) {
-            box.innerHTML = '<div class="empty"><div class="empty-icon ic-box" data-icon="list"></div>' +
-                '<div class="empty-title">还没有得分</div>' +
-                '<div class="empty-hint">点击「开始比赛」后用底部按钮加分</div></div>';
+
+        if (!items.length) {
+            if (count) count.textContent = '';
+            box.innerHTML = '<div class="tl-empty" aria-hidden="true"><i></i></div>' +
+                '<p class="tl-hint">点击「开始比赛」后用底部按钮加分，每一分都会落在这条时间轴上。</p>';
             return;
         }
-        box.innerHTML = html;
+
+        /* 只保留最近 TIMELINE_MAX 个回合：一屏能读完的长度。
+           截断的是**视图**，不是数据 —— scoreHistory 完整保留。 */
+        var start = Math.max(0, items.length - TIMELINE_MAX);
+        var shown = items.slice(start);
+        var firstIndex = start + 1;
+        var lastIndex = items.length;
+
+        var html = '';
+        var lastIdx = shown.length - 1;
+        var streakTeam = null;
+        var streak = 0;
+        var bestStreak = 0;
+        var switchAt = Math.floor(target / 2) + 1;
+        /* ⚠️ 换边点是「第几回合发生的」，不是「轨道的百分之几」。
+           轨道的横轴是回合序号，所以竖线必须落在真正打到换边分的那一回合上。
+           旧写法拿 (switchAt / target) 当百分比 —— 那是**比分**轴上的位置，
+           搬到**回合**轴上就指到了别处：21 分制下 11/21 = 52.4%，
+           而 52.4% 处其实是第 13 回合。标签写着 11 分、位置指着另一回合。
+           改成跑一遍累计比分，记下第一次越过换边分的那一回合。 */
+        var runA = 0;
+        var runB = 0;
+        var switchIdx = -1;
+        for (var k = 0; k < shown.length; k++) {
+            var e = shown[k];
+            var isA = e.team === 'a';
+            var sc = Math.max(0, num(e.newScore, 0));
+            if (isA) runA = sc; else runB = sc;
+            if (switchIdx < 0 && Math.max(runA, runB) >= switchAt) switchIdx = k;
+            /* 下限 6%：0 分的回合不该渲染成「没有这根柱子」，
+               那会让人以为漏了一个回合。 */
+            var pct = Math.max(6, Math.min(100, (sc / target) * 100));
+            html += '<div class="point-log-item ' + (isA ? 'a' : 'b') +
+                (k === lastIdx ? ' now' : '') +
+                '" style="--h:' + pct.toFixed(1) + '%" title="' +
+                ui.escapeHtml((isA ? m.teamNameA : m.teamNameB) + ' ' +
+                    num(e.oldScore, 0) + ' → ' + sc) + '"></div>';
+            if (e.team === streakTeam) { streak++; } else { streakTeam = e.team; streak = 1; }
+            if (streak > bestStreak) bestStreak = streak;
+        }
+
+        /* 柱子等宽，所以第 k 回合的中心在 (k + 0.5) / n 处。
+           换边还没发生时不画这条线 —— 画一条「将来会发生」的线是在编数据。 */
+        var switchPct = switchIdx >= 0 ? ((switchIdx + 0.5) / shown.length) * 100 : 0;
+        /* 换边标签默认骑在竖线上居中。但换边点落在两端时会撞上端点回合数：
+           实测最后一回合才换边时，「11 分换边」与「18」重叠 169px ——
+           两串数字糊在一起，读者只会以为渲染坏了。
+           靠近右端就向左展开、靠近左端就向右展开，
+           两种情况都让标签的**内侧边**贴住竖线，关联性不丢。 */
+        var midCls = '';
+        if (switchIdx >= 0) {
+            if (switchPct >= 62) midCls = ' align-right';
+            else if (switchPct <= 38) midCls = ' align-left';
+        }
+        if (switchIdx >= 0) {
+            html += '<div class="tl-rule" style="--x:' + switchPct.toFixed(1) + '%" aria-hidden="true"></div>';
+        }
+
+        if (count) {
+            /* 截断时要说清「显示几条 / 一共几条」。
+               旧文案是「40 回合 · 最长连得 40 · 最近 40 回合」—— 同一个数字
+               出现两次，读者反而看不出这局到底打了多少回合。 */
+            count.textContent =
+                (start > 0 ? shown.length + ' / ' + items.length + ' 回合' : shown.length + ' 回合') +
+                ' · 最长连得 ' + bestStreak;
+        }
+
+        box.innerHTML =
+            /* 图例：时间轴用了两种颜色，没有图例就只是在看色块。
+               左右各一个色点 + 队名，与比分板的甲/乙顺序一致。 */
+            '<div class="tl-head">' +
+            '<span class="tl-legend">' +
+            '<span class="tl-key"><i class="a"></i>' + ui.escapeHtml(m.teamNameA) + '</span>' +
+            '<span class="tl-key"><i class="b"></i>' + ui.escapeHtml(m.teamNameB) + '</span>' +
+            '</span>' +
+            '<span class="tl-stat">每格 1 回合</span>' +
+            '</div>' +
+            '<div class="tl-track">' + html + '</div>' +
+            '<div class="tl-axis"' +
+            (switchIdx >= 0 ? ' style="--x:' + switchPct.toFixed(1) + '%"' : '') + '>' +
+            '<span class="e">' + firstIndex + '</span>' +
+            (switchIdx >= 0 ? '<span class="mid' + midCls + '">' + switchAt + ' 分换边</span>' : '') +
+            '<span class="e">' + lastIndex + '</span>' +
+            '</div>';
     }
 
     function renderMatchInfo() {
@@ -297,11 +428,7 @@ window.App = window.App || {};
         var el = $(team === 'a' ? 'score-a' : 'score-b');
         fx.bumpScore(el);
         var panel = $(team === 'a' ? 'team-a-panel' : 'team-b-panel');
-        /* 脉冲色从令牌层取，不再手抄 rgba(255,46,99,.30) / rgba(0,229,255,.30) */
-        var pulse = team === 'a'
-            ? App.tokens.alpha(App.tokens.get('--a', '#E1554A'), 0.30)
-            : App.tokens.alpha(App.tokens.get('--b', '#3E8FD9'), 0.30);
-        fx.scorePulse(panel, pulse);
+        fx.scoreSweep(panel);
 
         if (amount > 0) { fx.pointSound(); fx.vibrate(50); }
         else { fx.clickSound(); fx.vibrate([30, 30, 30]); }

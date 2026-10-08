@@ -13,7 +13,7 @@ window.App = window.App || {};
        index.html 的 about-version 初值、README 徽章、sw.js 的 CACHE_NAME 注释。
        四处曾经各写各的（2.0.0 / 2.0.1 / 2.0.1 / 3.0.0），
        发布前靠人肉比对，容易漏。 */
-    var VERSION = '3.0.0';
+    var VERSION = '4.0.0';
 
     function $(id) { return document.getElementById(id); }
 

@@ -1,14 +1,17 @@
 /* ================================================================
    components.css — 按钮 / 输入 / chip / 列表 / 弹层 / toast
-   方向 C · 仪表读数器：填充块用纯色 + 微圆角，描边块 1px 发丝线。
-   不使用切角、不使用辉光、不使用渐变填充。
+   方向 v4 · 夜场 NIGHT COURT
+
+   两条形状规则贯穿本文件：
+     面板一律锐角（球场边线的语言）
+     交互一律全圆（手指按下去没有方向）
+
+   v3 是「纯色 + 微圆角 + 1px 描边」，在暗色下既没有层次也没有形状决定。
+   v4 用 --face-*（两段渐变）+ --lift（顶部内高光）替代描边做层次。
    ================================================================ */
 
 /* ---------- 按钮 ---------- */
-/* 旧版用「两枚角落渐变」裁切右上+左下模拟切角，那是转播车语言。
-   方向 C 改成纯色填充 + 3px 圆角：更干净，也让 --fill 的语义变直白。 */
 .btn {
-    --fill: var(--plate-2);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -17,19 +20,23 @@
     padding: var(--sp-3) var(--sp-5);
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     line-height: 1;
     text-align: center;
-    background-color: var(--fill);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
     color: var(--fg);
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
+    box-shadow: var(--lift), var(--sh-plate);
     cursor: pointer;
-    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
-        box-shadow var(--dur-1) var(--ease);
+    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease), transform var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
     user-select: none;
 }
+
+.btn:active { transform: scale(0.97); }
 
 .btn:focus-visible {
     outline: 2px solid var(--live);
@@ -39,23 +46,35 @@
 .btn[disabled] {
     opacity: 0.4;
     cursor: default;
+    transform: none;
 }
 
-/* 主行动：浅色填充 + 深墨字（仪表上的"主按钮"是白键，不是彩键） */
+/* 主行动：全屏唯一一处实心象牙白。
+   「全屏最亮的东西只有一个」—— 所以主按钮用白，不用彩色。
+
+   ⚠️ 必须同时给 background-color，不能只给渐变。
+   渐变写在 background-image 里，background-color 仍是 transparent，
+   于是任何按「读 backgroundColor」判断底色的路径（强制颜色模式、
+   html2canvas、对比度审计）都会把深墨字判成压在页面底色上 ——
+   实测 #0A0D0C on #0A0D0C = 1.00:1。给上实色后渐变只是「多一层」。 */
 .btn-primary {
-    --fill: var(--fg);
-    color: var(--void);
+    color: var(--on-light);
+    background-color: var(--fg);
+    /* ⚠️ 用 background-image 而不是 background 简写 ——
+       简写会把上面的 background-color 重置回 transparent。 */
+    background-image: linear-gradient(180deg, #FFFFFF 0%, #E8E4DA 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), var(--sh-plate);
 }
-.btn-primary:hover { --fill: #FFFFFF; }
+.btn-primary:hover { background-image: linear-gradient(180deg, #FFFFFF 0%, #F2EFE7 100%); }
 
-.btn-success { --fill: var(--ok); color: var(--void); }
-.btn-warning { --fill: var(--warn); color: var(--void); }
-/* 深墨字：白字压 #D9534F 只有 3.96:1，低于 AA 正文 4.5:1；
-   深墨是 4.77:1。也与上两条「填充按钮一律深墨字」的规则一致。 */
-.btn-danger { --fill: var(--danger); color: var(--void); }
-.btn-dark { --fill: var(--plate-3); color: var(--fg); }
+.btn-success { background: var(--ok); color: var(--on-light); box-shadow: var(--lift), var(--sh-plate); }
+.btn-warning { background: var(--warn); color: var(--on-light); box-shadow: var(--lift), var(--sh-plate); }
+/* 深墨字：白字压 #FF5A4F 只有 3.4:1，低于 AA 正文 4.5:1；深墨是 6.2:1。 */
+.btn-danger { background: var(--danger); color: var(--on-light); box-shadow: var(--lift), var(--sh-plate); }
+.btn-dark { background-color: var(--plate-3);
+    background-image: var(--face-3); color: var(--fg); }
 
-/* 描边按钮：1px 发丝线 */
+/* 描边按钮：改用「无填充 + 发丝环」，不再与实心按钮争视觉重量 */
 .btn-outline {
     background: transparent;
     color: var(--fg-2);
@@ -66,30 +85,32 @@
 .btn-ghost {
     background: transparent;
     color: var(--fg-2);
+    box-shadow: none;
 }
 .btn-ghost:hover { background: var(--plate-2); color: var(--fg); }
 
 /* 小按钮仍守住 44px 触摸下限（旧版 34px，实测不达标） */
 .btn-small {
     min-height: var(--tap-min);
-    padding: var(--sp-2) var(--sp-3);
+    padding: var(--sp-2) var(--sp-4);
     font-size: var(--fs-xs);
 }
 
 .btn-large {
     min-height: 52px;
-    font-size: var(--fs-md);
+    font-size: var(--fs-lg);
 }
 
 .btn-block { width: 100%; }
 
-/* 图标按钮：正方形命中区，守住 44px 下限。
+/* 图标按钮：圆形命中区，守住 44px 下限。
    旧版图标按钮只有内容宽（实测 35×44），横向不达标。 */
 .btn-icon {
     flex: 0 0 auto;
     width: var(--tap-min);
     min-width: var(--tap-min);
     padding: 0;
+    border-radius: var(--r-full);
 }
 
 .btn-row {
@@ -108,11 +129,13 @@
     margin-bottom: var(--sp-2);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
     color: var(--fg-3);
 }
 
+/* 输入框：内凹（--sink）而不是描边。
+   凹陷感让「可输入」这件事一眼可辨 —— 旧版用 1px 边，和卡片分不出来。 */
 .input,
 .textarea,
 .select {
@@ -123,9 +146,9 @@
     background: var(--void);
     color: var(--fg);
     border: none;
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    transition: box-shadow var(--dur-1) var(--ease);
+    border-radius: var(--r-xs);
+    box-shadow: var(--sink);
+    transition: box-shadow var(--dur-2) var(--ease);
 }
 
 .input::placeholder,
@@ -135,7 +158,7 @@
 .textarea:focus,
 .select:focus {
     outline: none;
-    box-shadow: inset 0 0 0 1px var(--live), 0 0 0 3px var(--live-soft);
+    box-shadow: var(--sink), 0 0 0 2px var(--live);
 }
 
 .textarea {
@@ -147,10 +170,9 @@
 .select {
     appearance: none;
     background-image: linear-gradient(45deg, transparent 50%, var(--fg-2) 50%),
-        linear-gradient(135deg, var(--fg-2) 50%, transparent 50%),
-        linear-gradient(90deg, var(--void), var(--void));
-    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%, 0 0;
-    background-size: 5px 5px, 5px 5px, 100% 100%;
+        linear-gradient(135deg, var(--fg-2) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size: 5px 5px, 5px 5px;
     background-repeat: no-repeat;
     padding-right: var(--sp-7);
 }
@@ -169,7 +191,7 @@
     padding: var(--sp-3) 0;
 }
 
-.switch-row + .switch-row { border-top: 1px solid var(--edge); }
+.switch-row + .switch-row { box-shadow: inset 0 1px 0 var(--edge); }
 
 .switch-info { flex: 1; min-width: 0; }
 
@@ -202,14 +224,14 @@
     cursor: pointer;
 }
 
-/* 开关：硬边轨道，非胶囊 */
+/* 开关：全圆胶囊（交互一律全圆）。v3 是硬边轨道，读起来像滑块坏了。 */
 .toggle-track {
     position: absolute;
     inset: 0;
     background: var(--plate-3);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+    border-radius: var(--r-full);
+    box-shadow: var(--sink);
+    transition: background var(--dur-3) var(--ease), box-shadow var(--dur-3) var(--ease);
     pointer-events: none;
 }
 
@@ -220,26 +242,26 @@
     left: 3px;
     width: 22px;
     height: 22px;
-    background: var(--fg-3);
-    border-radius: var(--r-xs, 1px);
-    transition: transform var(--dur-2) var(--ease), background var(--dur-2) var(--ease);
+    background: var(--fg-2);
+    border-radius: var(--r-full);
+    box-shadow: var(--sh-plate);
+    transition: transform var(--dur-3) var(--ease), background var(--dur-3) var(--ease);
 }
 
 .toggle input:checked + .toggle-track {
-    background: var(--live);
-    box-shadow: inset 0 0 0 1px var(--live);
+    background: var(--ok);
+    box-shadow: none;
 }
 .toggle input:checked + .toggle-track::after {
     transform: translateX(20px);
     background: var(--on-light);
 }
 .toggle input:focus-visible + .toggle-track {
-    box-shadow: inset 0 0 0 1px var(--live), 0 0 0 3px var(--live-soft);
+    box-shadow: var(--sink), 0 0 0 2px var(--live);
 }
 
-/* ---------- Chip / 分段小按钮 ---------- */
+/* ---------- Chip ---------- */
 .chip {
-    --fill: var(--plate);
     display: inline-flex;
     align-items: center;
     gap: var(--sp-1);
@@ -247,25 +269,27 @@
     padding: var(--sp-2) var(--sp-4);
     font-size: var(--fs-sm);
     font-weight: var(--fw-medium);
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     color: var(--fg-2);
-    background-color: var(--fill);
+    background-color: var(--plate);
+    background-image: var(--face-1);
     border: none;
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    border-radius: var(--r-full);
+    box-shadow: var(--lift), inset 0 0 0 1px var(--edge);
     cursor: pointer;
-    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
-        box-shadow var(--dur-1) var(--ease);
+    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.chip:hover { background-color: var(--plate-2); color: var(--fg); }
+.chip:hover { color: var(--fg); box-shadow: var(--lift), inset 0 0 0 1px var(--edge-2); }
 
-/* 选中态：浅底 + 强调边，不用整块荧光填充 */
+/* 选中态：抬起 + 更亮的边。v3 用荧光边，在暗环境里刺眼。 */
 .chip.active {
-    --fill: var(--plate-3);
     color: var(--fg);
-    box-shadow: inset 0 0 0 1px var(--live);
+    background-color: var(--plate-3);
+    background-image: var(--face-3);
+    box-shadow: var(--lift-2), inset 0 0 0 1px var(--edge-3);
 }
 
 .chip-row {
@@ -282,7 +306,6 @@
 }
 
 .pick-card {
-    --fill: var(--plate);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -291,24 +314,31 @@
     min-height: 76px;
     padding: var(--sp-3) var(--sp-2);
     text-align: center;
-    background-color: var(--fill);
+    background-color: var(--plate);
+    background-image: var(--face-1);
     border: none;
     border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    box-shadow: var(--lift);
     cursor: pointer;
-    transition: background-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+    transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.pick-card:hover { background-color: var(--plate-2); }
+.pick-card:hover { box-shadow: var(--lift), inset 0 0 0 1px var(--edge-2); }
 
+/* 选中态：顶部一条 3px 琥珀线 + 抬起。
+   ⚠️ v3 用 --live（琥珀）画这条线，但琥珀在全站的意思是「进行中」。
+   同一块屏幕上，分组方式的选中线和比分板上的「进行中」是同一个颜色，
+   于是两种完全不同的状态读起来是一回事。选中态改用象牙白 ——
+   它是「这块被按下了」，不是「有事情正在发生」。 */
 .pick-card.active {
-    --fill: var(--plate-3);
-    box-shadow: inset 0 0 0 1px var(--live);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
+    box-shadow: var(--lift-2), inset 0 3px 0 var(--fg);
 }
 
 .pick-icon { font-size: var(--fs-2xl); line-height: 1; color: var(--fg-2); }
-.pick-card.active .pick-icon { color: var(--live); }
+.pick-card.active .pick-icon { color: var(--fg); }
 .pick-name { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
 .pick-desc { font-size: var(--fs-3xs); color: var(--fg-3); }
 
@@ -322,16 +352,29 @@
     width: 100%;
     padding: var(--sp-3) var(--sp-4);
     text-align: left;
-    background: var(--plate);
+    background-color: var(--plate);
+    background-image: var(--face-1);
     border: none;
     border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    box-shadow: var(--lift);
     cursor: pointer;
-    transition: background var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+    transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.list-item:hover { background: var(--plate-2); }
+/* 焦点 / 悬停：发丝环，不是实心白描边。
+   ⚠️ 这里必须自己写 :focus-visible。不写的话会落到浏览器默认
+   outline（Chromium 是一圈亮白 + 蓝），在深色弹层里刺眼得像坏了。
+   焦点环不能删 —— 键盘用户靠它定位。改成象牙白细环，与选中语言一致。 */
+.list-item:hover,
+.list-item:focus-visible {
+    box-shadow: var(--lift), inset 0 0 0 1px var(--edge-3);
+}
+
+.list-item:focus-visible {
+    box-shadow: var(--lift), inset 0 0 0 1px var(--fg);
+    outline: none;
+}
 
 /* 与 .me-nav-item .ni-main 同一个坑：只写 flex:1 不带 flex-direction，
    标题与副标题（都是 inline）会挤在同一行、中间没有间距。
@@ -363,7 +406,7 @@
 
 .list-item-end {
     flex-shrink: 0;
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-md);
     font-weight: var(--fw-bold);
@@ -376,7 +419,7 @@
     color: var(--fg-3);
 }
 
-.empty-icon { font-size: 36px; line-height: 1; margin-bottom: var(--sp-3); opacity: 0.55; }
+.empty-icon { font-size: 36px; line-height: 1; margin-bottom: var(--sp-3); opacity: 0.45; }
 .empty-title { font-size: var(--fs-sm); font-weight: var(--fw-bold); color: var(--fg-2); }
 .empty-hint { margin-top: var(--sp-1); font-size: var(--fs-2xs); }
 
@@ -390,7 +433,7 @@
     font-weight: var(--fw-bold);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    border-radius: var(--r-xs, 2px);
+    border-radius: var(--r-xs);
     background: var(--plate-3);
     color: var(--fg-2);
 }
@@ -398,7 +441,10 @@
 .tag-win { background: var(--ok-soft); color: var(--ok); }
 .tag-lose { background: var(--danger-soft); color: var(--danger); }
 .tag-draw { background: var(--warn-soft); color: var(--warn); }
-.tag-brand { background: var(--live-soft); color: var(--live); }
+/* 「21 分制」「AA 制」这类**事实标签**不是状态，所以不占琥珀。
+   琥珀只表示「进行中」—— 一处颜色一个意思。 */
+.tag-brand { background: var(--plate-3); color: var(--fg); box-shadow: var(--lift); }
+/* 高光（加分赛 / 大逆转 / 零封）确实是成就，金色是对的 */
 .tag-gold { background: var(--live-soft); color: var(--gold); }
 
 /* ---------- 底部弹层 ---------- */
@@ -424,23 +470,24 @@
     max-height: 88dvh;
     overflow-y: auto;
     padding: var(--sp-5) var(--gutter) calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-sheet), inset 0 2px 0 var(--live);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
+    border-radius: var(--r-sheet, 14px) var(--r-sheet, 14px) 0 0;
+    /* 弹层顶部不再上琥珀 —— 琥珀是「进行中」，弹层是「被打开」。 */
+    box-shadow: var(--sh-sheet), var(--lift-2);
     transform: translateY(100%);
     transition: transform var(--dur-3) var(--ease);
 }
 
 .sheet-backdrop.show .sheet { transform: none; }
 
-/* 抓手：VOLT 短横 */
+/* 抓手：中性短横。v3 是琥珀色，与「进行中」状态色撞语义。 */
 .sheet-grip {
     width: 44px;
     height: 3px;
     margin: 0 auto var(--sp-4);
-    background: var(--live);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-flat);
+    background: var(--edge-3);
+    border-radius: var(--r-full);
 }
 
 .sheet-header {
@@ -453,22 +500,21 @@
 .sheet-title {
     flex: 1;
     font-size: var(--fs-lg);
-    font-weight: var(--fw-black);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.01em;
+    text-transform: none;
 }
 
 .sheet-close {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: var(--tap-min);
+    height: var(--tap-min);
     font-size: var(--fs-md);
-    background: var(--plate-2);
+    background: transparent;
     border: none;
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
+    border-radius: var(--r-full);
     cursor: pointer;
     color: var(--fg-2);
 }
@@ -480,7 +526,7 @@
     .sheet-backdrop { align-items: center; padding: var(--sp-6); }
     .sheet {
         max-height: 82dvh;
-        border-radius: var(--r-md);
+        border-radius: var(--r-sheet, 14px);
         transform: translateY(12px) scale(0.99);
         opacity: 0;
     }
@@ -488,28 +534,30 @@
 }
 
 /* ---------- Toast ----------
-   方向 C：提示条是"仪表报警灯"，不是装饰。所以用中性底 + 左侧 3px 状态边，
-   不用荧光整块填充。位置在顶栏之下，短暂出现后自动消失。 */
+   提示条是「仪表报警灯」，不是装饰。中性底 + 左侧 3px 边。
+   位置在顶栏之下，短暂出现后自动消失。
+   定位交给 .notice-rail（见上），这里只管自己的外观与进出动画。
+
+   ⚠️ 左边那道 3px 从 --live（琥珀）改成了 --fg-3。
+   琥珀在本设计里**只有一个含义：进行中**（见 tokens.css）。而 toast 承载的是
+   「已保存 / 请输入总金额 / 没有可撤回的得分」这类通用消息 —— 拿「进行中」
+   的颜色去标一条「保存成功」，等于把这个颜色作废。
+   高光徽章（赛点/加分赛/逆转）才需要颜色，它已经用 --gold 区分了。 */
 .toast {
-    position: fixed;
-    /* 必须带上 safe-area-inset-top：顶栏在刘海机型上会额外增高，
-       这里只算 --appbar-h 的话提示条会压住顶栏。 */
-    top: calc(var(--appbar-h) + env(safe-area-inset-top, 0px) + var(--sp-3));
-    left: 50%;
-    z-index: var(--z-toast);
-    width: min(calc(100% - var(--sp-8)), 420px);
+    width: 100%;
     padding: var(--sp-3) var(--sp-4);
-    background: var(--plate-3);
+    background-color: var(--plate-3);
+    background-image: var(--face-3);
     color: var(--fg);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--edge-2), inset 3px 0 0 var(--live);
-    transform: translate(-50%, -140%);
+    border-radius: var(--r-xs);
+    box-shadow: var(--sh-pop), inset 3px 0 0 var(--fg-3);
+    transform: translateY(-140%);
     opacity: 0;
     transition: transform var(--dur-3) var(--ease-out), opacity var(--dur-3) var(--ease);
     pointer-events: none;
 }
 
-.toast.show { transform: translate(-50%, 0); opacity: 1; }
+.toast.show { transform: translateY(0); opacity: 1; }
 
 .toast-title { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
 .toast-msg {
@@ -525,9 +573,10 @@
     width: 100%;
     max-width: 340px;
     padding: var(--sp-5);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--edge-2);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
+    border-radius: var(--r-sheet, 14px);
+    box-shadow: var(--sh-pop), var(--lift);
     transform: scale(0.96);
     opacity: 0;
     transition: transform var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease);
@@ -550,7 +599,7 @@
 .dialog-backdrop.show .dialog { transform: none; opacity: 1; }
 
 .dialog-title {
-    font-size: var(--fs-md);
+    font-size: var(--fs-lg);
     font-weight: var(--fw-bold);
     margin-bottom: var(--sp-3);
 }
@@ -558,30 +607,46 @@
 .dialog-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
 .dialog-actions .btn { flex: 1; }
 
-/* ---------- 高亮徽章（赛点 / 加分赛 / 逆转）---------- */
-.highlight-badge {
+/* ---------- 顶部通知栏（高亮徽章 + Toast 共用一条竖列）----------
+   ⚠️ 这两个东西原本各自 position:fixed 在**同一个 top** 上。
+   它们经常同时出现 —— 「换边提醒」toast 和「赛点！」高光徽章就是同一分
+   触发的，于是两块面板直接叠在一起，文字互相盖住（实测得分到 11 分时
+   两块都亮着，读出来是一团糊的）。
+   现在它们同属一个 flex 竖列容器，谁出现谁占位，不再互相压。 */
+.notice-rail {
     position: fixed;
-    /* 同 .toast：顶栏在刘海机型上会额外增高 */
+    /* 必须带上 safe-area-inset-top：顶栏在刘海机型上会额外增高，
+       这里只算 --appbar-h 的话通知会压住顶栏。 */
     top: calc(var(--appbar-h) + env(safe-area-inset-top, 0px) + var(--sp-3));
     left: 50%;
-    z-index: var(--z-highlight);
+    z-index: var(--z-toast);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-2);
+    width: min(calc(100% - var(--sp-8)), 420px);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+/* 高亮徽章（赛点 / 加分赛 / 逆转）*/
+.highlight-badge {
     display: flex;
     align-items: center;
     gap: var(--sp-3);
-    width: min(calc(100% - var(--sp-8)), 360px);
+    width: 100%;
     padding: var(--sp-3) var(--sp-4);
-    background: var(--plate-2);
-    border-radius: var(--r-sm);
-    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--gold), inset 3px 0 0 var(--gold);
-    transform: translateX(-50%);
+    background-color: var(--plate-3);
+    background-image: var(--face-3);
+    border-radius: var(--r-xs);
+    box-shadow: var(--sh-pop), inset 3px 0 0 var(--gold);
 }
 
 .highlight-icon { font-size: var(--fs-2xl); line-height: 1; }
 .highlight-title {
     font-size: var(--fs-sm);
-    font-weight: var(--fw-black);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
 }
 .highlight-desc { margin-top: 2px; font-size: var(--fs-2xs); color: var(--fg-2); }
 
@@ -589,52 +654,51 @@
 .highlight-badge.hide { animation: highlightOut var(--dur-2) var(--ease-in) both; }
 
 @keyframes highlightIn {
-    from { opacity: 0; transform: translate(-50%, -16px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
+    from { opacity: 0; transform: translateY(-14px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes highlightOut {
-    from { opacity: 1; transform: translate(-50%, 0); }
-    to { opacity: 0; transform: translate(-50%, -16px); }
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateY(-10px); }
 }
 
-/* ---------- 成就解锁徽章 ---------- */
+/* ---------- 成就徽章 ---------- */
 .achv-badge {
     position: fixed;
     left: 50%;
-    bottom: calc(var(--tabbar-h) + var(--sp-5));
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--sp-4));
     z-index: var(--z-highlight);
     display: none;
     align-items: center;
     gap: var(--sp-3);
-    width: min(calc(100% - var(--sp-8)), 340px);
+    width: min(calc(100% - var(--sp-8)), 360px);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--plate-2);
-    border-radius: var(--r-sm);
-    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--gold), inset 3px 0 0 var(--gold);
+    background-color: var(--plate-3);
+    background-image: var(--face-3);
+    border-radius: var(--r-xs);
+    box-shadow: var(--sh-pop), inset 3px 0 0 var(--gold);
     transform: translateX(-50%);
 }
 
-.achv-badge.show { display: flex; animation: achvPop var(--dur-3) var(--ease-out); }
+.achv-badge.show { display: flex; animation: achvPop var(--dur-4) var(--ease-out); }
 
 @keyframes achvPop {
-    from { opacity: 0; transform: translate(-50%, 16px) scale(0.97); }
+    from { opacity: 0; transform: translate(-50%, 16px) scale(0.96); }
     to { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 
 .achv-icon { font-size: var(--fs-2xl); line-height: 1; }
 .achv-title {
     font-size: var(--fs-sm);
-    font-weight: var(--fw-black);
-    color: var(--gold);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
 }
 .achv-desc { margin-top: 2px; font-size: var(--fs-2xs); color: var(--fg-2); }
 
-/* ---------- 通用焦点环（键盘可达）---------- */
+/* 键盘可达：非按钮元素的焦点环 */
 a:focus-visible,
 [role="button"]:focus-visible {
     outline: 2px solid var(--live);
     outline-offset: 2px;
+    border-radius: var(--r-xs);
 }

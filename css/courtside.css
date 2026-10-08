@@ -19,9 +19,9 @@
     z-index: var(--z-courtside);
     display: flex;
     flex-direction: column;
-    background: var(--void);
-    /* 场边模式要求极高的对比度：底色比主界面更深一档 */
-    --cs-bg: #0B0C0D;
+    /* 场边模式要求极高的对比度：底色比主界面再深一档。
+       不用纯黑 —— 纯黑会让比分的队色边缘发蓝（屏幕在纯黑上过冲）。 */
+    --cs-bg: var(--board);
     background: var(--cs-bg);
     /* 防止误触时页面被拖动 / 缩放 */
     touch-action: manipulation;
@@ -44,15 +44,18 @@
     padding-top: max(var(--sp-2), env(safe-area-inset-top));
     padding-left: max(var(--sp-4), env(safe-area-inset-left));
     padding-right: max(var(--sp-4), env(safe-area-inset-right));
-    border-bottom: 1px solid var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: inset 0 -1px 0 var(--edge);
     flex: 0 0 auto;
 }
 
 .cs-game {
-    font-family: var(--font-mono);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.06em;
+    font-family: var(--font-display);
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
     color: var(--fg-2);
     white-space: nowrap;
 }
@@ -65,20 +68,21 @@
 }
 
 .cs-timer {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-lg);
-    font-weight: var(--fw-semibold);
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-bold);
     color: var(--fg);
-    letter-spacing: 0.01em;
+    letter-spacing: -0.01em;
     white-space: nowrap;
 }
 .cs-timer.paused { color: var(--fg-3); }
 
 .cs-timer-label {
     font-size: var(--fs-3xs);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.16em;
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-micro);
+    text-transform: uppercase;
     color: var(--fg-3);
     white-space: nowrap;
 }
@@ -92,12 +96,12 @@
     padding: 0 var(--sp-3);
     font-family: var(--font-ui);
     font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
-    letter-spacing: 0.04em;
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.02em;
     color: var(--fg-2);
     background: transparent;
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
     cursor: pointer;
     transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
 }
@@ -127,18 +131,22 @@
     gap: var(--sp-4);
     padding: var(--sp-4);
     background: var(--cs-bg);
+    background-image: var(--pool);
     border: none;
     cursor: pointer;
     text-align: center;
     /* 按压反馈要立刻可见：从触摸到视觉 < 100ms */
-    transition: background var(--dur-1) var(--ease);
+    transition: background-color var(--dur-1) var(--ease);
     overflow: hidden;
 }
 
-/* 中缝：1px 分隔线挂在乙队一侧，不占额外列 */
-.cs-side-b { border-left: 1px solid var(--edge); }
+/* 中缝 = 网。亮线 + 两侧暗缝，深度自己出现，不占额外列。
+   ⚠️ 曾经写成 grid-template-columns: 1fr 1px 1fr，于是乙队被放进
+   「1px 的中间列」，整个右半屏是空的。分隔只能挂在子元素上。 */
+.cs-side-b { box-shadow: var(--net); }
 
-/* 队伍识别：顶部 4px 硬边（场边模式下比主界面更粗，2 米外可见） */
+/* 队伍识别：顶部 4px 硬边（场边模式下比主界面更粗，2 米外可见）。
+   落后方压到 55% —— 领先只是「更亮」，不是「换了个颜色」。 */
 .cs-side::before {
     content: "";
     position: absolute;
@@ -146,23 +154,34 @@
     left: 0;
     right: 0;
     height: 4px;
+    background: var(--team-c, var(--fg));
+    opacity: 0.55;
+    transition: opacity var(--dur-3) var(--ease);
 }
-.cs-side-a::before { background: var(--a); }
-.cs-side-b::before { background: var(--b); }
+.cs-side-a { --team-c: var(--a); }
+.cs-side-b { --team-c: var(--b); }
+
+/* 领先方：边线转亮 + 半场接到自己队色的光。
+   这是场边模式下表达「谁领先」的唯一方式 —— 不描边、不发光。 */
+.cs-side.leading::before { opacity: 1; }
+.cs-side-a.leading { background-image: var(--pool-a); }
+.cs-side-b.leading { background-image: var(--pool-b); }
 
 .cs-side:focus-visible { outline: 3px solid var(--live); outline-offset: -3px; }
 
-.cs-side-a:active { background: var(--a-dim); }
-.cs-side-b:active { background: var(--b-dim); }
+/* 按压只加一层底色，不动 background-image ——
+   否则领先方的队色光池会在按下的瞬间消失，看起来像闪了一下。 */
+.cs-side-a:active { background-color: var(--a-dim); }
+.cs-side-b:active { background-color: var(--b-dim); }
 
 /* 落后方整体降调（与主界面同一语义：让落后方退后，而不是让领先方发亮） */
-.cs-side:not(.leading) .cs-score { color: var(--fg-2); }
-.cs-side:not(.leading) .cs-name { color: var(--fg-3); }
+.cs-side:not(.leading) .cs-score { color: var(--fg-dim); }
+.cs-side:not(.leading) .cs-name { color: var(--fg-2); }
 
 .cs-name {
     font-size: clamp(0.875rem, 4.4vw, 1.5rem);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.04em;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
     color: var(--fg);
     max-width: 100%;
     overflow: hidden;
@@ -171,21 +190,34 @@
 }
 
 /* ---------- 比分：这是整个应用最重要的一个数字 ----------
-   420px 宽 / 竖屏：约 150px
-   横屏（场边模式默认）：clamp 上限生效，约 176px
-   2 米外可读。 */
+   竖屏 420px 宽：约 143px
+   横屏（场边模式默认，390px 高）：约 203px
+   2 米外可读 —— 可读距离按标牌经验法则换算（见 tools/audit-ui.js）。
+   字号下限锁死 96px：宁可让别的元素被挤掉，也不缩小读数。 */
 .cs-score {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    font-size: clamp(6rem, 30vw, 11rem);
-    font-weight: var(--fw-semibold);
+    /* ⚠️ 只开 tnum，不开 ss01 —— 否则 0 会变成带斜杠的 Ø */
+    font-feature-settings: "tnum" 1;
+    font-size: clamp(96px, 34vw, var(--fs-score-cs));
+    font-weight: var(--fw-score-cs);
     line-height: 0.82;
-    letter-spacing: -0.05em;
-    color: var(--fg);
+    letter-spacing: -0.055em;
+    color: var(--fg-dim);
+    transition: color var(--dur-3) var(--ease);
 }
 
-.cs-side-a.leading .cs-score { color: var(--a); }
-.cs-side-b.leading .cs-score { color: var(--b); }
+/* 领先方比分染队色，并在背后留一圈同色辉光 —— 光，不是描边 */
+.cs-side.leading .cs-score {
+    color: var(--team-c);
+    text-shadow: 0 0 90px var(--team-glow);
+}
+.cs-side-a.leading .cs-score { --team-glow: var(--a-edge); }
+.cs-side-b.leading .cs-score { --team-glow: var(--b-edge); }
+
+/* 三位数比分（自定义目标分下封顶可到 149）：降一档字号，
+   否则「149」在 844px 宽的横屏里会把半屏顶破。 */
+.cs-score.digits-3 { font-size: clamp(64px, 20vw, 130px); }
 
 /* 加分瞬间的脉冲：只改缩放与亮度，不做位移（避免"跳一下"看不清） */
 @keyframes csHit {
@@ -206,21 +238,20 @@
     display: block;
     width: clamp(28px, 7vw, 44px);
     height: 5px;
-    border-radius: 2px;
+    border-radius: 1px;
     background: var(--plate-3);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
 }
 
-.cs-side-a .cs-mark.won { background: var(--a); box-shadow: none; }
-.cs-side-b .cs-mark.won { background: var(--b); box-shadow: none; }
+.cs-side-a .cs-mark.won { background: var(--a); box-shadow: var(--sh-flat); }
+.cs-side-b .cs-mark.won { background: var(--b); box-shadow: var(--sh-flat); }
 
 /* 操作提示：只在进入时短暂出现，之后不干扰 */
 .cs-tap-hint {
-    font-size: var(--fs-3xs);
-    font-weight: var(--fw-medium);
-    letter-spacing: 0.14em;
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-micro);
+    text-transform: uppercase;
     color: var(--fg-3);
-    opacity: 0.7;
 }
 
 /* ---------- 底部提示条（防息屏失败 / 无可撤回等）---------- */
@@ -236,9 +267,10 @@
     line-height: var(--lh-snug);
     text-align: center;
     color: var(--fg);
-    background: var(--plate-3);
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-pop), inset 0 0 0 1px var(--edge-2);
+    background-color: var(--plate-3);
+    background-image: var(--face-3);
+    border-radius: var(--r-xs);
+    box-shadow: var(--sh-pop), inset 3px 0 0 var(--live);
     opacity: 0;
     pointer-events: none;
     transition: transform var(--dur-3) var(--ease-out), opacity var(--dur-3) var(--ease);

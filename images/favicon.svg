@@ -1,9 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="羽毛球极速记分板">
-  <polygon points="12,0 64,0 64,52 52,64 0,64 0,12" fill="#0A0E13"/>
-  <polygon points="64,64 64,34 30,64" fill="#D4FF3F" opacity=".18"/>
-  <g transform="translate(4 4) scale(2.333)" fill="none" stroke="#D4FF3F"
-     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="19.4" r="2.4" fill="#D4FF3F" stroke="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="羽毛球极速计分板">
+  <!-- 夜场 NIGHT COURT 图标。
+       两条边线 = 记分板的甲/乙外沿，这是 v4 的核心识别：
+       队色只出现在线、数字、光池里，不做填充、不做装饰。
+       中间是球头。三样东西，没有一个是为好看加的。
+
+       旧的 v2 图标是 VOLT 荧光绿 + 切角多边形 + 右上角斜块，
+       那套语言 v3 起已从界面移除 —— 图标不能是最后一个还留着它的地方。 -->
+  <rect width="64" height="64" rx="14" fill="#0A0D0C"/>
+  <rect x="5" y="10" width="3" height="44" rx="1.5" fill="#FF5A47"/>
+  <rect x="56" y="10" width="3" height="44" rx="1.5" fill="#4FA8E8"/>
+  <!-- 与 js/icons.js 的 shuttle 同一套几何；
+       描边宽度按缩放反算（1.5 ÷ 1.95），缩放后仍是图标本来的粗细。 -->
+  <g transform="translate(8.6 7.8) scale(1.95)" fill="none" stroke="#F4F1EA" stroke-width="0.77"
+     stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="19.4" r="2.4" fill="#F4F1EA" stroke="none"/>
     <path d="M10 17.2 12 3l2 14.2"/>
     <path d="M10.7 12.3h2.6"/>
   </g>

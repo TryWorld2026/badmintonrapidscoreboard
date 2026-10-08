@@ -1,7 +1,68 @@
 /* ================================================================
    base.css — reset、排版、布局原语、工具类
-   深色演播室 + VOLT TRUCK 切角语言
+   方向 v4 · 夜场 NIGHT COURT
+
+   这一层只做三件事：
+     1. 把「光从上面来」定成默认（--lift 用在每一块面上）
+     2. 把字号收敛成一档巨型 + 三档小字
+     3. 应用外壳（顶栏 / 内容 / 底部导航 / 分段控件）
    ================================================================ */
+
+/* ================================================================
+   显示字体：Barlow Semi Condensed（SIL Open Font License 1.1）
+
+   为什么必须自带：这是比分数字用的字体，而比分是这个应用里唯一
+   不允许被任何东西盖住的元素。旧栈写的是 DIN Next LT Pro → Bahnschrift
+   → Segoe UI，前两个只有 Windows 有；iOS 和 Android 会一路回落到
+   PingFang SC / Noto Sans SC —— 那是中文正文字体，数字宽而圆，
+   摆到 140px 上完全没有记分牌的样子。而手机才是球馆现场的主形态。
+
+   为什么是 Barlow Semi Condensed：
+     · 140px 下数字宽 74.91px，比 DIN 的 77.84px 还窄 —— 半场只有
+       194px 宽，字形窄 4% 就意味着比分能多开 4% 的字号。
+     · 带 tnum，逐帧变化不跳动（这是硬指标，见下方 .num 规则）。
+     · OFL 授权，可随项目分发，不像 DIN 是商业字体。
+   实测对比过 Archivo：同字号下数字宽 87.78px，比 DIN 宽 13%，
+   会逼着比分缩小 —— 对一个「读数优先」的界面是反向的。
+
+   只打包 400 / 700 / 800 三档：遍历全部 12 个视图 + 场边模式，
+   --font-display 实际落到的计算字重只有这三个（400 只有一处输入框，
+   700 有 25 处，800 是场边模式的比分）。其余档位不下载。
+
+   unicode-range 锁在拉丁区：中文交给系统字体（见 --font-display 栈），
+   所以 68KB 就能覆盖整个界面，而不是几 MB 的 CJK 子集。 */
+@font-face {
+    font-family: "Barlow Semi Condensed";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/barlow-semi-condensed-400.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+        U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Barlow Semi Condensed";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../fonts/barlow-semi-condensed-700.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+        U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Barlow Semi Condensed";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("../fonts/barlow-semi-condensed-800.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+        U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 *,
 *::before,
@@ -20,12 +81,13 @@ body {
     font-size: var(--fs-md);
     line-height: var(--lh-normal);
     color: var(--fg);
-    /* 方向 C：底色是纯中性石墨，零纹理、零扫描线。
-       旧版的 repeating-linear-gradient 扫描线是「电竞屏」语言，
-       与精密仪表的克制气质冲突，已移除。
-       唯一的氛围光是一道极淡的顶部渐隐，给纵向留出层次。 */
+    /* 夜场墨绿黑，零纹理。
+       旧版铺过 repeating-linear-gradient 扫描线（电竞屏语言），
+       v4 唯一的氛围光是顶部一道极淡的顶光渐隐 —— 与「光从上面来」同源。 */
     background-color: var(--void);
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, transparent 260px);
+    background-image: radial-gradient(140% 46% at 50% -8%,
+            rgba(255, 255, 255, 0.045) 0%, transparent 62%);
+    background-repeat: no-repeat;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
@@ -82,12 +144,14 @@ input, textarea, select {
 }
 
 a {
-    color: var(--live);
+    color: var(--fg);
     text-decoration: none;
 }
 
+/* 选中高亮用象牙白底 + 深墨字：与「全屏最亮的东西只有一个」一致。
+   琥珀只表示「进行中」，选中文字不是「进行中」。 */
 ::selection {
-    background: var(--live);
+    background: var(--fg);
     color: var(--on-light);
 }
 
@@ -98,7 +162,6 @@ a {
     flex-shrink: 0;
 }
 
-/* 图标容器：方形硬底，无圆角 */
 .ic-box {
     display: inline-flex;
     align-items: center;
@@ -106,30 +169,39 @@ a {
     flex-shrink: 0;
 }
 
-/* ---------- 数字 ---------- */
+/* ---------- 数字 ----------
+   全部走 --font-display（Barlow Semi Condensed），tabular 保证比分
+   逐帧变化不跳动 —— 这是硬指标，不是偏好：记分牌上数字一变就左右晃，
+   看起来像「读数不准」，而它恰恰是全应用最需要显得可信的那个数。
+   ⚠️ 只开 tnum，不碰任何其他 feature tag。
+      历史上踩过 DIN Next LT Pro 的 ss01 把 0 渲染成带斜杠的 Ø、
+      比分里的 0 被读成字母 O 的坑。Barlow 没有 ss01（已核对 GSUB），
+      但这条约束留着：显示字体随时可能换，而「只开 tnum」是安全下界。 */
 .num,
 .score-number,
 .timer-value,
 .stat-value,
 .hero-number {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
 }
 
-/* 转播比分：窄体 + 斜体 + 微斜切，模拟记分牌 LED 字 */
+/* v3 的「转播比分」是窄体 + 斜体 + 微斜切，模拟记分牌 LED。
+   v4 不再斜 —— 斜体数字在 140px 下会歪，且是廉价 LED 的符号。
+   保留这个类名供旧 markup 复用，只把字形改回直立。 */
 .num-display {
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
+    letter-spacing: -0.02em;
 }
 
-/* 转播小标签：全大写 + 宽字距 */
+/* 仪表小标签：全大写 + 宽字距 */
 .micro {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--ls-micro);
     text-transform: uppercase;
     color: var(--fg-3);
 }
@@ -160,13 +232,15 @@ a {
     gap: var(--sp-3);
     padding-left: var(--gutter);
     padding-right: var(--gutter);
-    background: color-mix(in srgb, var(--void) 92%, transparent);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--edge);
+    /* 实色 + 渐变两层：background-color 是给强制颜色模式 /
+       对比度审计 / html2canvas 用的「这块面到底什么颜色」的答案。 */
+    background-color: var(--plate);
+    background-image: linear-gradient(180deg, #121816 0%, #0D1211 100%);
+    box-shadow: var(--lift), 0 1px 0 var(--edge);
 }
 
-/* 顶栏底部 VOLT 高压线 */
+/* v3 的顶栏底部是一条 VOLT 高压线（三色渐变 + 中点亮色），
+   那是转播车语言。v4 换成一条纯粹的分隔线 —— 顶栏不该抢注意力。 */
 .appbar::after {
     content: "";
     position: absolute;
@@ -174,13 +248,8 @@ a {
     right: 0;
     bottom: -1px;
     height: 1px;
-    background: linear-gradient(90deg,
-            transparent 0%,
-            var(--edge-2) 18%,
-            var(--live) 50%,
-            var(--edge-2) 82%,
-            transparent 100%);
-    opacity: 0.55;
+    background: var(--edge);
+    opacity: 1;
 }
 
 .appbar-title {
@@ -190,11 +259,11 @@ a {
     min-width: 0;
     flex: 1;
     font-size: var(--fs-lg);
-    font-weight: var(--fw-black);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.01em;
+    text-transform: none;
     cursor: pointer;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-xs);
 }
 
 /* 键盘可达：顶栏标题兼作快捷操作触发器 */
@@ -212,7 +281,7 @@ a {
     color: var(--live);
     background: var(--live-soft);
     box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-sm);
+    border-radius: var(--r-xs);
     white-space: nowrap;
 }
 
@@ -223,10 +292,10 @@ a {
     flex-shrink: 0;
 }
 
-/* 图标按钮：小圆角方块。
+/* 图标按钮：圆形命中区。
    尺寸取 --tap-min（44px）：旧版是 36px，在「一手汗一手拍」的场景下
    极易误触 —— 实测有 4–11 个控件不达标，这条是可访问性硬标准。
-   视觉上仍是小方块（图标 17px），只是命中区扩大到 44。 */
+   形状从 v3 的小圆角方块改成全圆：交互一律全圆，面板一律锐角。 */
 .icon-btn {
     display: inline-flex;
     align-items: center;
@@ -237,11 +306,11 @@ a {
     font-size: var(--fs-lg);
     background: transparent;
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
     box-shadow: none;
     cursor: pointer;
     color: var(--fg-2);
-    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -276,13 +345,15 @@ a {
     bottom: 0;
     z-index: var(--z-tabbar);
     height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+    /* 桌面端：背景仍然铺满（它是一条「地面线」），
+       但四个 Tab 收进内容宽度内 —— 否则 1440px 下四个图标会被
+       拉到屏幕四角，读起来像四个不相干的按钮。 */
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: max(0px, calc((100% - var(--content-max)) / 2));
+    padding-right: max(0px, calc((100% - var(--content-max)) / 2));
     display: flex;
-    background: color-mix(in srgb, var(--void) 94%, transparent);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--edge);
-    box-shadow: var(--sh-plate);
+    background: #0B0F0E;
+    box-shadow: inset 0 1px 0 var(--edge), var(--sh-plate);
 }
 
 .tabbar-item {
@@ -292,7 +363,7 @@ a {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 4px;
     min-width: 0;
     padding: var(--sp-1) 0;
     background: none;
@@ -312,21 +383,23 @@ a {
 .tabbar-item .tab-label {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.12em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
 }
 
-.tabbar-item.active { color: var(--live); }
+/* 选中态：象牙白，不是荧光色。
+   旧版给激活项上 VOLT 亮色，那是「电竞感」的来源之一。 */
+.tabbar-item.active { color: var(--fg); }
 
-/* 激活态：顶部 VOLT 硬切指示条 */
+/* 激活态：顶部一条 2px 硬线（与边线语言一致），不是发光。 */
 .tabbar-item.active::before {
     content: "";
     position: absolute;
-    top: -1px;
-    left: 22%;
-    right: 22%;
+    top: 0;
+    left: 24%;
+    right: 24%;
     height: 2px;
-    background: var(--live);
+    background: var(--fg);
     box-shadow: var(--sh-flat);
 }
 
@@ -336,11 +409,12 @@ a {
 /* ---------- 分段控件（二级导航）---------- */
 .segmented {
     display: flex;
-    gap: 2px;
-    padding: 3px;
+    gap: var(--sp-1);
+    padding: var(--sp-1);
     margin-bottom: var(--sp-4);
-    background: var(--void);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background: var(--plate);
+    box-shadow: var(--sink);
+    border-radius: var(--r-full);
     overflow-x: auto;
     scrollbar-width: none;
 }
@@ -356,60 +430,104 @@ a {
     align-items: center;
     justify-content: center;
     padding: var(--sp-2) var(--sp-4);
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.02em;
     white-space: nowrap;
     text-align: center;
     color: var(--fg-3);
     background: none;
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
     cursor: pointer;
-    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
+    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-/* 选中态：不再用荧光填充整块，改为「浅底 + 强调文字 + 1px 边」，
-   更接近仪器上的档位指示，也不会在暗环境里刺眼。 */
+/* 选中态：抬起的药丸 + 顶光，不再靠 1px 边。
+   旧版是「深底 + 1px 边」，在暗色下几乎看不出选中。 */
 .segmented-item.active {
     color: var(--fg);
-    background: var(--plate-3);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
+    background-color: var(--plate-3);
+    background-image: var(--face-3);
+    box-shadow: var(--lift), var(--sh-plate);
 }
 
 .sub-panel { display: none; }
 .sub-panel.active { display: block; animation: panelIn var(--dur-3) var(--ease-out); }
 
-/* ---------- 卡片：硬矩形 + 发丝线 + 金属高光边 ---------- */
+/* ---------- 卡片：锐角 + 顶光 + 两段渐变 ----------
+   v4 的核心手法。旧版是「平面 + 1px 边」，暗色下边线不可见，
+   于是整屏塌成一块死灰 —— 这是「丑」的第一因。 */
 .card {
     position: relative;
-    background: var(--plate);
+    background-color: var(--plate);
+    background-image: var(--face-1);
     border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    box-shadow: var(--lift);
     padding: var(--sp-4);
     margin-bottom: var(--sp-4);
 }
 
-.card + .card { margin-top: 0; }
+/* 相邻卡片之间只留一条发丝分隔，不重复画顶光 */
+.card + .card {
+    margin-top: 0;
+    box-shadow: var(--lift), inset 0 1px 0 var(--edge);
+}
 
 .card-title {
     display: flex;
     align-items: center;
     gap: var(--sp-2);
-    font-size: var(--fs-md);
+    font-size: var(--fs-lg);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
     margin-bottom: var(--sp-3);
 }
 
 .card-title .title-extra {
     margin-left: auto;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-2xs);
     font-weight: var(--fw-medium);
     letter-spacing: 0;
     color: var(--fg-3);
 }
+
+/* 标题文字：允许被压缩、永不换行。
+   卡片标题行同时坐着「标题 + 计数 + 两个 44px 按钮」，
+   窄到 375px 时标题会先换行，把整行撑成 48px —— 记分页就为一行字
+   多付一倍高度。缩字比换行好：它仍是一行可读的字。 */
+.card-title-text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* 计数是次要读数，空间不够时让它先消失，而不是把标题挤换行。 */
+.card-title .title-extra:empty { display: none; }
+
+/* 卡片标题行里的图标按钮：44px 命中区不能缩（可访问性下限），
+   但视觉上要收，否则它会比标题还抢眼。
+   做法是保留 44×44 的命中盒、把图标本身画小一档，
+   再用负外边距把它在**布局**上压回一行高 —— 否则 44px 的按钮
+   会把 24px 的标题行撑到 48px，记分页就为这两个低频按钮
+   白白多付 24px 高度。命中区与视觉重量、与布局高度，三者解耦。 */
+.card-title .btn-sm-icon {
+    flex: 0 0 auto;
+    margin-left: 0;
+    margin-top: -10px;
+    margin-bottom: -10px;
+    font-size: var(--fs-md);
+    color: var(--fg-3);
+}
+
+/* .card-title 的 align-items 是 center；负外边距后按钮实际占 24px，
+   与标题同高，标题行就不会被撑开。 */
+
+.card-title .btn-sm-icon + .btn-sm-icon { margin-left: calc(var(--sp-1) * -1); }
+.card-title .btn-sm-icon:hover { color: var(--fg); }
 
 /* ---------- 工具类 ---------- */
 .row { display: flex; align-items: center; gap: var(--sp-3); }
@@ -437,20 +555,9 @@ a {
 .fw-black { font-weight: var(--fw-black); }
 .hidden { display: none !important; }
 
-/* 屏幕阅读器专用 */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-/* 减少动效偏好 */
+/* 减少动效偏好：全局兜底。
+   令牌层已经把 --dur-* 压到 1ms，但动画（animation）不吃令牌，
+   所以这里必须再兜一次，否则彩带 / 得分动效仍会播。 */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

@@ -1,10 +1,11 @@
 /* ================================================================
    account.css — 账号卡片与登录对话框
+   方向 v4 · 夜场 NIGHT COURT
 
-   设计延续方向 C（仪表读数器）：
+   账号是「同步通道的状态」，不是「比赛的状态」：
      - 状态用「一个点 + 一行字」表达，不用彩色整块
-     - 四个状态色：off(灰) / ok(绿) / pending(琥珀) / error(红)
-       全部低饱和，与队伍识别色不打架
+     - 五个状态：off(灰) / ok(绿) / pending(琥珀) / error(红) / busy(呼吸)
+       面积极小，与队伍识别色不打架
    ================================================================ */
 
 /* ---------- 账号卡片 ---------- */
@@ -14,9 +15,9 @@
     gap: var(--sp-3);
     padding: var(--sp-4);
     margin-bottom: var(--sp-4);
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
 .account-card.hidden { display: none; }
@@ -32,7 +33,7 @@
     flex: 0 0 auto;
     width: 10px;
     height: 10px;
-    border-radius: 50%;
+    border-radius: var(--r-full);
     background: var(--fg-3);
     transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
 }
@@ -40,18 +41,19 @@
 .acc-dot.tone-off { background: var(--fg-3); }
 .acc-dot.tone-ok {
     background: var(--ok);
-    box-shadow: 0 0 0 3px var(--ok-soft);
+    box-shadow: 0 0 0 4px var(--ok-soft);
 }
 .acc-dot.tone-pending {
     background: var(--warn);
-    box-shadow: 0 0 0 3px var(--warn-soft);
+    box-shadow: 0 0 0 4px var(--warn-soft);
 }
 .acc-dot.tone-error {
     background: var(--danger);
-    box-shadow: 0 0 0 3px var(--danger-soft);
+    box-shadow: 0 0 0 4px var(--danger-soft);
 }
 .acc-dot.tone-busy {
     background: var(--live);
+    box-shadow: 0 0 0 4px var(--live-soft);
     /* 同步中做一个呼吸效果，让"正在工作"可见 */
     animation: accPulse 1.4s var(--ease) infinite;
 }

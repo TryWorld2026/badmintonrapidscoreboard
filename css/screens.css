@@ -1,6 +1,22 @@
 /* ================================================================
    screens.css — 4 个 Tab 的页面级排版
-   Tab1 记分板（转播 score-bug 形制）/ Tab2 分组+费用 / Tab3 数据 / Tab4 我的
+   Tab1 记分板 / Tab2 分组+费用 / Tab3 数据 / Tab4 我的
+   方向 v4 · 夜场 NIGHT COURT
+
+   这一层最重的两处改动：
+
+   1) 比分板从「两个并排的仪表盘」改成「一块球场」。
+      中线是网、外沿是边线、顶部一盏灯打下来。
+      队色只出现在三条线上（外沿边线 / 进度线 / 得分键顶边），
+      不做填充、不做发光 —— 发光是廉价感的第一来源。
+
+   2) 得分流水从「文字行」改成「回合时间轴」。
+      旧版每得一分写一行「林知远 10 → 11」，二十五行看完也不知道
+      谁在连得、什么时候被追平。时间轴把一场球压成一条可读的条码：
+      柱高 = 该回合时该方的比分，颜色 = 谁得分。
+      这是这个产品唯一需要「看一眼就懂」的图形。
+
+   全文件只允许 var(--*)，裸色值一律回 tokens.css。
    ================================================================ */
 
 /* ================================================================
@@ -15,9 +31,9 @@
 
 .panel-head-title {
     font-size: var(--fs-lg);
-    font-weight: var(--fw-black);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
+    text-transform: none;
 }
 
 .panel-head-sub {
@@ -33,7 +49,9 @@
     flex-shrink: 0;
 }
 
-/* 分组标题（大写小标签 + 伏特竖线） */
+/* 分组标题（小标签 + 一条竖线）
+   v3 这条竖线是 VOLT 荧光色，是「电竞感」的来源之一。
+   v4 换成象牙白：它是排版记号，不是状态指示，不该有颜色。 */
 .section-title {
     display: flex;
     align-items: center;
@@ -41,16 +59,16 @@
     margin-bottom: var(--sp-3);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.14em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
     color: var(--fg-2);
 }
 
 .section-title::before {
     content: "";
-    width: 3px;
+    width: 2px;
     height: 0.9em;
-    background: var(--live);
+    background: var(--fg);
     box-shadow: var(--sh-flat);
 }
 
@@ -62,26 +80,76 @@
 }
 
 /* ================================================================
-   Tab1 — 记分板：方向 C · 仪表读数器
-   设计前提：手机架在场边、人站在 2 米外。
-   所以：读数区（两队 + 刻度环）绝对优先，操作区次之，日志再次之。
+   Tab1 — 记分板
+   设计前提：手机架在场边、人站在 2 米外、一手汗一手拍。
+   所以：比分是唯一的巨型元素，其余一切退到 ≤11px。
    ================================================================ */
 .scoreboard {
     position: relative;
-    background: var(--void);
-    /* 方向 C：不铺纹理。旧版在这里铺了球场横向细线 + 顶部三色渐变
-       （--a → --live → --b），那是「转播车」语言；仪表读数器靠
-       精确的边线与间距建立秩序，不靠装饰。 */
-    box-shadow: inset 0 0 0 1px var(--edge-2);
+    /* container-type 让 --fs-score 里的 cqi 有参照物（见 tokens.css）。
+       没有这一行，桌面端 36vw 会把比分撑到 518px。 */
+    container-type: inline-size;
+    background: var(--board);
+    /* 顶光：整个记分页只有这一盏灯，打在球场正上方 */
+    background-image: var(--pool);
     overflow: hidden;
+}
+
+/* ---------- 记分页：一屏布局 ----------
+   这一页原来高 904px，而 390×844 机身扣掉顶栏、底栏、Dock 后只剩约 604px
+   —— 溢出 300px，用户必须滚动才能看到时间轴。
+   根因是同一件事被说了两遍，还要多占一行：
+     1. 「快速切换赛制」卡（252px）与读数条说的是同一件事
+     2. 半场里「发球灯 + 甲队」那行是死数据（没有任何 JS 写过它）
+     3. 队头（角标 + 头像）与队名各占一行
+
+   现在压成四块：赛制芯片行 → 读数条 → 比分板 → 时间轴，一屏读完。
+   比分仍是唯一主角：它的字号受半场**宽度**限制（已顶格），
+   省下的高度全部还给时间轴与留白。 */
+.mode-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+}
+
+.mode-cell {
+    min-height: var(--tap-min);
+    padding: 0 var(--sp-1);
+    font-family: var(--font-ui);
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
+    color: var(--fg-2);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    border: none;
+    border-radius: var(--r-sm);
+    box-shadow: var(--lift);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--dur-2) var(--ease), background var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease);
+}
+
+.mode-cell:hover {
+    color: var(--fg);
+    box-shadow: var(--lift), inset 0 0 0 1px var(--edge-2);
+}
+
+/* 选中态：顶部 3px 象牙白，与 .pick-card 同一套语言。
+   不用琥珀 —— 全站琥珀只有一个含义：进行中。 */
+.mode-cell.active {
+    color: var(--fg);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
+    box-shadow: var(--lift-2), inset 0 3px 0 var(--fg);
 }
 
 .scoreboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* 中央分隔线用背景色实现，避免子元素 border 在缩放下的 0.5px 抖动 */
-    background: var(--edge);
-    gap: 1px;
+    background: var(--board);
 }
 
 .score-team {
@@ -89,34 +157,72 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--sp-2);
-    padding: var(--sp-5) var(--sp-3) var(--sp-4);
+    justify-content: center;
+    /* 队头（角标 + 头像 + 队名，同 44px 行高）+ 比分 + 进度线 + 两个 gap。
+       队名并进队头后省下一整行，这正是记分页能一屏装下的来源之一。 */
+    min-height: 128px;
+    /* ⚠️ 网格项默认 min-width:auto = 「不小于内容宽度」。
+       三位数比分（自定义目标分下封顶可到 149）会把半场顶宽，
+       整个 .scoreboard-grid 跟着溢出屏幕（实测 420px 视口下右边到 535px）。
+       锁成 min-width:0 + overflow:hidden，超宽时裁掉而不是撑破版面。 */
+    min-width: 0;
+    overflow: hidden;
+    gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3) var(--sp-3);
     text-align: center;
-    background: var(--void);
-    transition: background var(--dur-2) var(--ease);
+    background: var(--board);
+    transition: box-shadow var(--dur-3) var(--ease);
 }
 
-/* 队伍识别：顶部 3px 硬边 —— 这是界面里几乎唯一的彩色 */
+/* 得分扫光（.score-sweep，由 js/effects.js 插入）是「打在半场上的一道光」，
+   必须从内容**下面**扫过：比分是屏幕上唯一不允许被盖住的东西。
+   静态定位的子元素默认画在 z-index:0 的定位元素下面，所以这里把内容抬起来。 */
+.score-team > *:not(.score-sweep) {
+    position: relative;
+    z-index: 1;
+}
+
+/* 中线 = 网。
+   不是一根 1px 灰线：线本身是亮的，紧挨着的两侧是暗的，
+   于是「两块面被一张网分开」这件事自己成立（--net 见 tokens.css）。 */
+.score-team + .score-team {
+    box-shadow: var(--net);
+}
+
+/* 外沿边线：3px 全高。队色第一次出现在这里。
+   落后方压到 55% —— 领先方只是「更亮」，不是「换了个颜色」。 */
 .score-team::before {
     content: "";
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
+    bottom: 0;
+    /* 压在扫光之上：边线是「谁领先」的唯一指示，不能被光洗淡。 */
+    z-index: 2;
+    width: 3px;
+    background: var(--team-c, var(--fg));
+    opacity: 0.55;
+    transition: opacity var(--dur-3) var(--ease);
 }
-.score-team.team-a::before { background: var(--a); }
-.score-team.team-b::before { background: var(--b); }
 
-/* 队伍色的极淡晕染：只在顶部 42% 处，给"这台仪器有两路输入"的暗示 */
-.score-team.team-a { background-image: linear-gradient(180deg, var(--a-dim) 0%, transparent 42%); }
-.score-team.team-b { background-image: linear-gradient(180deg, var(--b-dim) 0%, transparent 42%); }
+.score-team.team-a { --team-c: var(--a); }
+.score-team.team-b { --team-c: var(--b); }
+.score-team.team-a::before { left: 0; }
+.score-team.team-b::before { right: 0; }
 
-/* 落后方整体降调 —— 旧版是给领先方加发光，方向 C 反过来：
-   让落后方退后，而不是让领先方发亮。发光是廉价感的来源。 */
-.score-team:not(.leading) .score-num { color: var(--fg-2); }
+/* 领先方：外沿边线转亮，半场接到的光换成队色。
+   这是 v4 表达「谁领先」的唯一方式 —— 不描边、不发光图标。 */
+.score-team.leading::before { opacity: 1; }
+
+.score-team.team-a.leading { background-image: var(--pool-a); }
+.score-team.team-b.leading { background-image: var(--pool-b); }
+
+/* 落后方整体降调：比分退到 62% 象牙白，队名退到 --fg-2。
+   不是「灰掉」—— 是同一支白墨的减光，所以仍然带暖调，不会脏。 */
+.score-team:not(.leading) .score-num { color: var(--fg-dim); }
 .score-team:not(.leading) .score-team-name { color: var(--fg-2); }
-.score-team:not(.leading) .dial { opacity: 0.62; }
+/* 落后方的进度线同样退一档。它已经用队色（识别性必须保留），
+   所以降调只能靠透明度 —— 而不是把颜色改成灰的。 */
+.score-team:not(.leading) .score-prog i { opacity: 0.5; }
 
 .score-team-head {
     display: flex;
@@ -126,68 +232,80 @@
     width: 100%;
 }
 
-/* 队伍 A/B 角标 */
+/* 队伍 A/B 角标：全圆药丸（交互语言）。
+   深墨字而不是象牙白：白字压信号红只有 3.40:1、压球场蓝 3.10:1，
+   均低于 AA 正文 4.5:1；换深墨后是 5.04:1 / 5.52:1。 */
 .score-team-tag {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
+    font-family: var(--font-display);
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.06em;
-    /* 深色墨水而不是 --on-dark(#F2F4F6)：
-       白字压信号红只有 3.40:1、压仪表蓝 3.10:1，均低于 AA 正文 4.5:1。
-       换深色后分别是 5.04:1 / 5.52:1。
-       （同 v2.0.2 修 dock 计分按钮时用的是同一个办法。） */
+    letter-spacing: 0;
     color: var(--void);
-    border-radius: var(--r-xs);
+    border-radius: var(--r-full);
 }
 
 .team-a .score-team-tag { background: var(--a); }
 .team-b .score-team-tag { background: var(--b); }
 
-/* 头像：小圆角方块，1px 边 */
+/* 头像：全圆，坐在内凹的底上。
+   队色表情压在 --plate-2 上只有 4.36:1（甲）/ 3.60:1（乙），低于 AA。
+   队色本身是产品识别色不能改，所以只在这一处把「队色文字」提亮到
+   同色系浅一档：甲 #E8665B → 5.05:1，乙 #4E9AE0 → 5.47:1。
+   色相不变，只是明度提一档，识别性不受影响。 */
 .score-team-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     flex-shrink: 0;
-    font-size: var(--fs-lg);
+    font-size: var(--fs-md);
     line-height: 1;
     background: var(--plate-2);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
+    box-shadow: var(--sink);
 }
 
-/* 队色表情压在 --plate-2 上只有 4.36:1（甲）/ 3.60:1（乙），低于 AA 4.5:1。
-   队色本身是产品识别色，不能改（README：全应用仅此两组饱和色）。
-   所以只在这一处把「队色文字」提亮到同色系的浅一档：
-   甲 #E8665B → 5.05:1，乙 #4E9AE0 → 5.47:1。
-   色相不变，只是明度提一档，识别性不受影响。 */
 .team-a .score-team-avatar { color: #E8665B; }
 .team-b .score-team-avatar { color: #4E9AE0; }
 
-/* 队名：仪表标签风格（不是全大写，中文没有大小写概念，改字距区分） */
+/* 队名：仪表标签风格（中文没有大小写概念，靠字距区分）。
+   它同时是输入框，所以保留 44px 触摸下限。
+
+   ⚠️ 这里刻意**不给** box-shadow 描边。
+   给了之后每一侧看起来都是一个「带框的表单」，半场就不再像球场。
+   输入框的可见性改由下面那条 :hover / :focus 规则表达 ——
+   平时它是队名，碰它才变成输入框。 */
 .score-team-name {
-    width: 100%;
+    /* 并进队头后不再独占一行：让它吃掉角标与头像之外的全部宽度。 */
+    flex: 1;
+    width: auto;
     min-width: 0;
-    /* 触摸目标下限：输入框也要可点 */
     min-height: var(--tap-min);
     padding: var(--sp-1) var(--sp-2);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.04em;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
     text-align: center;
     background: transparent;
     color: var(--fg);
     border: none;
     border-radius: var(--r-xs);
-    box-shadow: inset 0 0 0 1px var(--edge);
-    transition: box-shadow var(--dur-1) var(--ease);
+    box-shadow: none;
+    transition: box-shadow var(--dur-2) var(--ease), background var(--dur-2) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.score-team-name:hover,
+.score-team-name:focus {
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 0 0 1px var(--edge-2);
 }
 
 .score-team-name:focus {
@@ -195,140 +313,115 @@
     box-shadow: inset 0 0 0 1px var(--live), 0 0 0 3px var(--live-soft);
 }
 
-/* ---------- 刻度环：方向 C 的签名元素 ----------
-   比分外一圈 40 格精密刻度。用 conic-gradient 画刻度 + mask 挖空中心，
-   落后方刻度暗淡、领先方转亮 —— 用"刻度"而非"发光"表达状态。
-   纯 CSS，零图片，可随容器缩放。 */
+/* ---------- 读数区 ----------
+   旧版这里是一个 40 格 conic-gradient 刻度环（「方向 C」的签名元素）。
+   问题不在画得不好，在于它承载的信息是假的：
+   40 格刻度不映射任何真实规则（21 分制、11 分间歇、封顶 30 都与 40 无关），
+   它只是「看起来很精密」。读数器不是靠装饰变精密的。
+   现在换成一枚真正的容器：比分 + 一条带 11 分间歇刻度的进度线。 */
 .dial {
     position: relative;
-    display: grid;
-    place-items: center;
-    width: clamp(104px, 30vw, 132px);
-    aspect-ratio: 1;
-    transition: opacity var(--dur-3) var(--ease);
-}
-
-/* 刻度环本体：40 格，每格 9°，格宽 1.1° */
-.dial::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: repeating-conic-gradient(
-        from 0deg,
-        var(--dial-dim) 0deg 1.1deg,
-        transparent 1.1deg 9deg
-    );
-    -webkit-mask: radial-gradient(circle, transparent 54%, #000 56%, #000 64%, transparent 66%);
-    mask: radial-gradient(circle, transparent 54%, #000 56%, #000 64%, transparent 66%);
-    transition: background var(--dur-3) var(--ease);
-}
-
-/* 内圈细环：把数字"框"在仪表里 */
-.dial::after {
-    content: "";
-    position: absolute;
-    inset: 14%;
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 1px var(--edge);
-}
-
-/* 领先方：刻度转为亮色（中性灰白，不是彩色） */
-.score-team.leading .dial::before {
-    background: repeating-conic-gradient(
-        from 0deg,
-        var(--dial) 0deg 1.4deg,
-        transparent 1.4deg 9deg
-    );
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    width: 100%;
 }
 
 /* ---------- 大比分：等宽数字，不斜不发光 ---------- */
 .score-num {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-style: normal;
     font-variant-numeric: tabular-nums;
+    /* ⚠️ 只开 tnum（理由见 base.css 的 .num 规则）。 */
+    font-feature-settings: "tnum" 1;
+    /* 两条声明 = 渐进增强：
+       老浏览器不认 cqi，会把第二条整条丢掉，留下第一条；
+       新浏览器认 cqi，第二条覆盖第一条。 */
+    font-size: var(--fs-score-fixed);
     font-size: var(--fs-score);
-    font-weight: var(--fw-semibold);
-    line-height: 0.9;
-    letter-spacing: -0.04em;
+    max-width: 100%;
+    font-weight: var(--fw-score);
+    line-height: 0.84;
+    letter-spacing: -0.05em;
     transform: none;
     position: relative;
     z-index: 1;
 }
 
+/* 三位数比分（自定义目标分下封顶可到 149）。
+   字号靠 CSS 算不出「几位数」，所以由 js/match.js 加 .digits-3。
+   直接降一档而不是缩放：缩放会让笔画在 3 位数时突然变细，
+   降字号则是同一套字形按比例变小，视觉重量仍然一致。 */
+.score-num.digits-3 {
+    font-size: calc(var(--fs-score-fixed) * 0.62);
+    font-size: calc(var(--fs-score) * 0.62);
+}
+
 .team-a .score-num { color: var(--a); }
 .team-b .score-num { color: var(--b); }
 
-.score-num.bump { animation: scoreBump var(--dur-3) var(--ease-out); }
-
-@keyframes scoreBump {
-    0% { transform: scale(1); }
-    35% { transform: scale(1.09); }
-    100% { transform: scale(1); }
+/* 得分：数字「砸」进来 —— 一帧白闪 + 从 1.07 落到 1，硬落不回弹。
+   全站唯一的「大」动效。旧版的 scoreBump 是平滑缩放，读起来像
+   界面卡了一下；白闪 + 硬落才像记分牌翻牌。 */
+.score-num.bump {
+    animation: scoreStrike 320ms var(--ease-strike);
 }
 
-.score-team-meta {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-1);
-    min-height: 20px;
-    font-size: var(--fs-3xs);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--fg-3);
+@keyframes scoreStrike {
+    0%   { transform: scale(1.07); filter: brightness(2.6); }
+    22%  { transform: scale(0.985); filter: brightness(1.5); }
+    100% { transform: scale(1); filter: brightness(1); }
 }
 
-/* 发球方小灯：实心点 + 极淡的环 */
-.serve-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--fg-3);
-    border-radius: 50%;
-    opacity: 0.4;
-    transition: opacity var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+/* ---------- 比分进度线：本局进度 + 11 分间歇刻度 ----------
+   这是 .dial 里的第二个元素（由 js/match.js 渲染）。
+   柱高 = 得分 / 目标分；刻度落在换边点（21→11 / 15→8 / 11→6）。 */
+.score-prog {
+    position: relative;
+    width: min(140px, 78%);
+    height: 3px;
+    background: var(--edge-2);
+    border-radius: 2px;
 }
 
-.serve-dot.on { opacity: 1; }
-.team-a .serve-dot.on { background: var(--a); box-shadow: 0 0 0 3px var(--a-dim); }
-.team-b .serve-dot.on { background: var(--b); box-shadow: 0 0 0 3px var(--b-dim); }
-
-/* ---------- 当前局读数 ----------
-   旧版是浮在比分板正中的 "VS" 荧光徽标，绝对定位 + top:52px，
-   与队名输入框在 420px 宽下必然重叠（实测截图可见）。
-   方向 C 把它降级为状态条里的一枚普通读数：不浮动、不抢焦点。 */
-.scoreboard-game {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    padding-left: var(--sp-3);
-    border-left: 1px solid var(--edge);
+.score-prog i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--team-c, var(--fg));
+    border-radius: 2px;
+    box-shadow: 0 0 14px var(--team-glow, transparent);
+    transition: width var(--dur-3) var(--ease);
 }
 
-.scoreboard-game .vs-timer {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
-    color: var(--fg-2);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
+.team-a .score-prog i { --team-glow: var(--a-edge); }
+.team-b .score-prog i { --team-glow: var(--b-edge); }
+
+/* 换边刻度：一枚朝下的小三角，压在进度线正下方 */
+.score-prog::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: var(--switch, 52.4%);
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 4px solid var(--edge-3);
 }
 
 /* ---------- 底部状态条 ----------
-   方向 C：420px 宽下把「局分 + 当前局 + 计时 + 两个操作」塞进一行会挤到
-   文字竖排（实测截图可见「暂停」「局分」被折行）。
-   仪表读数器不该挤 —— 改成两行，信息分组更清楚：
-     第一行：局分刻度 ······ 当前局
-     第二行：计时 ······ 暂停 / 撤回
-   两行总高仍在 80px 内，不额外占空间。 */
+   旧版 420px 宽下把「局分 + 当前局 + 计时 + 两个操作」塞进一行会挤到
+   文字竖排。v4 仍然分两行，但把两行压到 62px，省下的高度全给比分。 */
 .scoreboard-bar {
     display: flex;
     flex-direction: column;
-    gap: var(--sp-2);
-    padding: var(--sp-3) var(--sp-4);
-    border-top: 1px solid var(--edge);
-    background: var(--plate);
+    gap: var(--sp-1);
+    padding: var(--sp-2) var(--sp-4);
+    box-shadow: inset 0 1px 0 var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
 }
 
 .scoreboard-bar-top,
@@ -346,33 +439,52 @@
 
 .games-won-side {
     display: flex;
-    gap: 4px;
+    gap: 3px;
 }
 
-/* 局分：条形刻度（比圆点更"仪器"，且与刻度环语言一致） */
+/* 局分：短棒刻度。比圆点更像仪器，且与进度线是同一套语言。 */
 .game-dot {
-    width: 18px;
+    width: 16px;
     height: 3px;
-    border-radius: 1px;
     background: var(--plate-3);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
+    border-radius: 1px;
     transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
 }
 
 .games-won-side.a .game-dot.won {
     background: var(--a);
-    box-shadow: none;
+    box-shadow: var(--sh-flat);
 }
 .games-won-side.b .game-dot.won {
     background: var(--b);
-    box-shadow: none;
+    box-shadow: var(--sh-flat);
 }
 
 .games-won-label {
-    font-size: var(--fs-3xs);
-    font-weight: var(--fw-semibold);
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
     color: var(--fg-3);
-    letter-spacing: 0.14em;
+    letter-spacing: var(--ls-label);
+    white-space: nowrap;
+}
+
+/* 当前局读数：旧版是浮在比分板中央的 "VS" 荧光徽标，绝对定位 + top:52px，
+   与队名输入框在 420px 宽下必然重叠。v4 把它按普通读数处理，不浮动。 */
+.scoreboard-game {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    padding-left: var(--sp-3);
+    box-shadow: inset 1px 0 0 var(--edge);
+}
+
+.scoreboard-game .vs-timer {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-label);
+    color: var(--fg-2);
     white-space: nowrap;
 }
 
@@ -384,18 +496,19 @@
 }
 
 .timer-value {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-xl);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.01em;
+    font-size: var(--fs-2xl);
+    font-weight: var(--fw-bold);
+    letter-spacing: -0.01em;
     color: var(--fg);
     white-space: nowrap;
 }
 
 .timer-paused { color: var(--fg-3); }
 
-/* 本局信息条 */
+/* 本局信息条：赛制 / 局制 / 封顶 / 目标分。
+   它是「读一下」的信息，不是「盯着看」的信息，所以整体压到 11px。 */
 .match-info {
     display: flex;
     align-items: center;
@@ -403,9 +516,9 @@
     flex-wrap: wrap;
     margin-bottom: var(--sp-4);
     padding: var(--sp-2) var(--sp-3);
-    background: var(--plate);
-    box-shadow: inset 0 0 0 1px var(--edge);
-    border-radius: var(--r-sm);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     font-size: var(--fs-2xs);
     color: var(--fg-2);
 }
@@ -413,66 +526,98 @@
 .match-info .grow { text-align: right; }
 
 /* ---------- 底部动作 Dock（仅记分页）----------
-   方向 C：这是全场最重要的两个按钮，所以给足高度（64px）。
-   「一手汗一手拍」的场景下，旧版 54px 不够稳。 */
+   全场最重要的两个按钮。v4 把它们做成「半屏键」：
+     88px 高、各占一半宽、彼此只隔 1px。
+   打球时手是汗的、眼睛不在屏幕上，这两个键必须闭着眼也能按中。
+   队色只出现在顶边 3px 与按压时的一层极淡光池里。 */
 .dock {
     position: fixed;
+    /* 桌面端不能横跨整个视口：内容被 --content-max 收到 440px，
+       而 Dock 若铺满 1440px，两个计分键会变成两块巨型色带 ——
+       它们会抢走比分的「唯一主角」地位。
+       用 left/right:0 + max-width + margin:auto 居中，与内容同宽。 */
     left: 0;
     right: 0;
     bottom: var(--tabbar-h);
     z-index: var(--z-dock);
-    display: flex;
-    gap: var(--sp-2);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
     padding: var(--sp-2) var(--gutter);
-    background: color-mix(in srgb, var(--void) 96%, transparent);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--edge);
+    background: var(--board);
+    box-shadow: var(--sh-sheet);
 }
 
 .dock[hidden] { display: none; }
 
 .score-btn {
-    flex: 1;
-    min-height: 64px;
-    font-size: var(--fs-md);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.04em;
-    border-radius: var(--r-sm);
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: 3px;
+    min-height: 88px;
+    padding: 0;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
+    border-radius: 0;
+    overflow: hidden;
+    transition: background var(--dur-2) var(--ease), transform var(--dur-1) var(--ease);
 }
 
-/* 队伍识别靠「左边缘 3px 硬边 + 文字色」，不靠整块高饱和填充：
-   旧版把按钮刷成玫红/电青，是界面上最刺眼的两块。
-   实测对比度：--a #E1554A 在 --plate-2 上约 4.6:1、--b #3E8FD9 约 5.2:1，
-   均过 WCAG AA。 */
-.score-btn.team-a {
-    background: var(--plate-2);
-    color: var(--fg);
-    box-shadow: inset 3px 0 0 var(--a), inset 0 0 0 1px var(--edge);
+/* 顶边 3px 队色：与比分板外沿边线是同一条语言 */
+.score-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--team-c);
 }
+
+.score-btn.team-a { --team-c: var(--a); --team-soft: var(--a-dim); --team-soft-2: var(--a-soft); }
+.score-btn.team-b { --team-c: var(--b); --team-soft: var(--b-dim); --team-soft-2: var(--b-soft); }
+
+.score-btn.team-a,
 .score-btn.team-b {
-    background: var(--plate-2);
     color: var(--fg);
-    box-shadow: inset 3px 0 0 var(--b), inset 0 0 0 1px var(--edge);
+    /* 实色打底 + 一层队色光池。
+       只写 background-image 的话 background-color 仍是 transparent，
+       审计与强制颜色模式都会把这块读成「没有底色」。 */
+    background-color: var(--plate);
+    background-image: linear-gradient(180deg, var(--team-soft) 0%, transparent 78%);
 }
-.score-btn.team-a:hover { background: var(--plate-3); }
-.score-btn.team-b:hover { background: var(--plate-3); }
-.score-btn.team-a:active { background: var(--a-dim); }
-.score-btn.team-b:active { background: var(--b-dim); }
 
-/* 按钮里的加分符号：给"按下去会发生什么"一个明确暗示 */
+.score-btn.team-a:hover,
+.score-btn.team-b:hover {
+    background-color: var(--plate-2);
+    background-image: linear-gradient(180deg, var(--team-soft-2) 0%, transparent 78%);
+}
+
+/* 按下去：光池加深一档，整块轻微下沉。不做位移，避免"跳一下"按空。 */
+.score-btn.team-a:active,
+.score-btn.team-b:active {
+    background-color: var(--plate);
+    background-image: linear-gradient(180deg, var(--team-soft-2) 0%, var(--team-soft) 100%);
+    transform: scale(0.994);
+}
+
+/* 按钮里的加分符号：给「按下去会发生什么」一个明确暗示。
+   它压在队色文字旁边，所以用 --fg-3（中性），按下去才亮成队色。 */
 .score-btn .plus {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--fs-lg);
     line-height: 1;
     color: var(--fg-3);
     transition: color var(--dur-1) var(--ease);
 }
+
 .score-btn.team-a:active .plus { color: var(--a); }
 .score-btn.team-b:active .plus { color: var(--b); }
 
@@ -480,41 +625,230 @@
    选择器必须匹配 body —— nav.js 把 dock-on 加在 document.body 上，
    而 .app 是 body 里的子元素。写成 `.app.dock-on` 要求同一个元素
    同时具备两者，规则永远不会命中（实测 querySelectorAll 匹配数为 0），
-   于是 padding-bottom 一直停在 base.css 的 90px，
-   而实际需要 --dock-h 80 + tabbar 58 + sp-6 24 = 162px，
-   记分页滚到底时内容被 Dock 永久压住约 49px。 */
+   于是 padding-bottom 一直停在 base.css 的默认值，
+   而实际需要 --dock-h + tabbar + sp-6。
+   记分页滚到底时内容被 Dock 永久压住约 49px，这条是补盲区。 */
 body.dock-on .content {
-    padding-bottom: calc(var(--dock-h, 68px) + var(--tabbar-h) + var(--sp-6) + env(safe-area-inset-bottom, 0px));
+    /* 避让高度 = Dock + Tab Bar，再加上一点点呼吸位。
+       原来多给了 --sp-6(24px)，那在「可以滚动」时无所谓；
+       但记分页现在是一条硬约束「一屏读完」，这 16px 的富余
+       正好卡在 iPhone 14 差 22px 的缺口上。
+       所以精确到「够用 + 8px」，不再拍一个宽松值。 */
+    padding-bottom: calc(var(--dock-h) + var(--tabbar-h) + var(--sp-2) + env(safe-area-inset-bottom, 0px));
 }
 
-/* ---------- 本局得分流水 ---------- */
+/* ---------- 本局回合时间轴 ----------
+   旧版「得分流水」是一串文字行，读不出势头。
+   时间轴把一场球压成一条可读的条码：
+     柱高 = 该回合结束时该方的比分（相对目标分）
+     颜色 = 谁得分（甲 --a / 乙 --b）
+     贯穿线 = 换边点（11 分间歇）
+   连得几分、什么时候被追平，一瞥即得。 */
 .point-log {
+    position: relative;
     display: flex;
     flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.tl-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+}
+
+.tl-head .tl-stat {
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-micro);
+    text-transform: uppercase;
+    color: var(--fg-3);
+}
+
+/* 图例：两种颜色必须有说明，否则时间轴只是在看色块 */
+.tl-legend {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    min-width: 0;
+}
+
+.tl-key {
+    display: inline-flex;
+    align-items: center;
     gap: var(--sp-1);
-    max-height: 168px;
-    overflow-y: auto;
+    min-width: 0;
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.04em;
+    color: var(--fg-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tl-key i {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 1px;
+}
+
+.tl-key i.a { background: var(--a); }
+.tl-key i.b { background: var(--b); }
+
+/* 空态说明：不画假柱子，改说一句「这一分要怎么进来」 */
+.tl-hint {
+    margin-top: var(--sp-2);
+    font-size: var(--fs-2xs);
+    line-height: var(--lh-snug);
+    color: var(--fg-3);
+}
+
+.tl-track {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    /* 72px：一条 25 回合的曲线要读得出「谁在追」。
+       原来是 92px，但那是「整页可以滚动」时的余量；
+       记分页现在必须一屏读完，高度要让给这条约束。
+       72px 仍保留 0→21 的形状。 */
+    height: 72px;
+    padding-bottom: 10px;
+}
+
+/* 基线：时间轴的地面。少了它柱子像浮在空中。 */
+.tl-track::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 9px;
+    height: 1px;
+    background: var(--edge-2);
 }
 
 .point-log-item {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 2px;
+    /* 柱高由 js/match.js 写入 --h（百分比） */
+    height: var(--h, 40%);
+    border-radius: 1px 1px 0 0;
+    background: var(--fg-3);
+    transition: height var(--dur-3) var(--ease);
+}
+
+.point-log-item.a { background: var(--a); }
+.point-log-item.b { background: var(--b); }
+
+/* 当前分：唯一一根带光柱的柱子，标出「现在读到哪」 */
+.point-log-item.now { box-shadow: 0 0 12px currentColor; }
+.point-log-item.a.now { color: var(--a); }
+.point-log-item.b.now { color: var(--b); }
+
+/* 换边点：一条贯穿轨道的极细竖线 + 轴上一枚点。
+   文字标签放在轴行里 —— 压在柱子上会打架。 */
+.tl-rule {
+    position: absolute;
+    top: 0;
+    bottom: 10px;
+    left: var(--x, 52.4%);
+    width: 1px;
+    background: var(--edge-3);
+    pointer-events: none;
+}
+
+.tl-rule::after {
+    content: "";
+    position: absolute;
+    bottom: -3px;
+    left: -2px;
+    width: 5px;
+    height: 5px;
+    border-radius: var(--r-full);
+    background: var(--fg-3);
+}
+
+.tl-axis {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: var(--sp-2);
-    padding: var(--sp-1) var(--sp-2);
-    font-size: var(--fs-2xs);
-    border-radius: var(--r-sm);
-    background: var(--plate-2);
-}
-
-.point-log-item .log-score {
-    margin-left: auto;
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
+    /* 轴行要留出标签高度：.mid 是绝对定位的（对齐换边竖线），
+       不预留高度的话它会压到下面的内容上。 */
+    min-height: 18px;
+    font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-micro);
+    color: var(--fg-3);
 }
 
-.point-log-item.a { box-shadow: inset 3px 0 0 var(--a); }
-.point-log-item.b { box-shadow: inset 3px 0 0 var(--b); }
+.tl-axis .e { flex: 1; }
+.tl-axis .e:last-child { text-align: right; }
+
+/* 换边标签必须落在换边竖线正下方 —— 标签和线对不上，读者就会去猜
+   哪个数字是「换边」。--x 由 js/match.js 写在同一处，两者永远同源。 */
+.tl-axis .mid {
+    position: absolute;
+    left: var(--x, 50%);
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 0 var(--sp-2);
+    color: var(--fg-2);
+    letter-spacing: var(--ls-label);
+}
+
+/* 换边点靠近两端时，标签改为从竖线向内展开，不再居中骑线。
+   居中的话它会盖住端点回合数（实测最末回合才换边时重叠 169px）。
+
+   方向不能搞反 —— 展开要朝「远离那侧端点」的方向：
+     · 换边点靠右（align-right）→ 标签向左展开，右边缘贴住竖线
+     · 换边点靠左（align-left） → 标签向右展开，左边缘贴住竖线
+   反过来做，标签会直接顶出卡片外缘（实测溢出 44px）。
+   关联性始终由 .tl-rule 那条竖线维持，标签只是它的注释。 */
+.tl-axis .mid.align-right {
+    transform: translateX(-100%);
+    margin-left: calc(var(--sp-1) * -1);
+}
+
+.tl-axis .mid.align-left {
+    transform: none;
+    margin-left: var(--sp-1);
+}
+
+/* 空态：不画「假柱子」。
+   摆一排灰条看起来像数据加载失败 —— 空时间轴就该是空的。
+   改为一条虚线基线 + 一枚起点标记。
+   高度也要收：92px 是为「25 根柱子」准备的，空态用不着，
+   留一大片空白反而像内容没加载出来。 */
+.point-log .tl-empty {
+    position: relative;
+    height: 34px;
+    padding-bottom: 10px;
+}
+
+.point-log .tl-empty::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 9px;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--edge-2) 0 4px, transparent 4px 9px);
+}
+
+.point-log .tl-empty i {
+    position: absolute;
+    left: 0;
+    bottom: 5px;
+    width: 9px;
+    height: 9px;
+    border-radius: var(--r-full);
+    background: var(--fg-3);
+    box-shadow: 0 0 0 4px rgba(126, 137, 131, 0.14);
+}
 
 /* ---------- 比赛结果弹层 ---------- */
 .result-hero {
@@ -522,14 +856,26 @@ body.dock-on .content {
     padding: var(--sp-4) 0 var(--sp-5);
 }
 
-.result-trophy { font-size: 48px; line-height: 1; }
+.result-trophy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    font-size: var(--fs-3xl);
+    line-height: 1;
+    color: var(--gold);
+    background: var(--plate-2);
+    border-radius: var(--r-full);
+    box-shadow: var(--lift), inset 0 0 0 2px var(--gold);
+}
 
 .result-title {
     margin-top: var(--sp-3);
-    font-size: var(--fs-2xl);
+    font-size: var(--fs-3xl);
     font-weight: var(--fw-black);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    text-transform: none;
 }
 
 .result-sub {
@@ -549,19 +895,20 @@ body.dock-on .content {
 .result-score-side {
     flex: 1;
     padding: var(--sp-3);
-    border-radius: var(--r-sm);
     text-align: center;
-    background: var(--plate-2);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
-.result-score-side.a { box-shadow: inset 0 0 0 1px var(--a-edge), inset 0 3px 0 var(--a); }
-.result-score-side.b { box-shadow: inset 0 0 0 1px var(--b-edge), inset 0 3px 0 var(--b); }
+/* 队色只走顶部 3px 硬边 —— 与比分板的外沿边线同一条语言 */
+.result-score-side.a { box-shadow: var(--lift), inset 0 3px 0 var(--a); }
+.result-score-side.b { box-shadow: var(--lift), inset 0 3px 0 var(--b); }
 
 .result-score-side .name {
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.1em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
     color: var(--fg-2);
     overflow: hidden;
@@ -570,21 +917,34 @@ body.dock-on .content {
 }
 
 .result-score-side .val {
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-3xl);
-    font-weight: 400;
+    font-weight: var(--fw-score);
     line-height: 1.05;
 }
 
 .result-score-side.a .val { color: var(--a); }
 .result-score-side.b .val { color: var(--b); }
 
-/* 胜方：金色描边 + 顶部横条 */
+/* 胜方：只加一层顶光 + 更亮的底，**不换掉队色边线**。
+   队色是「这是哪一队」，金色是「赢了」—— 两件事。
+   旧版让胜方整块换成金色描边，结果读不出赢的是甲还是乙。
+   现在边线仍是队色，胜负由上方的大字与奖杯说明。 */
 .result-score-side.win {
-    background: var(--live-soft);
-    box-shadow: inset 0 0 0 2px var(--gold);
+    background-color: var(--plate-2);
+    background-image: var(--pool);
+    box-shadow: var(--lift-2), inset 0 3px 0 var(--team-c);
+}
+
+.result-score-side.a { --team-c: var(--a); }
+.result-score-side.b { --team-c: var(--b); }
+
+/* 负方：整块退一档，边线也随之减弱 */
+.result-score-side:not(.win) {
+    background-color: var(--plate);
+    box-shadow: var(--lift), inset 0 3px 0 var(--edge-2);
 }
 
 .result-stats {
@@ -595,25 +955,26 @@ body.dock-on .content {
 }
 
 .result-stat {
-    padding: var(--sp-2);
-    background: var(--plate-2);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    padding: var(--sp-3) var(--sp-2);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     text-align: center;
 }
 
 .result-stat .k {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.08em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
     color: var(--fg-3);
 }
 
 .result-stat .v {
-    font-family: var(--font-mono);
+    margin-top: 2px;
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-md);
+    font-size: var(--fs-xl);
     font-weight: var(--fw-bold);
 }
 
@@ -629,15 +990,15 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--plate-2);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge), inset 3px 0 0 var(--live);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift), inset 3px 0 0 var(--gold);
 }
 
 .highlight-item .hi-icon {
-    font-size: var(--fs-xl);
+    font-size: var(--fs-lg);
     line-height: 1;
-    color: var(--live);
+    color: var(--gold);
 }
 
 .highlight-item .hi-title {
@@ -670,10 +1031,10 @@ body.dock-on .content {
     padding: 2px var(--sp-2);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    color: var(--live);
-    background: var(--live-soft);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-xs, 2px);
+    color: var(--fg);
+    background: var(--plate-3);
+    box-shadow: var(--lift);
+    border-radius: var(--r-full);
 }
 
 /* 单个球员的水平输入行 */
@@ -684,7 +1045,7 @@ body.dock-on .content {
     padding: var(--sp-2) 0;
 }
 
-.skill-row + .skill-row { border-top: 1px solid var(--edge); }
+.skill-row + .skill-row { box-shadow: inset 0 1px 0 var(--edge); }
 
 .skill-row .idx {
     display: inline-flex;
@@ -693,13 +1054,13 @@ body.dock-on .content {
     width: 22px;
     height: 22px;
     flex-shrink: 0;
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
     color: var(--fg-3);
     background: var(--plate-2);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-xs, 2px);
+    box-shadow: var(--lift);
+    border-radius: var(--r-full);
 }
 
 .skill-row .name-input { flex: 1; min-width: 0; }
@@ -707,24 +1068,27 @@ body.dock-on .content {
 .skill-row .skill-select {
     width: 88px;
     flex-shrink: 0;
-    min-height: 36px;
+    min-height: var(--tap-min);
     padding: var(--sp-1) var(--sp-2);
     font-size: var(--fs-xs);
 }
 
+/* 删除按钮：44px 圆形命中区。
+   旧版是 30×30，在「一手汗一手拍」的场景里根本按不中。 */
 .skill-row .del-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: var(--tap-min);
+    height: var(--tap-min);
     flex-shrink: 0;
-    font-size: var(--fs-sm);
+    font-size: var(--fs-md);
     color: var(--fg-3);
     background: none;
     border: none;
-    border-radius: var(--r-xs, 2px);
+    border-radius: var(--r-full);
     cursor: pointer;
+    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
 }
 
 .skill-row .del-btn:hover { background: var(--danger-soft); color: var(--danger); }
@@ -741,9 +1105,9 @@ body.dock-on .content {
 }
 
 .duel-card {
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     overflow: hidden;
 }
 
@@ -756,7 +1120,7 @@ body.dock-on .content {
     font-weight: var(--fw-bold);
     color: var(--fg-3);
     background: var(--plate-2);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
 }
 
@@ -790,15 +1154,15 @@ body.dock-on .content {
     flex-direction: column;
     gap: 2px;
     padding: var(--sp-2) var(--sp-3);
-    background: var(--plate-2);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
+    box-shadow: var(--lift);
 }
 
 /* 轮休的人整体降调：不是「被排除」，是这一轮歇着 */
 .rotation-row.is-bench {
     background: transparent;
-    box-shadow: inset 0 0 0 1px var(--edge-2);
+    box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .rotation-name {
@@ -830,7 +1194,7 @@ body.dock-on .content {
     padding: var(--sp-3);
 }
 
-.duel-side + .duel-side { border-top: 1px solid var(--edge); }
+.duel-side + .duel-side { box-shadow: inset 0 1px 0 var(--edge); }
 
 .duel-side-tag {
     display: inline-flex;
@@ -839,11 +1203,12 @@ body.dock-on .content {
     width: 26px;
     height: 26px;
     flex-shrink: 0;
+    font-family: var(--font-display);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-black);
-    /* 同上：深色墨水保证对比度（白字在队伍色上只有 3.40 / 3.10:1） */
+    /* 同上：深墨保证对比度（白字在队伍色上只有 3.40 / 3.10:1） */
     color: var(--void);
-    border-radius: var(--r-xs);
+    border-radius: var(--r-full);
 }
 
 .duel-side.side-a .duel-side-tag { background: var(--a); }
@@ -863,30 +1228,35 @@ body.dock-on .content {
 
 /* ---------- 费用 ---------- */
 .expense-hero {
+    position: relative;
     padding: var(--sp-5) var(--sp-4);
     text-align: center;
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    background-image: var(--pool);
+    box-shadow: var(--lift);
     margin-bottom: var(--sp-4);
 }
 
 .expense-hero .label {
-    font-size: var(--fs-3xs);
+    font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
     color: var(--fg-3);
-    letter-spacing: 0.16em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
 }
 
+/* 金额是这一页的主角，所以它用 display 字体 + 巨型档。
+   旧版是 --font-ui 斜体 26px —— 斜体在数字上是「小报感」，
+   且与比分用了两套完全不同的数字字形。 */
 .hero-number {
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-3xl);
-    font-weight: 400;
+    font-size: 40px;
+    font-weight: var(--fw-score);
     line-height: 1.05;
-    letter-spacing: 0;
+    letter-spacing: -0.03em;
     color: var(--fg);
 }
 
@@ -907,9 +1277,9 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
 .split-row .who {
@@ -927,25 +1297,25 @@ body.dock-on .content {
     height: 6px;
     flex-shrink: 0;
     background: var(--plate-3);
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
     overflow: hidden;
 }
 
 .split-row .share-bar i {
     display: block;
     height: 100%;
-    background: var(--live);
+    background: var(--fg-2);
     box-shadow: var(--sh-flat);
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
 }
 
 .split-row .amt {
     flex-shrink: 0;
     width: 84px;
     text-align: right;
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-md);
+    font-size: var(--fs-lg);
     font-weight: var(--fw-bold);
 }
 
@@ -965,16 +1335,16 @@ body.dock-on .content {
     padding: var(--sp-2) 0;
 }
 
-.time-row + .time-row { border-top: 1px solid var(--edge); }
+.time-row + .time-row { box-shadow: inset 0 1px 0 var(--edge); }
 
 .time-row .who { flex: 1; min-width: 0; font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
 
 .time-row .time-input {
     width: 76px;
     flex-shrink: 0;
-    min-height: 36px;
+    min-height: var(--tap-min);
     padding: var(--sp-1) var(--sp-2);
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--fs-sm);
     text-align: center;
 }
@@ -998,15 +1368,15 @@ body.dock-on .content {
 
 .stat-card {
     position: relative;
-    padding: var(--sp-3);
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    padding: var(--sp-4) var(--sp-3);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     text-align: center;
     overflow: hidden;
 }
 
-/* 顶部伏特细线 */
+/* 顶部一条发丝线：与卡片之间用同一套「光从上面来」的语言 */
 .stat-card::before {
     content: "";
     position: absolute;
@@ -1021,18 +1391,19 @@ body.dock-on .content {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
     color: var(--fg-3);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
 }
 
 .stat-card .v {
-    margin-top: 2px;
-    font-family: var(--font-ui);
-    font-style: italic;
+    margin-top: var(--sp-1);
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-3xl);
-    font-weight: 400;
+    font-weight: var(--fw-score);
     line-height: 1.1;
+    letter-spacing: -0.02em;
     color: var(--fg);
 }
 
@@ -1045,9 +1416,9 @@ body.dock-on .content {
 /* ---------- 图表 ---------- */
 .chart-card {
     padding: var(--sp-4);
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     margin-bottom: var(--sp-4);
 }
 
@@ -1058,7 +1429,7 @@ body.dock-on .content {
     margin-bottom: var(--sp-3);
     font-size: var(--fs-sm);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
 }
 
 .chart-box {
@@ -1068,7 +1439,9 @@ body.dock-on .content {
 
 .chart-box.tall { height: 260px; }
 
-/* ---------- 排行榜 ---------- */
+/* ---------- 排行榜 ----------
+   三列等高、底座由「名次色 + 底座高度」区分。
+   旧做法按内容高度对齐，冠军会被挤到奇怪的位置。 */
 .podium {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1083,10 +1456,10 @@ body.dock-on .content {
     flex-direction: column;
     align-items: center;
     gap: var(--sp-2);
-    padding: var(--sp-3) var(--sp-1) var(--sp-3);
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    padding: var(--sp-3) var(--sp-2) var(--sp-4);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     text-align: center;
     overflow: hidden;
 }
@@ -1106,47 +1479,63 @@ body.dock-on .content {
 .podium-step.rank-2::before { background: var(--silver); }
 .podium-step.rank-3::before { background: var(--bronze); }
 
-.podium-step .medal { font-size: var(--fs-2xl); line-height: 1; color: var(--fg-2); }
-.podium-step.rank-1 .medal { color: var(--gold); }
-.podium-step.rank-2 .medal { color: var(--silver); }
-.podium-step.rank-3 .medal { color: var(--bronze); }
+.podium-step .medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    font-size: var(--fs-lg);
+    line-height: 1;
+    color: var(--fg-2);
+    background: var(--plate-2);
+    border-radius: var(--r-full);
+    box-shadow: var(--lift);
+}
+
+.podium-step.rank-1 .medal { color: var(--gold); box-shadow: var(--lift), inset 0 0 0 2px var(--gold); }
+.podium-step.rank-2 .medal { color: var(--silver); box-shadow: var(--lift), inset 0 0 0 2px var(--silver); }
+.podium-step.rank-3 .medal { color: var(--bronze); box-shadow: var(--lift), inset 0 0 0 2px var(--bronze); }
 
 .podium-step .pname {
     width: 100%;
     font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .podium-step .pval {
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
-    font-weight: 400;
-    color: var(--live);
+    font-weight: var(--fw-score);
+    letter-spacing: -0.02em;
+    color: var(--fg);
 }
 
+/* 冠军多一档呼吸空间，但不改变列宽 —— 三列必须等宽，
+   否则「领奖台」会读成三张随机大小的卡片。 */
 .podium-step.rank-1 { padding-top: var(--sp-5); }
-.podium-step.rank-1 .medal { font-size: 30px; }
-.podium-step.rank-2 .medal { font-size: 26px; }
-.podium-step.rank-3 .medal { font-size: 22px; }
+.podium-step.rank-1 .medal { width: 42px; height: 42px; font-size: var(--fs-xl); }
+.podium-step.rank-2 .medal { width: 38px; height: 38px; font-size: var(--fs-lg); }
 
 .rank-row {
     display: flex;
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
-.rank-row + .rank-row { margin-top: var(--sp-2); }
+.rank-row + .rank-row {
+    margin-top: var(--sp-2);
+}
 
 .rank-row .rno {
     display: inline-flex;
@@ -1155,18 +1544,23 @@ body.dock-on .content {
     width: 26px;
     height: 26px;
     flex-shrink: 0;
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
     color: var(--fg-3);
     background: var(--plate-2);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-xs, 2px);
+    box-shadow: var(--lift);
+    border-radius: var(--r-full);
 }
 
 .rank-row .rmain { flex: 1; min-width: 0; }
 
+/* ⚠️ .rname / .rsub 在 HTML 里是 <span>（js/stats.js 拼出来的），
+   span 默认 inline，两个会挤在同一行上连成
+   「李大力5 场 · 胜率 40%」—— 名字和它的数据粘在一起。
+   这里显式改成块级，各自占一行。 */
 .rank-row .rname {
+    display: block;
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
     overflow: hidden;
@@ -1175,6 +1569,7 @@ body.dock-on .content {
 }
 
 .rank-row .rsub {
+    display: block;
     margin-top: 2px;
     font-size: var(--fs-3xs);
     color: var(--fg-3);
@@ -1182,12 +1577,13 @@ body.dock-on .content {
 
 .rank-row .rval {
     flex-shrink: 0;
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
-    font-weight: 400;
-    color: var(--live);
+    font-weight: var(--fw-score);
+    letter-spacing: -0.02em;
+    color: var(--fg);
 }
 
 /* ---------- 能力分析 ---------- */
@@ -1207,16 +1603,16 @@ body.dock-on .content {
     flex-shrink: 0;
     font-size: var(--fs-2xl);
     line-height: 1;
-    color: var(--live);
-    background: var(--live-soft);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-sm);
+    color: var(--fg);
+    background: var(--plate-2);
+    box-shadow: var(--lift);
+    border-radius: var(--r-full);
 }
 
 .ability-head .nm {
     font-size: var(--fs-lg);
     font-weight: var(--fw-black);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
 }
 
 .ability-head .sl {
@@ -1238,12 +1634,12 @@ body.dock-on .content {
     padding: var(--sp-1) var(--sp-3);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.08em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
-    color: var(--live);
-    background: var(--live-soft);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-xs, 2px);
+    color: var(--fg-2);
+    background: var(--plate-2);
+    box-shadow: var(--lift);
+    border-radius: var(--r-full);
 }
 
 .ability-section { margin-top: var(--sp-5); }
@@ -1255,7 +1651,7 @@ body.dock-on .content {
     margin-bottom: var(--sp-3);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.14em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
     color: var(--fg-2);
 }
@@ -1265,9 +1661,9 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
 .recent-row + .recent-row { margin-top: var(--sp-2); }
@@ -1286,11 +1682,12 @@ body.dock-on .content {
 
 .recent-row .r-score {
     flex-shrink: 0;
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
-    font-weight: 400;
+    font-weight: var(--fw-score);
+    letter-spacing: -0.02em;
 }
 
 /* ---------- 成就 ---------- */
@@ -1299,9 +1696,9 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-4);
     padding: var(--sp-4);
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     margin-bottom: var(--sp-4);
 }
 
@@ -1320,9 +1717,11 @@ body.dock-on .content {
     stroke-width: 8;
 }
 
+/* 进度环：象牙白，不是琥珀。
+   v3 给它上了 --live，于是「进度」与「进行中状态」撞了语义。 */
 .achv-ring .ring-fg {
     fill: none;
-    stroke: var(--live);
+    stroke: var(--fg);
     stroke-width: 8;
     stroke-linecap: butt;
     transition: stroke-dashoffset var(--dur-3) var(--ease);
@@ -1334,7 +1733,7 @@ body.dock-on .content {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-sm);
     font-weight: var(--fw-black);
@@ -1345,8 +1744,8 @@ body.dock-on .content {
 .achv-progress .txt .t {
     font-size: var(--fs-md);
     font-weight: var(--fw-black);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-transform: none;
 }
 
 .achv-progress .txt .d {
@@ -1364,9 +1763,9 @@ body.dock-on .content {
 .achv-card {
     padding: var(--sp-3);
     text-align: center;
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
 .achv-card .ic {
@@ -1380,7 +1779,7 @@ body.dock-on .content {
     margin-top: var(--sp-2);
     font-size: var(--fs-xs);
     font-weight: var(--fw-bold);
-    color: var(--fg-3);
+    color: var(--fg-2);
 }
 
 .achv-card .ds {
@@ -1393,19 +1792,23 @@ body.dock-on .content {
     margin-top: var(--sp-2);
     height: 4px;
     background: var(--plate-3);
-    border-radius: var(--r-md);
+    border-radius: var(--r-full);
     overflow: hidden;
 }
 
 .achv-card .pb i {
     display: block;
     height: 100%;
-    background: var(--edge-2);
-    border-radius: var(--r-md);
+    background: var(--edge-4);
+    border-radius: var(--r-full);
 }
 
+/* 已解锁：金色只走顶部 3px 硬边 + 图标色，不再整块描边。
+   旧版是「描边 + 顶条」两层金，整格看起来在发光。 */
 .achv-card.unlocked {
-    box-shadow: inset 0 0 0 1px var(--gold), inset 0 3px 0 var(--gold);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
+    box-shadow: var(--lift-2), inset 0 3px 0 var(--gold);
 }
 
 .achv-card.unlocked .ic { color: var(--gold); }
@@ -1419,9 +1822,9 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
 .history-row + .history-row { margin-top: var(--sp-2); }
@@ -1448,11 +1851,12 @@ body.dock-on .content {
 
 .history-row .h-score {
     flex-shrink: 0;
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-xl);
-    font-weight: 400;
+    font-weight: var(--fw-score);
+    letter-spacing: -0.02em;
 }
 
 .history-actions {
@@ -1469,25 +1873,24 @@ body.dock-on .content {
     display: flex;
     align-items: center;
     gap: var(--sp-4);
-    padding: var(--sp-4);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    padding: var(--sp-5) var(--sp-4);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     margin-bottom: var(--sp-4);
     overflow: hidden;
 }
 
-/* 右上伏特斜切色块 */
+/* 右上角一道斜切的光，而不是 v3 那块伏特色块。
+   色块是「贴上去的装饰」；光是「同一盏顶灯的余晖」。 */
 .me-head::before {
     content: "";
     position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 110px;
-    height: 110px;
-    background: var(--live);
-    opacity: 0.1;
-    transform: rotate(45deg);
+    top: -70px;
+    right: -50px;
+    width: 170px;
+    height: 170px;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.10), transparent);
 }
 
 .me-avatar {
@@ -1499,16 +1902,19 @@ body.dock-on .content {
     flex-shrink: 0;
     font-size: var(--fs-3xl);
     line-height: 1;
-    color: var(--live);
-    background: var(--live-soft);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-sm);
+    /* 全站唯一一处实心象牙白 —— 与 .btn-primary 同一条规则：
+       「全屏最亮的东西只有一个」。 */
+    color: var(--on-light);
+    background-color: var(--fg);
+    background-image: linear-gradient(180deg, #FFFFFF 0%, #DCD7CC 100%);
+    border-radius: var(--r-full);
+    box-shadow: var(--sh-plate);
 }
 
-.me-head .nm { font-size: var(--fs-lg); font-weight: var(--fw-black); letter-spacing: 0.04em; }
+.me-head .nm { font-size: var(--fs-2xl); font-weight: var(--fw-black); letter-spacing: -0.01em; }
 
 .me-head .sl {
-    margin-top: 2px;
+    margin-top: var(--sp-1);
     font-size: var(--fs-2xs);
     color: var(--fg-3);
 }
@@ -1519,31 +1925,33 @@ body.dock-on .content {
     display: flex;
     align-items: center;
     gap: var(--sp-3);
+    min-height: 64px;
     padding: var(--sp-3) var(--sp-4);
     text-align: left;
-    background: var(--plate);
+    background-color: var(--plate);
+    background-image: var(--face-1);
     border: none;
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    box-shadow: var(--lift);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    transition: background var(--dur-1) var(--ease);
+    transition: background var(--dur-2) var(--ease);
 }
 
-.me-nav-item:hover { background: var(--plate-2); }
+.me-nav-item:hover { background-color: var(--plate-2);
+    background-image: var(--face-2); }
 
 .me-nav-item .ni-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
     font-size: var(--fs-md);
-    color: var(--live);
-    background: var(--live-soft);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-sm);
+    color: var(--fg-2);
+    background: var(--plate-3);
+    border-radius: var(--r-full);
+    box-shadow: var(--lift);
 }
 
 /* ni-main 必须是纵向布局。
@@ -1551,8 +1959,7 @@ body.dock-on .content {
    .ni-title 与 .ni-sub 都是 inline，于是两者排在同一行、中间没有间距：
    标题长的项（「头像管理」「数据备份」）因为换行看起来正常，
    标题短的项（「设置」「关于」）就渲染成「设置比赛规则与偏好」——
-   视觉上完全读不出这是两段文字。
-   这类 bug 只在短标题上暴露，所以长时间没被发现。 */
+   视觉上完全读不出这是两段文字。这类 bug 只在短标题上暴露。 */
 .me-nav-item .ni-main {
     flex: 1;
     min-width: 0;
@@ -1574,7 +1981,7 @@ body.dock-on .content {
     color: var(--fg-3);
 }
 
-.me-nav-item .ni-arrow { color: var(--fg-3); font-size: var(--fs-sm); }
+.me-nav-item .ni-arrow { color: var(--fg-3); font-size: var(--fs-md); }
 
 /* 设置子页返回条 */
 .sub-back {
@@ -1586,11 +1993,11 @@ body.dock-on .content {
     margin-bottom: var(--sp-3);
     font-size: var(--fs-xs);
     font-weight: var(--fw-semibold);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     color: var(--fg-2);
     background: none;
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1603,22 +2010,23 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-4);
-    background: var(--plate);
-    border-radius: var(--r-md);
-    box-shadow: inset 0 0 0 1px var(--edge), var(--sh-inset);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     margin-bottom: var(--sp-4);
 }
 
-.weather-card .w-icon { font-size: var(--fs-3xl); line-height: 1; color: var(--live); }
+.weather-card .w-icon { font-size: var(--fs-3xl); line-height: 1; color: var(--fg-2); }
 
 .weather-card .w-main { flex: 1; min-width: 0; }
 
 .weather-card .w-temp {
-    font-family: var(--font-ui);
-    font-style: italic;
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
     font-size: var(--fs-2xl);
-    font-weight: 400;
+    font-weight: var(--fw-score);
+    letter-spacing: -0.02em;
     line-height: 1.1;
 }
 
@@ -1640,6 +2048,8 @@ body.dock-on .content {
     text-align: center;
 }
 
+/* 应用标识：象牙白底 + 深墨图标。
+   旧版是 VOLT 荧光底，那是整个应用「廉价感」最集中的一处。 */
 .about-logo .mark {
     display: inline-flex;
     align-items: center;
@@ -1648,16 +2058,17 @@ body.dock-on .content {
     height: 68px;
     font-size: 32px;
     color: var(--on-light);
-    background: var(--live);
-    border-radius: var(--r-xs);
-    box-shadow: var(--sh-flat);
+    background-color: var(--fg);
+    background-image: linear-gradient(180deg, #FFFFFF 0%, #DCD7CC 100%);
+    border-radius: var(--r-full);
+    box-shadow: var(--sh-plate);
 }
 
 .about-logo .nm {
     font-size: var(--fs-lg);
     font-weight: var(--fw-black);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-transform: none;
 }
 .about-logo .ver { font-size: var(--fs-2xs); color: var(--fg-3); }
 
@@ -1668,9 +2079,9 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-3) var(--sp-4);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     font-size: var(--fs-sm);
 }
 
@@ -1678,7 +2089,7 @@ body.dock-on .content {
 
 .about-item .v {
     font-weight: var(--fw-bold);
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
 }
 
@@ -1706,20 +2117,24 @@ body.dock-on .content {
     aspect-ratio: 1;
     font-size: var(--fs-2xl);
     line-height: 1;
-    background: var(--plate);
+    background-color: var(--plate);
+    background-image: var(--face-1);
     border: none;
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    border-radius: var(--r-full);
+    box-shadow: var(--lift);
     cursor: pointer;
     transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
 
-.avatar-opt:hover { background: var(--plate-2); }
+.avatar-opt:hover { background-color: var(--plate-2);
+    background-image: var(--face-2); }
 
+/* 选中态：象牙白环 + 抬起。不用琥珀 —— 头像不是状态。 */
 .avatar-opt.active {
-    box-shadow: inset 0 0 0 2px var(--live);
-    background: var(--live-soft);
+    box-shadow: var(--lift-2), 0 0 0 2px var(--fg);
+    background-color: var(--plate-3);
+    background-image: var(--face-3);
 }
 
 .avatar-opt:active { transform: scale(0.94); }
@@ -1731,9 +2146,9 @@ body.dock-on .content {
     align-items: center;
     gap: var(--sp-3);
     padding: var(--sp-2) var(--sp-3);
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
 }
 
 .avatar-bound-row .ab-avatar {
@@ -1746,8 +2161,8 @@ body.dock-on .content {
     font-size: var(--fs-lg);
     line-height: 1;
     background: var(--plate-2);
-    box-shadow: inset 0 0 0 1px var(--edge-2);
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
+    box-shadow: var(--lift);
 }
 
 .avatar-bound-row .ab-name {
@@ -1774,28 +2189,38 @@ body.dock-on .content {
     gap: var(--sp-5);
     padding: var(--sp-6);
     text-align: center;
-    background: var(--void);
+    background-color: var(--void);
+    /* 一盏顶灯 + 一枚暗角。
+       旧版铺的是 3px 周期扫描线（电竞屏语言），v4 唯一的氛围光
+       与全站同源：光从上面来。 */
     background-image:
-        repeating-linear-gradient(0deg,
-            rgba(255, 255, 255, 0.022) 0px,
-            rgba(255, 255, 255, 0.022) 1px,
-            transparent 1px,
-            transparent 3px);
+        radial-gradient(90% 46% at 50% 4%, rgba(255, 255, 255, 0.07), transparent 62%),
+        radial-gradient(120% 90% at 50% 120%, rgba(0, 0, 0, 0.55), transparent 60%);
+    background-repeat: no-repeat;
 }
 
 .onboard.show { display: flex; }
 
 .onboard-art {
-    font-size: 60px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    font-size: 38px;
     line-height: 1;
-    color: var(--live);
+    color: var(--on-light);
+    background-color: var(--fg);
+    background-image: linear-gradient(180deg, #FFFFFF 0%, #DCD7CC 100%);
+    border-radius: var(--r-full);
+    box-shadow: var(--sh-plate);
 }
 
 .onboard-title {
-    font-size: var(--fs-2xl);
+    font-size: var(--fs-3xl);
     font-weight: var(--fw-black);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    text-transform: none;
 }
 
 .onboard-desc {
@@ -1811,14 +2236,14 @@ body.dock-on .content {
 }
 
 .onboard-dots i {
-    width: 7px;
-    height: 7px;
-    background: var(--edge-2);
-    border-radius: var(--r-xs);
+    width: 6px;
+    height: 6px;
+    background: var(--edge-3);
+    border-radius: var(--r-full);
     transition: background var(--dur-2) var(--ease), width var(--dur-2) var(--ease);
 }
 
-.onboard-dots i.on { width: 20px; background: var(--live); box-shadow: var(--sh-flat); }
+.onboard-dots i.on { width: 20px; background: var(--fg); box-shadow: var(--sh-flat); }
 
 .onboard-actions {
     display: flex;
@@ -1840,10 +2265,10 @@ body.dock-on .content {
 }
 
 .backup-stat .bs {
-    padding: var(--sp-3);
-    background: var(--plate-2);
-    border-radius: var(--r-sm);
-    box-shadow: inset 0 0 0 1px var(--edge);
+    padding: var(--sp-4) var(--sp-3);
+    background-color: var(--plate);
+    background-image: var(--face-1);
+    box-shadow: var(--lift);
     text-align: center;
 }
 
@@ -1851,14 +2276,109 @@ body.dock-on .content {
     font-size: var(--fs-3xs);
     font-weight: var(--fw-bold);
     color: var(--fg-3);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
 }
 
 .backup-stat .bs .v {
-    font-family: var(--font-ui);
-    font-style: italic;
+    margin-top: var(--sp-1);
+    font-family: var(--font-display);
+    font-style: normal;
     font-variant-numeric: tabular-nums;
-    font-size: var(--fs-2xl);
-    font-weight: 400;
+    font-size: var(--fs-3xl);
+    font-weight: var(--fw-score);
+    letter-spacing: -0.02em;
+}
+
+/* ================================================================
+   矮屏适配：iPhone SE（375×667）/ 老款安卓（360×640）
+
+   这一档机身只有 640–667px，而顶栏 + 底栏 + Dock 就吃掉 190px，
+   可给内容的不到 430px —— 要在这么短的一屏里读完一整场比赛，
+   必须有取舍。原则：**只压留白与容器，不压可用性**。
+
+   明确不压的四样：
+     · 触摸目标 44px（审计逐个点名，也是打球时戴汗手的真实需要）
+     · Dock 两个加分键（76px，仍是全屏第二大的可点区域）
+     · 比分（只是把上限从 124px 调到 124/30cqi，受宽度限制而非砍半）
+     · 时间轴本身（连得几分、何时被追平，是这一页的核心读数）
+
+   压掉的是：固定栏高度、栏内留白、轨道高度 —— 全是「空气」。
+
+   ⚠️ 这一段必须放在文件末尾。
+   它和常规档的 .score-btn / .scoreboard-bar 是同优先级，
+   层叠靠「后写者胜」。放在前面会被常规档覆盖：
+   自定义属性（--dock-h 等）能生效，元素规则却失效 ——
+   于是避让高度按 92px 算、按钮实际还是 88px，页面反而更矮一点但更不对。
+   ================================================================ */
+@media (max-height: 700px) {
+    :root {
+        --tabbar-h: 54px;
+        --dock-h: 92px;          /* = .score-btn 的 76px + 上下 padding 8×2 */
+        --fs-score-fixed: clamp(64px, 28vw, 118px);
+        --fs-score: clamp(64px, 28cqi, 118px);
+    }
+
+    .score-btn { min-height: 76px; }
+
+    /* 比分条两行并一行：局分 / 当前局 / 计时 / 操作 本就是同一条读数。
+       DOM 不动 —— 用 display:contents 让两行的子元素直接参与外层 flex，
+       既不改结构、也不打散语义。 */
+    .scoreboard-bar {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--sp-2);
+        padding: var(--sp-1) var(--sp-3);
+    }
+    .scoreboard-bar-top,
+    .scoreboard-bar-bottom { display: contents; }
+    .scoreboard-game {
+        margin-left: 0;
+        padding-left: var(--sp-2);
+    }
+    .timer-value { font-size: var(--fs-md); }
+    /* 允许换行：单行时「局分 + 当前局 + 计时 + 暂停 + 撤回」实测宽 378px，
+       而 375px 机身下面板只有 343px —— 撤回键被挤出屏幕右缘（超出 35px）。
+       撤回是打球时的高频操作，丢不得；换行比丢掉它便宜。
+       换行后自然分成「局分 / 当前局」与「计时 / 操作」两段，语义也顺。 */
+    .scoreboard-bar {
+        flex-wrap: wrap;
+        row-gap: var(--sp-1);
+    }
+    /* 计时与两个操作键绑成一段，不被拆散 */
+    .timer-value { order: 10; }
+    .scoreboard-timer { order: 11; margin-left: auto; }
+    .games-won { order: 1; }
+    .scoreboard-game { order: 2; margin-left: auto; }
+
+    .mode-row { margin-bottom: var(--sp-1); }
+    .match-info {
+        margin-bottom: var(--sp-2);
+        padding: 2px var(--sp-3);
+    }
+    .score-team {
+        gap: var(--sp-2);
+        padding: var(--sp-1) var(--sp-2) var(--sp-2);
+    }
+    .dial { gap: var(--sp-2); }
+    .card {
+        padding: var(--sp-2);
+        margin-bottom: var(--sp-1);
+    }
+    .card-title { margin-bottom: var(--sp-1); }
+    .tl-track { height: 36px; }
+    .point-log .tl-empty { height: 30px; }
+    .tl-track::after { bottom: 7px; }
+    .tl-axis { min-height: 14px; }
+
+    /* 再收 18px，全部来自元素之间的空隙，不碰任何读数：
+       时间轴内部的条目间距、读数条内边距、末张卡片的下外边距。
+       卡片的下外边距在这里纯属多余 —— 它下面是内容区的底部避让区。 */
+    .point-log { gap: var(--sp-1); }
+    .match-info { padding-top: 1px; padding-bottom: 1px; }
+    .card:last-child { margin-bottom: 0; }
+
+    /* 最后 12px：把内容区本身的上下留白也压一档。
+       到这里已经没有「装饰」可压了 —— 剩下的都是真内容。 */
+    .content { padding-top: var(--sp-1); }
 }

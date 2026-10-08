@@ -1,16 +1,26 @@
 /* ================================================================
    share-card.css — 分享卡（html2canvas 导出）
-   ⚠️ 本文件是令牌层的例外：全部使用字面量，禁止 var(--*)。
+   方向 v4 · 夜场 NIGHT COURT
+
+   ⚠️ 本文件是令牌层的**唯一例外**：全部使用字面量，禁止 var(--*)。
    原因：html2canvas 在离屏克隆节点上解析 CSS 自定义属性不稳定，
    且不支持 oklch() / lab() / color-mix() / clip-path()。
-   ⚠️ 同时避免使用 gap / grid / backdrop-filter / filter，
-   以保证导出结果与预览一致。
+   ⚠️ 同时避免 gap / grid / backdrop-filter / filter —— 它们会让
+   导出结果与预览不一致（预览是浏览器，导出是 html2canvas 的近似实现）。
+   所以这里的布局全部走 float / inline-block / margin。
 
-   方向 C · 仪表读数器：
-     - 底色是中性石墨，不是荧光深蓝
-     - 队伍识别靠「3px 识别条 + 比分色」，不靠旋转装饰块
-     - 数字用等宽体（旧版是 Impact 斜体，属小报感）
-     - 三套模板只在「底色深浅」上做区分，色相保持中性
+   ⚠️ 改这里的任何色值，必须同步 tokens.css 里对应的那一个。
+   对应关系：
+     #0B0F0E ← --board        #101513 ← --plate
+     #161C1A ← --plate-2      #F4F1EA ← --fg
+     #A9B2AD ← --fg-2         #8A948E ← --fg-3
+     #FF5A47 ← --a            #4FA8E8 ← --b
+     #D8B26A ← --gold         #F2C14E ← --live
+
+   方向：分享卡是这张卡片在别人手机上的**唯一一次露面**，
+   所以它必须与主界面同源 —— 同一套墨色、同一套队色、同一条
+   「光从上面来」的规则。旧版是三档中性石墨 + 一条顶部识别线，
+   发出去像另一个 App 的截图。
    ================================================================ */
 
 .share-card {
@@ -18,16 +28,23 @@
     width: 360px;
     padding: 26px 24px 22px;
     overflow: hidden;
-    font-family: "Bahnschrift", "Segoe UI", "PingFang SC",
+    /* 显示字体必须与主界面同源，否则导出的卡片与预览是两种字形。
+       这里写字体名（不是 var()，见文件头例外说明），
+       而 @font-face 定义在 base.css —— base.css 在 index.html 里先于本文件加载，
+       html2canvas 克隆节点时字体已经注册好了。 */
+    font-family: "Barlow Semi Condensed", "PingFang SC",
         "Microsoft YaHei", "Noto Sans SC", sans-serif;
     font-size: 14px;
     line-height: 1.5;
-    color: #F2F4F6;
-    background: #17191C;
+    /* 象牙白而不是纯白：纯白压在深底上会发光发蓝 */
+    color: #F4F1EA;
+    background: #101513;
     box-sizing: border-box;
 }
 
-/* 顶部一条极细的识别线：仪表语言里唯一的装饰，且承载信息（谁在左谁在右）*/
+/* 顶部 3px 识别线：与主界面比分板的外沿边线是同一条语言。
+   它承载信息 —— 颜色就是胜方。平局时退成中性发丝线，
+   因为「没有胜方」这件事本身也需要被如实画出来。 */
 .share-card::before {
     content: "";
     position: absolute;
@@ -35,13 +52,32 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: #E1554A;
+    background: rgba(244, 241, 234, 0.24);
 }
 
-/* 三套模板：中性石墨的三档明度，不做色相偏移 */
-.share-card-tpl-1 { background: #17191C; }
-.share-card-tpl-2 { background: #1D2024; }
-.share-card-tpl-3 { background: #24282D; }
+.share-card.win-a::before { background: #FF5A47; }
+.share-card.win-b::before { background: #4FA8E8; }
+
+/* 顶光：整张卡从上方接到的一盏灯。
+   没有它，深色卡片就是一块死灰 —— 这是 v4 与旧版唯一的、
+   也是最关键的一处差别。 */
+.share-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 190px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0));
+    pointer-events: none;
+}
+
+/* 三套模板：夜场墨绿黑的三档明度。
+   旧版做的是中性石墨的三档 —— 但深色 UI 的明度差在石墨上会发蓝，
+   在墨绿黑上才是「同一盏灯下的三块面」。 */
+.share-card-tpl-1 { background: #0B0F0E; }
+.share-card-tpl-2 { background: #101513; }
+.share-card-tpl-3 { background: #161C1A; }
 
 .share-card > * { position: relative; z-index: 1; }
 
@@ -50,7 +86,7 @@
     overflow: hidden;
     margin-bottom: 20px;
     padding-bottom: 11px;
-    border-bottom: 1px solid rgba(242, 244, 246, 0.14);
+    border-bottom: 1px solid rgba(244, 241, 234, 0.14);
 }
 
 .sc-brand {
@@ -59,7 +95,7 @@
     font-weight: 600;
     letter-spacing: 2.6px;
     text-transform: uppercase;
-    color: #E0A33E;
+    color: #8A948E;
 }
 
 .sc-date {
@@ -67,7 +103,7 @@
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.6px;
-    color: rgba(242, 244, 246, 0.6);
+    color: #8A948E;
 }
 
 /* ---------- 对阵区 ---------- */
@@ -83,6 +119,8 @@
     text-align: center;
 }
 
+/* 头像：全圆，坐在内凹的底上（与主界面 .score-team-avatar 同一形制）。
+   html2canvas 支持 inset box-shadow，所以「凹陷」可以直接用。 */
 .sc-avatar {
     width: 52px;
     height: 52px;
@@ -90,9 +128,9 @@
     font-size: 26px;
     line-height: 52px;
     text-align: center;
-    background: rgba(242, 244, 246, 0.06);
-    border: 1px solid rgba(242, 244, 246, 0.14);
-    border-radius: 3px;
+    background: #161C1A;
+    border-radius: 26px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .sc-name {
@@ -105,21 +143,27 @@
     white-space: nowrap;
 }
 
+/* 比分：这是整张卡唯一的主角，所以它比任何文字都大得多。
+   tabular-nums 让两边的数字列宽一致，对阵才读得出「比较」。 */
 .sc-score {
     margin-top: 5px;
-    font-family: ui-monospace, "SF Mono", "Roboto Mono", Consolas, monospace;
+    font-family: "Barlow Semi Condensed", "PingFang SC",
+        "Microsoft YaHei", Consolas, monospace;
     font-size: 46px;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1;
     letter-spacing: -2px;
     font-variant-numeric: tabular-nums;
-    color: #F2F4F6;
+    color: #F4F1EA;
 }
 
-/* 胜方给金，负方降调：不加粗、不发光 */
-.sc-team.win .sc-score { color: #C9A227; }
-.sc-team.lose .sc-score { color: rgba(242, 244, 246, 0.45); }
+/* 胜方染队色，负方退到 62% 象牙白。
+   旧版给胜方上金色 —— 金色是「奖牌」的语义，不是「这一队赢了」的语义；
+   而且它让分享卡和主界面读起来像两套规则。 */
+.sc-team.win .sc-score { color: #FF5A47; }
+.sc-team.win.side-b .sc-score { color: #4FA8E8; }
+.sc-team.lose .sc-score { color: rgba(244, 241, 234, 0.62); }
 
 .sc-vs {
     display: inline-block;
@@ -130,14 +174,14 @@
     font-weight: 600;
     letter-spacing: 1.6px;
     text-align: center;
-    color: rgba(242, 244, 246, 0.4);
+    color: #8A948E;
 }
 
 /* ---------- 局数行 ---------- */
 .sc-games {
     margin-top: 18px;
     padding-top: 15px;
-    border-top: 1px solid rgba(242, 244, 246, 0.14);
+    border-top: 1px solid rgba(244, 241, 234, 0.14);
     overflow: hidden;
 }
 
@@ -147,7 +191,7 @@
     font-weight: 600;
     letter-spacing: 1.8px;
     text-transform: uppercase;
-    color: rgba(242, 244, 246, 0.5);
+    color: #8A948E;
 }
 
 .sc-games-list { float: right; }
@@ -156,13 +200,13 @@
     display: inline-block;
     margin-left: 6px;
     padding: 3px 9px;
-    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-family: "Barlow Semi Condensed", "PingFang SC",
+        "Microsoft YaHei", Consolas, monospace;
     font-size: 11px;
     font-weight: 600;
-    background: rgba(242, 244, 246, 0.07);
-    border: 1px solid rgba(242, 244, 246, 0.18);
-    border-radius: 2px;
-    color: #F2F4F6;
+    background: rgba(244, 241, 234, 0.07);
+    border-radius: 3px;
+    color: #F4F1EA;
 }
 
 /* ---------- 高光区 ---------- */
@@ -175,7 +219,7 @@
     font-weight: 600;
     letter-spacing: 1.8px;
     text-transform: uppercase;
-    color: rgba(242, 244, 246, 0.5);
+    color: #8A948E;
     margin-bottom: 7px;
 }
 
@@ -183,16 +227,16 @@
     margin-bottom: 5px;
     font-size: 12px;
     line-height: 1.45;
-    color: rgba(242, 244, 246, 0.88);
+    color: rgba(244, 241, 234, 0.88);
 }
 
-.sc-hl b { font-weight: 600; color: #E0A33E; }
+.sc-hl b { font-weight: 600; color: #F2C14E; }
 
 /* ---------- 底部 ---------- */
 .sc-foot {
     margin-top: 18px;
     padding-top: 13px;
-    border-top: 1px solid rgba(242, 244, 246, 0.14);
+    border-top: 1px solid rgba(244, 241, 234, 0.14);
     overflow: hidden;
 }
 
@@ -201,7 +245,7 @@
     font-size: 10.5px;
     font-weight: 500;
     letter-spacing: 0.6px;
-    color: rgba(242, 244, 246, 0.5);
+    color: #8A948E;
 }
 
 .sc-foot-app {
@@ -210,7 +254,7 @@
     font-weight: 600;
     letter-spacing: 1.6px;
     text-transform: uppercase;
-    color: #E0A33E;
+    color: #F4F1EA;
 }
 
 /* ---------- 预览容器（页面内嵌，非导出目标）---------- */
@@ -218,12 +262,12 @@
     display: flex;
     justify-content: center;
     padding: 16px;
-    background: #101113;
-    border: 1px solid #2A2E33;
+    background: #0B0F0E;
+    border: 1px solid rgba(244, 241, 234, 0.08);
     overflow: auto;
 }
 
 .share-preview .share-card {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(242, 244, 246, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(244, 241, 234, 0.10);
     flex-shrink: 0;
 }

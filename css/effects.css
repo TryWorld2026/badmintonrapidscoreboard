@@ -1,6 +1,11 @@
 /* ================================================================
    effects.css — 全屏特效：彩带 / 烟花 / 胜利横幅 / 得分脉冲
-   深色主题适配：粒子用 VOLT 高饱和实色 + 自辉光，在黑底上炸开。
+   方向 v4 · 夜场 NIGHT COURT
+
+   铁律 5「动效只服务得分」的落地：
+   全站只有一个「大」动效（比分砸进来，在 screens.css 里），
+   其余都是 ≤520ms 的收尾。粒子只取队色 + 状态色共 5 色 ——
+   与界面上出现的颜色严格一致，所以庆祝也不会「换一个 App」。
    ================================================================ */
 
 .fx-layer {
@@ -17,7 +22,7 @@
     top: -12px;
     width: 9px;
     height: 14px;
-    border-radius: var(--r-sm);
+    border-radius: 1px;
     will-change: transform, opacity;
     animation: confettiFall linear forwards;
 }
@@ -68,9 +73,12 @@
     gap: var(--sp-2);
     padding: var(--sp-6) var(--sp-7);
     text-align: center;
-    background: var(--plate);
-    border-radius: var(--r-sm);
-    box-shadow: var(--sh-pop), inset 0 0 0 2px var(--gold);
+    background-color: var(--plate-2);
+    background-image: var(--face-2);
+    border-radius: var(--r-sheet, 14px);
+    /* 金色只走顶部 3px 硬边 + 图标色，不做整块描边 ——
+       整块描边会让横幅看起来在发光，那是廉价感的第一来源。 */
+    box-shadow: var(--sh-pop), var(--lift-2), inset 0 3px 0 var(--gold);
     transform: translate(-50%, -50%);
 }
 
@@ -82,18 +90,18 @@
 .victory-banner .vb-icon { font-size: 52px; line-height: 1; color: var(--gold); }
 
 .victory-banner .vb-title {
-    font-size: var(--fs-2xl);
+    font-size: var(--fs-3xl);
     font-weight: var(--fw-black);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    text-transform: none;
 }
 
 .victory-banner .vb-team {
-    font-size: var(--fs-md);
+    font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
-    letter-spacing: 0.1em;
+    letter-spacing: var(--ls-label);
     text-transform: uppercase;
-    color: var(--live);
+    color: var(--fg-3);
 }
 
 @keyframes victoryIn {
@@ -101,29 +109,49 @@
     to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* ---------- 得分脉冲（大比分旁的扩散圈）---------- */
-.score-pulse {
+/* ---------- 得分扫光（扫过本方半场）----------
+   v3 在这里画的是一个实心扩散圆：40px 的硬边圆盘从比分后面放大到 136px。
+   它不是「光」，是一块半透明色块压在数字上——也是这张页面里最后一块
+   看上去廉价的东西。v4 的规则 05 写的是「得分时一道光扫过本方半场」，
+   所以这里换成一道真的光：一条从上到下扫过整个半场的白色渐变，
+   本身是透明的，只是把下方的面「照亮」一下。
+
+   它铺满半场（inset:0），所以半场不能再有 overflow:hidden，
+   否则扫到一半就被裁掉——见 screens.css 的 .score-team。 */
+.score-sweep {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 40px;
-    height: 40px;
-    margin: -20px 0 0 -20px;
-    border-radius: var(--r-full);
+    inset: 0;
+    z-index: 0;
     pointer-events: none;
-    animation: pulseOut 520ms var(--ease-out) forwards;
+    /* 一条光带，铺在 3 倍高的画布上，靠移动 background-position 扫过。
+       不用 transform 位移整个元素 —— 那样光带会从面板边缘「切」进来、
+       再「切」出去，边界上留下一道硬边（实测扫到中段时半场底部有一条
+       齐刷刷的亮线，比原来的圆盘更难看）。
+       3 倍画布下可视窗口恒为 1/3 高，而首尾 1/3 全透明，
+       所以光带无论扫到哪里，边缘都永远是淡出的。 */
+    background-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 35%,
+        rgba(255, 255, 255, 0.16) 50%,
+        transparent 65%,
+        transparent 100%
+    );
+    background-size: 100% 300%;
+    background-position: 0% 0%;
+    animation: sweepDown 560ms var(--ease-out) forwards;
 }
 
-@keyframes pulseOut {
-    from { transform: scale(0.4); opacity: 0.55; }
-    to { transform: scale(3.4); opacity: 0; }
+@keyframes sweepDown {
+    from { background-position: 0% 0%; }
+    to { background-position: 0% 100%; }
 }
 
 /* ---------- 加载骨架（图表/数据）---------- */
 .skeleton {
     background: linear-gradient(90deg, var(--plate-2) 25%, var(--plate-3) 37%, var(--plate-2) 63%);
     background-size: 400% 100%;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-xs);
     animation: skeletonShift 1.4s var(--ease) infinite;
 }
 

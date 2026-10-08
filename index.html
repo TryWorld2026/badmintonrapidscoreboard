@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0A0E13">
+<meta name="theme-color" content="#0A0D0C">
 <meta name="description" content="羽毛球极速计分板 — 轻量本地计分、分组、费用分摊与数据统计工具">
 <title>羽毛球极速计分板</title>
 <link rel="manifest" href="manifest.json">
@@ -49,6 +49,17 @@
         <!-- ============ Tab 1：记分 ============ -->
         <section class="tab-panel" data-tab="score" id="panel-score" role="tabpanel" aria-label="记分">
 
+            <!-- 赛制：一行切换 + 一行读。旧版把四个赛制按钮放进一张 252px 的
+                 卡片，与下面的读数条说的是同一件事，记分页因此一屏装不下。
+                 合并成两行 44px / 37px，信息一条不少，高度只剩三成。 -->
+            <div class="mode-row" role="group" aria-label="目标分数">
+                <button type="button" class="mode-cell active" data-act="match:mode" data-mode="21">21 分</button>
+                <button type="button" class="mode-cell" data-act="match:mode" data-mode="15">15 分</button>
+                <button type="button" class="mode-cell" data-act="match:mode" data-mode="11">11 分</button>
+                <button type="button" class="mode-cell" data-act="match:mode" data-mode="custom">自定义</button>
+            </div>
+
+            <!-- 赛制读数条：一行读完「这局怎么打」。 -->
             <div class="match-info" id="match-info"></div>
 
             <div class="scoreboard">
@@ -57,26 +68,26 @@
                         <div class="score-team-head">
                             <span class="score-team-tag micro">A</span>
                             <span class="score-team-avatar" id="team-a-avatar">🏸</span>
+                            <input class="score-team-name" id="team-a-name" data-act="match:team-name"
+                                   data-team="a" value="队伍 A" maxlength="20" aria-label="甲队名称">
                         </div>
-                        <input class="score-team-name" id="team-a-name" data-act="match:team-name"
-                               data-team="a" value="队伍 A" maxlength="20" aria-label="甲队名称">
-                        <div class="dial"><div class="score-num num" id="score-a">0</div></div>
-                        <div class="score-team-meta">
-                            <span class="serve-dot on" aria-hidden="true"></span>
-                            <span class="text-3 text-2xs">甲队</span>
+                        <!-- .dial 是比分 + 进度线的容器（不再是刻度环）。
+                             .score-prog 的宽度与换边刻度由 js/match.js 渲染。 -->
+                        <div class="dial">
+                            <div class="score-num num" id="score-a">0</div>
+                            <div class="score-prog" id="prog-a" role="img" aria-label="甲队本局进度"><i></i></div>
                         </div>
                     </div>
                     <div class="score-team team-b" id="team-b-panel">
                         <div class="score-team-head">
                             <span class="score-team-tag micro">B</span>
                             <span class="score-team-avatar" id="team-b-avatar">🏸</span>
+                            <input class="score-team-name" id="team-b-name" data-act="match:team-name"
+                                   data-team="b" value="队伍 B" maxlength="20" aria-label="乙队名称">
                         </div>
-                        <input class="score-team-name" id="team-b-name" data-act="match:team-name"
-                               data-team="b" value="队伍 B" maxlength="20" aria-label="乙队名称">
-                        <div class="dial"><div class="score-num num" id="score-b">0</div></div>
-                        <div class="score-team-meta">
-                            <span class="text-3 text-2xs">乙队</span>
-                            <span class="serve-dot" aria-hidden="true"></span>
+                        <div class="dial">
+                            <div class="score-num num" id="score-b">0</div>
+                            <div class="score-prog" id="prog-b" role="img" aria-label="乙队本局进度"><i></i></div>
                         </div>
                     </div>
                 </div>
@@ -107,40 +118,22 @@
             </div>
 
             <div class="card">
-                <div class="card-title">本局得分流水
-                    <span class="title-extra">最多显示最近 40 条</span>
+                <!-- 得分流水 → 回合时间轴。
+                     旧版每得一分写一行「林知远 10 → 11」，二十五行看完也不知道
+                     谁在连得、什么时候被追平。时间轴把一场球压成一条可读的条码：
+                     柱高 = 该回合该方的比分，颜色 = 谁得分，竖线 = 换边点。
+                     数据源不变（仍是 App.state.match.scoreHistory），
+                     条数上限仍由 js/match.js 控制。 -->
+                <div class="card-title"><span class="card-title-text">回合时间轴</span>
+                    <span class="title-extra" id="point-log-count"></span>
+                    <!-- 重置收进卡片标题行：它们是低频、且需要二次确认的动作，
+                         不该和「加分」抢同一块视觉面积，也不该再占一整行 44px。 -->
+                    <button type="button" class="icon-btn btn-ghost btn-sm-icon" data-act="match:reset-game"
+                            aria-label="重置本局比分" title="重置本局比分"><span class="ic-box" data-icon="refresh"></span></button>
+                    <button type="button" class="icon-btn btn-ghost btn-sm-icon" data-act="match:reset"
+                            aria-label="重置整场比赛" title="重置整场比赛"><span class="ic-box" data-icon="trash"></span></button>
                 </div>
                 <div class="point-log" id="point-log"></div>
-                <div class="btn-row mt-3">
-                    <button type="button" class="btn btn-outline btn-small" data-act="match:reset-game">重置本局</button>
-                    <button type="button" class="btn btn-outline btn-small" data-act="match:reset">重置比赛</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">快速切换赛制</div>
-                <div class="pick-grid">
-                    <button type="button" class="pick-card active" data-act="match:mode" data-mode="21">
-                        <span class="pick-icon ic-box" data-icon="target"></span>
-                        <span class="pick-name">21 分</span>
-                        <span class="pick-desc">标准单局</span>
-                    </button>
-                    <button type="button" class="pick-card" data-act="match:mode" data-mode="15">
-                        <span class="pick-icon ic-box" data-icon="bolt"></span>
-                        <span class="pick-name">15 分</span>
-                        <span class="pick-desc">快速局</span>
-                    </button>
-                    <button type="button" class="pick-card" data-act="match:mode" data-mode="11">
-                        <span class="pick-icon ic-box" data-icon="flame"></span>
-                        <span class="pick-name">11 分</span>
-                        <span class="pick-desc">短局</span>
-                    </button>
-                    <button type="button" class="pick-card" data-act="match:mode" data-mode="custom">
-                        <span class="pick-icon ic-box" data-icon="pencil"></span>
-                        <span class="pick-name">自定义</span>
-                        <span class="pick-desc">任意目标分</span>
-                    </button>
-                </div>
             </div>
         </section>
 
@@ -617,7 +610,7 @@
                     <!-- 初值：settings.js 启动时会用 VERSION 覆盖。
                          写在这里是为了「JS 还没跑起来」或失败时也有个合理显示，
                          但要与 js/settings.js 的 VERSION 保持一致。 -->
-                    <span class="ver" id="about-version">v3.0.0</span>
+                    <span class="ver" id="about-version">v4.0.0</span>
                 </div>
                 <div class="about-list">
                     <div class="about-item"><span class="k">数据存储</span><span class="v" id="about-storage-2">localStorage</span></div>
@@ -782,9 +775,9 @@
         </div>
 
         <div class="chip-row mb-4">
-            <button type="button" class="chip active" data-act="share:tpl" data-value="1">VOLT 石墨</button>
-            <button type="button" class="chip" data-act="share:tpl" data-value="2">靛蓝赛场</button>
-            <button type="button" class="chip" data-act="share:tpl" data-value="3">绯红夜战</button>
+            <button type="button" class="chip active" data-act="share:tpl" data-value="1">夜场墨绿</button>
+            <button type="button" class="chip" data-act="share:tpl" data-value="2">场板</button>
+            <button type="button" class="chip" data-act="share:tpl" data-value="3">抬起</button>
         </div>
 
         <div class="share-preview">
@@ -891,12 +884,21 @@
     </div>
 </div>
 
-<!-- ================= 高光徽章 / 成就徽章 / 胜利横幅 / Toast ================= -->
-<div class="highlight-badge" id="highlight-badge" hidden aria-hidden="true">
-    <span class="highlight-icon ic-box" id="hl-icon" data-icon="star"></span>
-    <div class="grow">
-        <div class="highlight-title" id="hl-title"></div>
-        <div class="highlight-desc" id="hl-desc"></div>
+<!-- ================= 高光徽章 / 成就徽章 / 胜利横幅 / Toast =================
+     高光徽章与 Toast 同属 .notice-rail 一条竖列：
+     两者会被同一分同时触发（换边提醒 + 赛点），各自 fixed 会叠在一起。 -->
+<div class="notice-rail">
+    <div class="highlight-badge" id="highlight-badge" hidden aria-hidden="true">
+        <span class="highlight-icon ic-box" id="hl-icon" data-icon="star"></span>
+        <div class="grow">
+            <div class="highlight-title" id="hl-title"></div>
+            <div class="highlight-desc" id="hl-desc"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+        <div class="toast-title" id="toast-title"></div>
+        <div class="toast-msg" id="toast-msg"></div>
     </div>
 </div>
 
@@ -912,11 +914,6 @@
     <div class="vb-icon ic-box" data-icon="trophy" aria-hidden="true"></div>
     <div class="vb-title" id="vb-title"></div>
     <div class="vb-team num" id="vb-team"></div>
-</div>
-
-<div class="toast" id="toast" role="status" aria-live="polite">
-    <div class="toast-title" id="toast-title"></div>
-    <div class="toast-msg" id="toast-msg"></div>
 </div>
 
 <!-- ================= 新手引导 ================= -->

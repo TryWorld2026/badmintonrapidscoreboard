@@ -37,7 +37,7 @@ window.App = window.App || {};
 
     /* 侧别 → 队色令牌（跟随令牌层，不手抄色值） */
     function sideColor(side) {
-        return App.tokens.get(side === 'a' ? '--a' : '--b', side === 'a' ? '#E1554A' : '#3E8FD9');
+        return App.tokens.get(side === 'a' ? '--a' : '--b', side === 'a' ? '#FF5A47' : '#4FA8E8');
     }
 
     /* ------------------------------------------------------------
@@ -49,6 +49,10 @@ window.App = window.App || {};
 
         setText('cs-score-a', m.scoreA);
         setText('cs-score-b', m.scoreB);
+        /* 三位数比分降一档字号：场边模式是 2 米外读的，
+           撑破半屏比数字小一点严重得多。 */
+        toggleClass('cs-score-a', 'digits-3', Number(m.scoreA) >= 100);
+        toggleClass('cs-score-b', 'digits-3', Number(m.scoreB) >= 100);
         setText('cs-name-a', m.teamNameA || '甲队');
         setText('cs-name-b', m.teamNameB || '乙队');
         setText('cs-timer', App.match.formatTime(m.seconds));

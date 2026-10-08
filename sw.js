@@ -11,7 +11,7 @@
    js/css——实测改过 screens.css 后线上 Lighthouse 仍报旧色值，就是这个
    原因。每次动 js/css/vendor 就把版本号 +1。
    ================================================================ */
-var CACHE_NAME = 'badminton-score-v14';
+var CACHE_NAME = 'badminton-score-v18';
 
 var ASSETS = [
   './',
@@ -26,6 +26,13 @@ var ASSETS = [
   './css/courtside.css',
   './css/account.css',
   './css/share-card.css',
+
+  /* 显示字体：比分数字用的 Barlow Semi Condensed（OFL）。
+     必须进预缓存 —— 离线时字体拿不到会回落到中文正文字体，
+     比分就会从「记分牌」变成「正文」，而球馆里断网是常态。 */
+  './fonts/barlow-semi-condensed-400.woff2',
+  './fonts/barlow-semi-condensed-700.woff2',
+  './fonts/barlow-semi-condensed-800.woff2',
 
   './js/icons.js',
   './js/tokens.js',

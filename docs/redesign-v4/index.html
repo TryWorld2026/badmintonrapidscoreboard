@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>羽毛球极速计分板 · v4 重设计 — 夜场 NIGHT COURT</title>
+<link rel="stylesheet" href="system.css">
+<link rel="stylesheet" href="screens.css">
+</head>
+<body class="doc">
+<div class="wrap">
+
+<!-- ============================================================
+     封面
+     ============================================================ -->
+<header class="doc-head">
+    <div class="doc-eyebrow">Redesign · v4 · 2026</div>
+    <h1 class="doc-title">夜场<br><em>NIGHT COURT</em></h1>
+    <p class="doc-lede">
+        把这块记分板当成一件<b>球场器械</b>重做。删掉所有 1px 灰边、切角、
+        扫描线和「转播车」装饰，改用<b>顶光</b>做层次、用<b>一条时间轴</b>讲一场球、
+        用<b>两米外能读的数字</b>做主角。深色不是风格选择，是球馆的默认光线。
+    </p>
+    <div class="doc-meta">
+        <span class="hot">390 × 844 主形态</span>
+        <span class="hot">844 × 390 场边形态</span>
+        <span>1 档巨型 + 3 档小字</span>
+        <span>唯二饱和色</span>
+        <span>WCAG AA</span>
+        <span>零图片依赖</span>
+    </div>
+</header>
+
+<!-- ============================================================
+     一 · 设计系统
+     ============================================================ -->
+<section class="doc-section">
+    <div class="doc-h2">
+        <span class="idx">01</span>
+        <h2>设计系统</h2>
+        <span class="note">先定规则，再画界面</span>
+    </div>
+
+    <div class="ds-grid">
+
+        <!-- 颜色 -->
+        <div class="ds-panel">
+            <h3>颜色</h3>
+            <p class="hint">
+                底色是<b>夜场墨绿黑</b>——不是纯黑（死板、无层次），也不是蓝黑（廉价电竞感）。
+                全屏只有两组饱和色，且只用于「识别谁是谁」。
+            </p>
+            <div class="swatches">
+                <div class="sw"><i style="background:#0A0D0C"></i><span class="n">地面 Ground</span><span class="v">#0A0D0C</span></div>
+                <div class="sw"><i style="background:#101513"></i><span class="n">面板 Surface</span><span class="v">#101513</span></div>
+                <div class="sw"><i style="background:#1E2523"></i><span class="n">弹层 Raised</span><span class="v">#1E2523</span></div>
+                <div class="sw"><i style="background:#F4F1EA"></i><span class="n">墨 Ink</span><span class="v">#F4F1EA</span></div>
+                <div class="sw"><i style="background:#A9B2AD"></i><span class="n">次级 Ink 2</span><span class="v">#A9B2AD</span></div>
+                <div class="sw"><i style="background:#7E8983"></i><span class="n">三级 Ink 3</span><span class="v">#7E8983</span></div>
+                <div class="sw"><i style="background:#FF5A47"></i><span class="n">甲队 A · 球头橙红</span><span class="v">#FF5A47</span></div>
+                <div class="sw"><i style="background:#4FA8E8"></i><span class="n">乙队 B · 球场蓝</span><span class="v">#4FA8E8</span></div>
+                <div class="sw"><i style="background:#F2C14E"></i><span class="n">进行中 Live</span><span class="v">#F2C14E</span></div>
+                <div class="sw"><i style="background:#4FC08A"></i><span class="n">成功 OK</span><span class="v">#4FC08A</span></div>
+            </div>
+        </div>
+
+        <!-- 字体 -->
+        <div class="ds-panel">
+            <h3>字体</h3>
+            <p class="hint">
+                只保留<b>一档巨型 + 三档小字</b>。中间那层「24px 标题 / 13px 正文」全部删除——
+                正是它让旧界面看起来什么都没强调。
+                比分用 Archivo 的等宽数字，逐帧变化不跳动。
+            </p>
+            <div class="spec">
+                <div class="spec-row">
+                    <span class="tag">Hero 84–140</span>
+                    <span class="spec-hero num">14</span>
+                </div>
+                <div class="spec-row">
+                    <span class="tag">H1 / 26</span>
+                    <span style="font-size:26px;font-weight:800;letter-spacing:-0.015em">智能分组</span>
+                </div>
+                <div class="spec-row">
+                    <span class="tag">H3 / 15</span>
+                    <span style="font-size:15px;font-weight:700">本局回合时间轴</span>
+                </div>
+                <div class="spec-row">
+                    <span class="tag">Body / 13.5</span>
+                    <span style="font-size:13.5px;color:var(--ink-2)">至少 4 人才能分组</span>
+                </div>
+                <div class="spec-row">
+                    <span class="tag">Label / 11</span>
+                    <span class="label">Serve · 发球</span>
+                </div>
+                <div class="spec-row">
+                    <span class="tag">Micro / 9.5</span>
+                    <span class="micro">Court 1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 光与面 -->
+        <div class="ds-panel">
+            <h3>光，不是边框</h3>
+            <p class="hint">
+                旧版的核心问题：所有层次靠 1px 灰边，面板是<b>平的</b>，
+                所以整屏像一块死灰。<br>
+                v4 每一块面 = 两段渐变 + 一条顶部内高光。<b>光从上面来。</b>
+            </p>
+            <div class="stack">
+                <div class="face" style="padding:18px">
+                    <div class="label">Surface · 基础面</div>
+                </div>
+                <div class="face-3" style="padding:18px">
+                    <div class="label" style="color:var(--ink-2)">Raised · 抬起面</div>
+                </div>
+                <div style="position:relative;height:96px;background:#0B0F0E;overflow:hidden">
+                    <div class="pool"></div>
+                    <div style="position:relative;padding:18px">
+                        <div class="label">Pool · 顶灯光池</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 组件 -->
+        <div class="ds-panel">
+            <h3>组件</h3>
+            <p class="hint">
+                圆角只有两种决定：<b>面板一律锐角</b>（这是球场边线的语言），
+                <b>交互一律全圆</b>（手指按下去没有方向）。
+                旧版铺满 2–6px 圆角，是「没决定」的样子。
+            </p>
+            <div class="shelf-col">
+                <div class="shelf">
+                    <button class="btn btn-primary">开始比赛</button>
+                    <button class="btn">撤回</button>
+                    <button class="btn btn-ghost">重置本局</button>
+                </div>
+                <div class="shelf">
+                    <div class="seg" style="width:230px">
+                        <button class="on">21 分</button>
+                        <button>15 分</button>
+                        <button>11 分</button>
+                    </div>
+                </div>
+                <div class="shelf">
+                    <span class="chip on">张三</span>
+                    <span class="chip">李四</span>
+                    <span class="chip">王五</span>
+                </div>
+                <div class="shelf">
+                    <span class="dot live"></span><span class="label" style="color:var(--ink-2)">进行中</span>
+                    <span class="dot ok" style="margin-left:14px"></span><span class="label" style="color:var(--ink-2)">已保存</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 五条铁律 -->
+        <div class="ds-panel" style="grid-column:1/-1">
+            <h3>五条铁律</h3>
+            <p class="hint">每一条都从使用场景推导，不是口味偏好。</p>
+            <div class="rule"><b>01</b><p><b>光，不是边框。</b>层次来自顶光与投影。删掉任何一处 1px 灰边，画面都不应该塌。</p></div>
+            <div class="rule"><b>02</b><p><b>一个主角。</b>比分是全站唯一的巨型元素。标签一律 ≤11px 且加宽字距，永远不与数字争。</p></div>
+            <div class="rule"><b>03</b><p><b>两条线定义一场球。</b>中线是网、外沿是边线。队色只出现在线、数字、光池里，不做装饰。</p></div>
+            <div class="rule"><b>04</b><p><b>一场比赛有一条形状。</b>得分流水升级为回合时间轴，一屏读出势头与转折。</p></div>
+            <div class="rule"><b>05</b><p><b>动效只服务得分。</b>其余交互 ≤120ms 或不做。得分时数字「砸」进来，并有一道光扫过本方半场。</p></div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ============================================================
+     二 · 记分主界面
+     ============================================================ -->
+<section class="doc-section">
+    <div class="doc-h2">
+        <span class="idx">02</span>
+        <h2>记分主界面</h2>
+        <span class="note">比分 140px · 时间轴 · 半屏按键</span>
+    </div>
+
+    <div class="frames">
+
+        <!-- ---------- 进行中 ---------- -->
+        <div class="frame">
+            <div class="frame-cap"><b>进行中</b><span>第 2 局 · 甲队领先 · 14 : 11</span></div>
+            <div class="phone"><div class="screen">
+
+                <div class="statusbar">
+                    <span>9:41</span>
+                    <span class="sb-right">
+                        <span class="sb-bars"><i></i><i></i><i></i><i></i></span>
+                        <span class="sb-batt"><i></i></span>
+                    </span>
+                </div>
+
+                <div class="rail">
+                    <span class="rail-title">记分</span>
+                    <span class="rail-sep"></span>
+                    <span class="rail-sub">21 分 · 三局两胜</span>
+                    <span class="rail-acts">
+                        <button class="ic-btn" aria-label="场边模式">
+                            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                        <button class="ic-btn" aria-label="数据">
+                            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg>
+                        </button>
+                        <button class="ic-btn" aria-label="分享">
+                            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.2V3.8"/><path d="M8 7.6 12 3.6l4 4"/><path d="M5 13.6v5.6h14v-5.6"/></svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="board">
+                    <div class="half a leading">
+                        <div class="team">
+                            <div class="team-name">陈骁</div>
+                            <div class="team-sub">甲队</div>
+                        </div>
+                        <div class="score num">14</div>
+                        <div class="prog"><span style="--p:67%"></span><i style="--x:52.4%"></i></div>
+                        <div class="serve on"><i></i>发球</div>
+                    </div>
+                    <div class="half b">
+                        <div class="team">
+                            <div class="team-name">林知远</div>
+                            <div class="team-sub">乙队</div>
+                        </div>
+                        <div class="score num">11</div>
+                        <div class="prog"><span style="--p:52%"></span><i style="--x:52.4%"></i></div>
+                        <div class="serve"><i></i>接发</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <span class="timer num">18:42</span>
+                    <span class="games a" style="margin-left:2px">
+                        <i class="won"></i><i></i><i></i>
+                    </span>
+                    <span class="label" style="margin-left:6px">第 2 局</span>
+                    <span class="controls-right">
+                        <button class="pill-btn">
+                            <svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9.4 5.4v13.2"/><path d="M14.6 5.4v13.2"/></svg>
+                            暂停
+                        </button>
+                        <button class="ic-btn" aria-label="撤回">
+                            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.8 10h12.2a4.6 4.6 0 0 1 0 9.2H9.2"/><path d="M7.4 5.6 3 10l4.4 4.4"/></svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="tl-card">
+                    <div class="tl-head">
+                        <span class="label" style="color:var(--ink-2)">本局回合时间轴</span>
+                        <span class="micro">25 回合 · 最长连得 4</span>
+                    </div>
+                    <div class="tl-track">
+                        <span class="tl-bar w-b" style="--h:30%"></span>
+                        <span class="tl-bar w-a" style="--h:42%"></span>
+                        <span class="tl-bar w-a" style="--h:54%"></span>
+                        <span class="tl-bar w-b" style="--h:34%"></span>
+                        <span class="tl-bar w-a" style="--h:66%"></span>
+                        <span class="tl-bar w-a" style="--h:74%"></span>
+                        <span class="tl-bar w-b" style="--h:46%"></span>
+                        <span class="tl-bar w-b" style="--h:52%"></span>
+                        <span class="tl-bar w-a" style="--h:82%"></span>
+                        <span class="tl-bar w-a" style="--h:88%"></span>
+                        <span class="tl-bar w-a" style="--h:94%"></span>
+                        <span class="tl-bar w-b" style="--h:58%"></span>
+                        <span class="tl-bar w-b now" style="--h:100%"></span>
+                        <span class="tl-rule" style="--x:52.4%"></span>
+                    </div>
+                    <div class="tl-axis">
+                        <span class="e">01</span>
+                        <span class="mid">11 分间歇</span>
+                        <span class="e">25</span>
+                    </div>
+                </div>
+
+                <div class="dock">
+                    <button class="dock-btn a">
+                        <span class="k">甲队得分</span>
+                        <span class="h">轻点 +1 · 长按撤回</span>
+                    </button>
+                    <button class="dock-btn b">
+                        <span class="k">乙队得分</span>
+                        <span class="h">轻点 +1 · 长按撤回</span>
+                    </button>
+                </div>
+
+                <nav class="tabbar">
+                    <span class="tab on">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="19.4" r="2.4"/><path d="M10 17.2 12 3l2 14.2"/><path d="M10.7 12.3h2.6"/></svg>
+                        记分
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 20.6 13 11"/><path d="M20.6 20.6 11 11"/><path d="M11 3.4 20.6 13"/><path d="M13 3.4 3.4 13"/><circle cx="12" cy="12" r="1.9"/></svg>
+                        对战
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg>
+                        数据
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.4" r="3.4"/><path d="M3.2 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M15.8 5.4a3.4 3.4 0 0 1 0 6.4"/><path d="M17.4 14.9c2 .7 3.4 2.5 3.4 5.1"/></svg>
+                        我的
+                    </span>
+                </nav>
+
+            </div></div>
+        </div>
+
+        <!-- ---------- 开赛前 ---------- -->
+        <div class="frame">
+            <div class="frame-cap"><b>开赛前</b><span>0 : 0 · 空态即引导</span></div>
+            <div class="phone"><div class="screen">
+
+                <div class="statusbar">
+                    <span>9:41</span>
+                    <span class="sb-right">
+                        <span class="sb-bars"><i></i><i></i><i></i><i></i></span>
+                        <span class="sb-batt"><i></i></span>
+                    </span>
+                </div>
+
+                <div class="rail">
+                    <span class="rail-title">记分</span>
+                    <span class="rail-sep"></span>
+                    <span class="rail-sub">21 分 · 三局两胜</span>
+                    <span class="rail-acts">
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.2V3.8"/><path d="M8 7.6 12 3.6l4 4"/><path d="M5 13.6v5.6h14v-5.6"/></svg></button>
+                    </span>
+                </div>
+
+                <div class="board">
+                    <div class="half a">
+                        <div class="team">
+                            <div class="team-name">队伍 A</div>
+                            <div class="team-sub">甲队</div>
+                        </div>
+                        <div class="score num">0</div>
+                        <div class="prog"><span style="--p:0%"></span><i style="--x:52.4%"></i></div>
+                        <div class="serve on"><i></i>发球</div>
+                    </div>
+                    <div class="half b">
+                        <div class="team">
+                            <div class="team-name">队伍 B</div>
+                            <div class="team-sub">乙队</div>
+                        </div>
+                        <div class="score num">0</div>
+                        <div class="prog"><span style="--p:0%"></span><i style="--x:52.4%"></i></div>
+                        <div class="serve"><i></i>接发</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <span class="timer num" style="color:var(--ink-3)">00:00</span>
+                    <span class="games a" style="margin-left:2px"><i></i><i></i><i></i></span>
+                    <span class="label" style="margin-left:6px">第 1 局</span>
+                    <span class="controls-right">
+                        <button class="pill-btn" style="background:linear-gradient(180deg,#FFFFFF,#E8E4DA);color:#0A0D0C">
+                            <svg class="ic-sm" viewBox="0 0 24 24" fill="#0A0D0C" stroke="none"><path d="M8 5.4 18.6 12 8 18.6z"/></svg>
+                            开始比赛
+                        </button>
+                    </span>
+                </div>
+
+                <div class="tl-card">
+                    <div class="tl-head">
+                        <span class="label" style="color:var(--ink-2)">本局回合时间轴</span>
+                        <span class="micro">等待第一分</span>
+                    </div>
+                    <div class="tl-empty"><i></i></div>
+                    <div class="tl-axis">
+                        <span class="e">点「开始比赛」后</span>
+                        <span class="e">每一分都会落在这里</span>
+                    </div>
+                </div>
+
+                <div class="dock">
+                    <button class="dock-btn a">
+                        <span class="k">甲队得分</span>
+                        <span class="h">轻点 +1 · 长按撤回</span>
+                    </button>
+                    <button class="dock-btn b">
+                        <span class="k">乙队得分</span>
+                        <span class="h">轻点 +1 · 长按撤回</span>
+                    </button>
+                </div>
+
+                <nav class="tabbar">
+                    <span class="tab on">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="19.4" r="2.4"/><path d="M10 17.2 12 3l2 14.2"/><path d="M10.7 12.3h2.6"/></svg>
+                        记分
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 20.6 13 11"/><path d="M20.6 20.6 11 11"/><path d="M11 3.4 20.6 13"/><path d="M13 3.4 3.4 13"/><circle cx="12" cy="12" r="1.9"/></svg>
+                        对战
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg>
+                        数据
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.4" r="3.4"/><path d="M3.2 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M15.8 5.4a3.4 3.4 0 0 1 0 6.4"/><path d="M17.4 14.9c2 .7 3.4 2.5 3.4 5.1"/></svg>
+                        我的
+                    </span>
+                </nav>
+
+            </div></div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ============================================================
+     三 · 场边模式
+     ============================================================ -->
+<section class="doc-section">
+    <div class="doc-h2">
+        <span class="idx">03</span>
+        <h2>场边模式</h2>
+        <span class="note">横屏 · 205px 比分 · 2.5 米可读</span>
+    </div>
+
+    <div class="frames">
+        <div class="frame" style="width:844px">
+            <div class="frame-cap"><b>横屏场边</b><span>手机架场边，人站两米外</span></div>
+            <div class="phone wide"><div class="screen">
+                <div class="cs-top">
+                    <span class="cs-game">第 2 局 · 21 分制</span>
+                    <span class="cs-right">
+                        <span class="dot live"></span>
+                        <span class="cs-timer">18:42</span>
+                        <span class="cs-exit">退出</span>
+                    </span>
+                </div>
+                <div class="cs-body">
+                    <div class="cs-half a leading">
+                        <div class="cs-name">陈骁</div>
+                        <div class="cs-score num">14</div>
+                        <div class="games a"><i class="won"></i><i></i><i></i></div>
+                        <div class="cs-hint">轻点加分 · 长按撤回</div>
+                    </div>
+                    <div class="cs-half b">
+                        <div class="cs-name">林知远</div>
+                        <div class="cs-score num">11</div>
+                        <div class="games b"><i></i><i></i><i></i></div>
+                        <div class="cs-hint">轻点加分 · 长按撤回</div>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     四 · 对战 / 数据 / 我的
+     ============================================================ -->
+<section class="doc-section">
+    <div class="doc-h2">
+        <span class="idx">04</span>
+        <h2>二级页</h2>
+        <span class="note">对战 · 数据 · 我的</span>
+    </div>
+
+    <div class="frames">
+
+        <!-- ---------- 智能分组 ---------- -->
+        <div class="frame">
+            <div class="frame-cap"><b>智能分组</b><span>随机 / 实力平衡 / 轮换</span></div>
+            <div class="phone"><div class="screen">
+                <div class="statusbar"><span>9:41</span><span class="sb-right"><span class="sb-bars"><i></i><i></i><i></i><i></i></span><span class="sb-batt"><i></i></span></span></div>
+                <div class="rail">
+                    <span class="rail-title">对战</span>
+                    <span class="rail-sep"></span>
+                    <span class="rail-sub">智能分组</span>
+                    <span class="rail-acts">
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.2V3.8"/><path d="M8 7.6 12 3.6l4 4"/><path d="M5 13.6v5.6h14v-5.6"/></svg></button>
+                    </span>
+                </div>
+
+                <div class="page">
+                    <div class="page-pad stack">
+                        <div class="seg">
+                            <button class="on">智能分组</button>
+                            <button>费用分摊</button>
+                        </div>
+
+                        <div class="modes">
+                            <button class="mode on">
+                                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.4"/><circle cx="9" cy="9" r="1.25" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.25" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.25" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.25" fill="currentColor" stroke="none"/></svg>
+                                <span class="n">随机</span><span class="d">Random</span>
+                            </button>
+                            <button class="mode">
+                                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15.4"/><path d="M7.4 19.8h9.2"/><path d="M3.6 8.8h16.8"/><path d="M3.6 8.8 1.9 13.4h3.4z"/><path d="M20.4 8.8l-1.7 4.6h3.4z"/></svg>
+                                <span class="n">均衡</span><span class="d">Balanced</span>
+                            </button>
+                            <button class="mode">
+                                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 12a8.2 8.2 0 1 1-2.6-6"/><path d="M20.4 3.6v4.2h-4.2"/></svg>
+                                <span class="n">轮换</span><span class="d">Rotation</span>
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-head">
+                                <span class="card-title">参赛名单</span>
+                                <span class="card-note">8 人 · 2 块场地</span>
+                            </div>
+                            <div style="padding:0 16px 16px">
+                                <div class="field" style="height:auto;padding:12px 14px;line-height:1.9;color:var(--ink-2)">
+                                    张三　李四　王五　赵六<br>孙七　周八　吴九　郑十
+                                </div>
+                                <div class="shelf" style="margin-top:12px">
+                                    <span class="chip"><svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/></svg>张三</span>
+                                    <span class="chip"><svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/></svg>李四</span>
+                                    <span class="chip"><svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/></svg>王五</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="min-height:52px">生成分组</button>
+
+                        <div class="stack-tight" style="margin-top:6px">
+                            <div class="label" style="padding:8px 0 4px">对阵结果</div>
+
+                            <div class="duel">
+                                <div class="duel-tag">
+                                    <span class="duel-court">Court 01</span>
+                                    <span class="micro">实力差 0.5</span>
+                                </div>
+                                <div class="duel-body">
+                                    <div class="duel-side a">
+                                        <div class="p"><span class="av">张</span><span class="nm">张三</span></div>
+                                        <div class="p"><span class="av">王</span><span class="nm">王五</span></div>
+                                    </div>
+                                    <span class="duel-vs">VS</span>
+                                    <div class="duel-side b r">
+                                        <div class="p"><span class="av">李</span><span class="nm">李四</span></div>
+                                        <div class="p"><span class="av">赵</span><span class="nm">赵六</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="duel">
+                                <div class="duel-tag">
+                                    <span class="duel-court">Court 02</span>
+                                    <span class="micro">实力差 0.5</span>
+                                </div>
+                                <div class="duel-body">
+                                    <div class="duel-side a">
+                                        <div class="p"><span class="av">孙</span><span class="nm">孙七</span></div>
+                                        <div class="p"><span class="av">吴</span><span class="nm">吴九</span></div>
+                                    </div>
+                                    <span class="duel-vs">VS</span>
+                                    <div class="duel-side b r">
+                                        <div class="p"><span class="av">周</span><span class="nm">周八</span></div>
+                                        <div class="p"><span class="av">郑</span><span class="nm">郑十</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="tabbar">
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="19.4" r="2.4"/><path d="M10 17.2 12 3l2 14.2"/><path d="M10.7 12.3h2.6"/></svg>
+                        记分
+                    </span>
+                    <span class="tab on">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 20.6 13 11"/><path d="M20.6 20.6 11 11"/><path d="M11 3.4 20.6 13"/><path d="M13 3.4 3.4 13"/><circle cx="12" cy="12" r="1.9"/></svg>
+                        对战
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg>
+                        数据
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.4" r="3.4"/><path d="M3.2 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M15.8 5.4a3.4 3.4 0 0 1 0 6.4"/><path d="M17.4 14.9c2 .7 3.4 2.5 3.4 5.1"/></svg>
+                        我的
+                    </span>
+                </nav>
+            </div></div>
+        </div>
+
+        <!-- ---------- 排行榜 ---------- -->
+        <div class="frame">
+            <div class="frame-cap"><b>数据 · 排行榜</b><span>领奖台 + 榜单</span></div>
+            <div class="phone"><div class="screen">
+                <div class="statusbar"><span>9:41</span><span class="sb-right"><span class="sb-bars"><i></i><i></i><i></i><i></i></span><span class="sb-batt"><i></i></span></span></div>
+                <div class="rail">
+                    <span class="rail-title">数据</span>
+                    <span class="rail-sep"></span>
+                    <span class="rail-sub">排行榜</span>
+                    <span class="rail-acts">
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.2V3.8"/><path d="M8 7.6 12 3.6l4 4"/><path d="M5 13.6v5.6h14v-5.6"/></svg></button>
+                    </span>
+                </div>
+
+                <div class="page">
+                    <div class="page-pad stack">
+                        <div class="seg">
+                            <button>历史</button><button class="on">排行榜</button><button>能力</button><button>成就</button>
+                        </div>
+
+                        <div class="card">
+                            <div class="podium">
+                                <div class="pod g2">
+                                    <span class="av">林</span><span class="nm">林知远</span><span class="sc num">12</span><span class="bar"></span>
+                                </div>
+                                <div class="pod g1">
+                                    <span class="av">陈</span><span class="nm">陈骁</span><span class="sc num">18</span><span class="bar"></span>
+                                </div>
+                                <div class="pod g3">
+                                    <span class="av">周</span><span class="nm">周八</span><span class="sc num">9</span><span class="bar"></span>
+                                </div>
+                            </div>
+                            <div class="shelf" style="justify-content:center;padding:16px 16px 18px">
+                                <span class="chip on">胜场</span><span class="chip">场次</span><span class="chip">胜率</span><span class="chip">时长</span>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="lb-row">
+                                <span class="rk">04</span>
+                                <span><span class="nm">孙七</span><br><span class="sub">14 场 · 胜率 50%</span></span>
+                                <span class="sc">7</span>
+                            </div>
+                            <div class="lb-row">
+                                <span class="rk">05</span>
+                                <span><span class="nm">赵六</span><br><span class="sub">11 场 · 胜率 45%</span></span>
+                                <span class="sc">5</span>
+                            </div>
+                            <div class="lb-row">
+                                <span class="rk">06</span>
+                                <span><span class="nm">吴九</span><br><span class="sub">9 场 · 胜率 44%</span></span>
+                                <span class="sc">4</span>
+                            </div>
+                            <div class="lb-row">
+                                <span class="rk">07</span>
+                                <span><span class="nm">郑十</span><br><span class="sub">8 场 · 胜率 38%</span></span>
+                                <span class="sc">3</span>
+                            </div>
+                        </div>
+
+                        <div class="stats" style="margin-top:4px">
+                            <div class="stat"><div class="v num">42</div><div class="k">总场次</div></div>
+                            <div class="stat"><div class="v num win" style="color:var(--ok)">26</div><div class="k">胜场</div></div>
+                            <div class="stat"><div class="v num">62%</div><div class="k">胜率</div></div>
+                            <div class="stat"><div class="v num">31.5h</div><div class="k">总时长</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="tabbar">
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="19.4" r="2.4"/><path d="M10 17.2 12 3l2 14.2"/><path d="M10.7 12.3h2.6"/></svg>
+                        记分
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 20.6 13 11"/><path d="M20.6 20.6 11 11"/><path d="M11 3.4 20.6 13"/><path d="M13 3.4 3.4 13"/><circle cx="12" cy="12" r="1.9"/></svg>
+                        对战
+                    </span>
+                    <span class="tab on">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg>
+                        数据
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.4" r="3.4"/><path d="M3.2 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M15.8 5.4a3.4 3.4 0 0 1 0 6.4"/><path d="M17.4 14.9c2 .7 3.4 2.5 3.4 5.1"/></svg>
+                        我的
+                    </span>
+                </nav>
+            </div></div>
+        </div>
+
+        <!-- ---------- 我的 ---------- -->
+        <div class="frame">
+            <div class="frame-cap"><b>我的</b><span>本机优先 · 云端可选</span></div>
+            <div class="phone"><div class="screen">
+                <div class="statusbar"><span>9:41</span><span class="sb-right"><span class="sb-bars"><i></i><i></i><i></i><i></i></span><span class="sb-batt"><i></i></span></span></div>
+                <div class="rail">
+                    <span class="rail-title">我的</span>
+                    <span class="rail-acts">
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg></button>
+                        <button class="ic-btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.2V3.8"/><path d="M8 7.6 12 3.6l4 4"/><path d="M5 13.6v5.6h14v-5.6"/></svg></button>
+                    </span>
+                </div>
+
+                <div class="page">
+                    <div class="stack">
+                        <div class="me-card">
+                            <div class="pool"></div>
+                            <span class="me-av">本</span>
+                            <span>
+                                <span class="me-name">本机球员</span>
+                                <span class="me-sub" style="display:block">42 场 · 26 胜 · 本机存储</span>
+                            </span>
+                            <span class="me-badge"><span class="dot ok"></span>本地</span>
+                        </div>
+
+                        <div style="padding:0 16px">
+                            <div class="card">
+                                <div class="card-head">
+                                    <span class="card-title">账号与同步</span>
+                                    <span class="card-note">可选</span>
+                                </div>
+                                <div style="padding:0 16px 18px">
+                                    <p style="font-size:13.5px;color:var(--ink-2);line-height:1.8">
+                                        登录后战绩同时保存在云端，换设备也能拉回来。
+                                        <b style="color:var(--ink)">不登录也完全可用</b>——数据只留在本机。
+                                    </p>
+                                    <button class="btn btn-primary" style="width:100%;margin-top:14px">登录 / 注册</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding:0 16px">
+                            <div class="card">
+                                <div class="row">
+                                    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.2h3.6M13.4 7.2H20"/><path d="M4 12h9.6M19.4 12H20"/><path d="M4 16.8h6.6M16.4 16.8H20"/><circle cx="9.6" cy="7.2" r="2.2"/><circle cx="15.6" cy="12" r="2.2"/><circle cx="12.6" cy="16.8" r="2.2"/></svg>
+                                    <span style="flex:1"><span class="row-title">比赛规则与偏好</span><br><span class="row-sub">21 分 · 三局两胜 · 加分赛</span></span>
+                                    <svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                </div>
+                                <div class="row">
+                                    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.4" r="3.4"/><path d="M3.2 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M15.8 5.4a3.4 3.4 0 0 1 0 6.4"/><path d="M17.4 14.9c2 .7 3.4 2.5 3.4 5.1"/></svg>
+                                    <span style="flex:1"><span class="row-title">头像管理</span><br><span class="row-sub">为球员绑定专属头像</span></span>
+                                    <svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                </div>
+                                <div class="row">
+                                    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.8v11.2"/><path d="M8 10.8 12 14.8l4-4"/><path d="M4.8 20.2h14.4"/></svg>
+                                    <span style="flex:1"><span class="row-title">数据备份</span><br><span class="row-sub">导出 / 恢复 / 清空</span></span>
+                                    <svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding:0 16px">
+                            <div class="stats">
+                                <div class="stat"><div class="v num">42</div><div class="k">比赛记录</div></div>
+                                <div class="stat"><div class="v num">16</div><div class="k">分组记录</div></div>
+                                <div class="stat"><div class="v num">7</div><div class="k">费用记录</div></div>
+                                <div class="stat"><div class="v num">86<span style="font-size:16px">KB</span></div><div class="k">占用空间</div></div>
+                            </div>
+                        </div>
+
+                        <p style="text-align:center;font-size:11px;color:var(--ink-3);padding:10px 24px 24px;line-height:1.8">
+                            所有数据默认只保存在本机浏览器，不会上传服务器。<br>
+                            v4.0.0 · MIT
+                        </p>
+                    </div>
+                </div>
+
+                <nav class="tabbar">
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="19.4" r="2.4"/><path d="M10 17.2 12 3l2 14.2"/><path d="M10.7 12.3h2.6"/></svg>
+                        记分
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 20.6 13 11"/><path d="M20.6 20.6 11 11"/><path d="M11 3.4 20.6 13"/><path d="M13 3.4 3.4 13"/><circle cx="12" cy="12" r="1.9"/></svg>
+                        对战
+                    </span>
+                    <span class="tab">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19.6h16"/><path d="M7.4 19.6v-5.8"/><path d="M12 19.6V7.6"/><path d="M16.6 19.6v-9"/></svg>
+                        数据
+                    </span>
+                    <span class="tab on">
+                        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8.4" r="3.4"/><path d="M3.2 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M15.8 5.4a3.4 3.4 0 0 1 0 6.4"/><path d="M17.4 14.9c2 .7 3.4 2.5 3.4 5.1"/></svg>
+                        我的
+                    </span>
+                </nav>
+            </div></div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ============================================================
+     五 · 与旧版逐条对账
+     ============================================================ -->
+<section class="doc-section">
+    <div class="doc-h2">
+        <span class="idx">05</span>
+        <h2>与旧版逐条对账</h2>
+        <span class="note">为什么旧版「丑」</span>
+    </div>
+
+    <div class="ds-panel" style="padding:0;overflow:hidden">
+        <table class="diff">
+            <thead>
+                <tr><th>问题</th><th>旧版（v3 方向 C）</th><th>v4 夜场</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>面板是平的</td>
+                    <td class="old"><code>--sh-flat: none</code>，全靠 1px 灰边分层。暗色下边线不可见，整屏塌成一块死灰。</td>
+                    <td class="new">两段渐变 + 顶部内高光（<code>--lift</code>）。光从上面来，深度自然出现。</td>
+                </tr>
+                <tr>
+                    <td>圆角「没决定」</td>
+                    <td class="old">全站铺 2 / 3 / 4 / 6 / 10px 五档圆角，既不像矩形也不像圆角。</td>
+                    <td class="new">只留两种决定：面板一律锐角（边线语言），交互一律全圆。</td>
+                </tr>
+                <tr>
+                    <td>数字不够大</td>
+                    <td class="old">比分 clamp(52–76px)，在 390px 机上只有 66px。</td>
+                    <td class="new"><code>clamp(84px, 36cqi, 140px)</code>，390px 机上 140px（占半屏 78%）。场边模式 205px。</td>
+                </tr>
+                <tr>
+                    <td>没有主角</td>
+                    <td class="old">26px 标题、13px 正文、76px 比分三层挤在一起，读起来「什么都没强调」。</td>
+                    <td class="new">一档巨型 + 三档小字（15 / 13.5 / 11 / 9.5）。中号层整层删除。</td>
+                </tr>
+                <tr>
+                    <td>刻度环是装饰</td>
+                    <td class="old">比分外 40 格 conic-gradient 刻度环。好看，但不承载任何信息。</td>
+                    <td class="new">换成<b>进度线</b>：刻度落在 11 分（间歇）与目标分上，同时给出「离局点还有几分」。</td>
+                </tr>
+                <tr>
+                    <td>得分流水读不出势头</td>
+                    <td class="old">一串文字行「林知远 10 → 11」，要一行行读才知道谁在连得。</td>
+                    <td class="new"><b>回合时间轴</b>：每分一根竖条，按队伍着色。连得、追平、转折一瞥即得。</td>
+                </tr>
+                <tr>
+                    <td>队色占了太多面积</td>
+                    <td class="old">3px 顶条 + 头像 + 队标 + 比分 + 局分 + 发球点，六处用色。</td>
+                    <td class="new">收敛到三处：外沿边线、比分、进度线。其余全部中性。</td>
+                </tr>
+                <tr>
+                    <td>落后方处理反了</td>
+                    <td class="old">落后方降不透明度（<code>opacity:.62</code>）——在暗色下直接变成看不清。</td>
+                    <td class="new">落后方用固定 62% 象牙白（对比度达标），领先方才升到队色 + 光晕。</td>
+                </tr>
+                <tr>
+                    <td>顶栏只有标题</td>
+                    <td class="old">左侧「记分」两个大字，右侧三个图标，中间空。</td>
+                    <td class="new">标题 + 赛制摘要（21 分 · 三局两胜）+ 图标。顶栏终于有信息。</td>
+                </tr>
+                <tr>
+                    <td>动效廉价</td>
+                    <td class="old">得分数字 <code>scale(1.09)</code> 回弹——所有 UI 框架的默认动效。</td>
+                    <td class="new">得分时数字「砸」进来（白闪 + 从 1.07 落到 1），同时一道光扫过本方半场。</td>
+                </tr>
+                <tr>
+                    <td>配色是「石墨」</td>
+                    <td class="old">#101113 中性石墨，球馆冷光下发蓝发脏。</td>
+                    <td class="new">#0A0D0C 夜场墨绿黑，在冷光下仍然干净。</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="ds-panel" style="margin-top:22px">
+        <h3>保留不动</h3>
+        <p class="hint">重设计不是推翻一切。以下都是对的，原样保留。</p>
+        <div class="rule"><b>—</b><p><b>场边模式的交互。</b>半屏即按钮、轻点加分、长按 520ms 撤回、防息屏。这套是对的，只换视觉。</p></div>
+        <div class="rule"><b>—</b><p><b>本地优先。</b>不登录也完全可用，计分永不等网络。文案与流程一字不改。</p></div>
+        <div class="rule"><b>—</b><p><b>业务规则与数据结构。</b>BWF 计分、分组算法、费用分摊、10 个 localStorage 键名，全部不动。</p></div>
+        <div class="rule"><b>—</b><p><b>线性 SVG 图标系统。</b>51 枚 1.6px 描边图标，只改尺寸与颜色绑定，不重画。</p></div>
+    </div>
+
+    <!-- 设计稿与最终实现之间必然有出入。这里逐条记下来，
+         否则下一轮重设计会以为「稿子就是现状」，把已经修好的问题再改回去。 -->
+    <div class="ds-panel" style="margin-top:22px">
+        <h3>实现时对设计稿的修正</h3>
+        <p class="hint">下面每一条都是照着稿子做完、在真实页面上看出来的问题。设计稿不是最终答案。</p>
+        <div class="rule"><b>01</b><p><b>得分动效换掉了。</b>稿子写「一道光扫过本方半场」，但代码里留的还是 v3 那个 40px 实心扩散圆——它是一块半透明色块压在数字上，不是光。改成铺满半场的渐变光带，用 <code>background-position</code> 扫过：用 <code>transform</code> 位移整个元素会让光带从边缘「切」进来，留下一道硬边。</p></div>
+        <div class="rule"><b>02</b><p><b>时间轴的换边线原本指错了位置。</b>稿子只画了效果，没写坐标怎么算。第一版拿 <code>switchAt / target</code>（比分轴）当轨道百分比，而轨道横轴是<b>回合序号</b>——21 分制下这条线落在第 13 回合，标签却写着 11。改成累计比分找第一次越过换边分的那一回合。</p></div>
+        <div class="rule"><b>03</b><p><b>高光徽章和 Toast 原本叠在一起。</b>两者各自 <code>position: fixed</code> 在同一个 <code>top</code>，而「换边提醒」和「赛点！」是同一分触发的——两块面板直接互相盖住。合并进一条 <code>.notice-rail</code> 竖列。</p></div>
+        <div class="rule"><b>04</b><p><b>Toast 的左边那道琥珀被换掉了。</b>稿子规定「琥珀只有一个含义：进行中」，但 toast 承载的是「已保存 / 请输入金额」这类通用消息。拿「进行中」的颜色去标一条「保存成功」，等于把这个颜色作废。改成 <code>--fg-3</code>。</p></div>
+        <div class="rule"><b>05</b><p><b>排行榜的名字和数据粘在一行。</b><code>.rname</code> / <code>.rsub</code> 在 DOM 里是 <code>&lt;span&gt;</code>，默认 inline，读出来是「李大力5 场 · 胜率 40%」。显式改成块级。</p></div>
+        <div class="rule"><b>06</b><p><b>比分进度线的刻度是 11 点，不是 11%</b>——稿子的示意图按百分比画，实现按真实换边分算（21 分制 11 / 15 分制 8 / 11 分制 6）。</p></div>
+        <div class="rule"><b>07</b><p><b>显示字体从 DIN 换成了自带的 Barlow Semi Condensed。</b>稿子写的是「数字用等宽体」，但没有指定字体族，实现沿用了 DIN Next LT Pro → Bahnschrift 的系统栈——这两个只有 Windows 有，iOS / Android 会一路回落到 PingFang SC（中文正文字体），而手机才是球馆现场的主形态。改成随包分发（OFL，3 档 68KB，<code>unicode-range</code> 锁拉丁区，中文仍走系统）。选型依据是实测：140px 下 Barlow 数字宽 74.9px，比 DIN 的 77.8px 更窄，半场只有 194px 宽，窄的字形能换来更大的比分；Archivo 同字号 87.8px，宽 13%，是反向的。</p></div>
+    </div>
+</section>
+
+<!-- ============================================================
+     六 · 落地说明
+     ============================================================ -->
+<section class="doc-section">
+    <div class="doc-h2">
+        <span class="idx">06</span>
+        <h2>落地说明</h2>
+        <span class="note">怎么把这套设计接进现有工程</span>
+    </div>
+
+    <div class="ds-grid">
+
+        <div class="ds-panel">
+            <h3>替换范围</h3>
+            <p class="hint">只改视觉层，不动任何业务代码。</p>
+            <div class="rule"><b>改</b><p><code>css/tokens.css</code>、<code>base.css</code>、<code>components.css</code>、<code>screens.css</code>、<code>courtside.css</code>、<code>share-card.css</code>、<code>effects.css</code>。</p></div>
+            <div class="rule"><b>不动</b><p><code>js/</code> 全部业务模块、<code>server/</code>、<code>test/</code>、<code>tools/</code>。<br>localStorage 的 10 个键名与字段结构逐字不变。</p></div>
+            <div class="rule"><b>新增</b><p>只有时间轴需要新 DOM：把 <code>#point-log</code> 的渲染结果同时映射成一组 <code>.tl-bar</code>。<br>数据源不变（还是那份得分流水），只是多一个视图。</p></div>
+            <div class="rule"><b>同步</b><p>改 <code>tokens.css</code> 后必须同步 <code>js/tokens.js</code> 的 <code>palette()</code> 回落字面量、<code>share-card.css</code>、以及 <code>sw.js</code> 的 <code>CACHE_NAME</code>。</p></div>
+        </div>
+
+        <div class="ds-panel">
+            <h3>字体授权（上线前必须决定）</h3>
+            <p class="hint">本设计稿用的 DIN Next LT Pro 是<b>商业字体</b>，随项目分发即侵权。二选一。</p>
+            <div class="rule"><b>A</b><p><b>购买 DIN Next LT Pro 授权</b>并自托管 woff2。<br>字形最好，但按年计费、按域名算。</p></div>
+            <div class="rule"><b>B</b><p><b>换成 OFL 开源体</b>：<code>Archivo</code>（几何、tabular 数字，最接近）或 <code>Barlow</code>（略窄，更「器械」）。<br>零成本、可自托管、可商用。已写入字体栈回落位。</p></div>
+            <div class="rule"><b>—</b><p>中文用 <code>Noto Sans SC</code>（SIL OFL），可放心自托管。当前已回落系统黑体。</p></div>
+        </div>
+
+        <div class="ds-panel">
+            <h3>待实测项</h3>
+            <p class="hint">设计稿已渲染校验，但以下是本设计稿<b>无法覆盖</b>的，需在真实设备上验收。</p>
+            <div class="rule"><b>1</b><p>真机 2 米可读性（场边模式 205px 是计算值，不是肉眼结论）。</p></div>
+            <div class="rule"><b>2</b><p>得分动效在低端安卓上的帧率（<code>filter: brightness</code> 触发重绘）。<br>若掉帧，降级为纯 <code>transform</code> 缩放。</p></div>
+            <div class="rule"><b>3</b><p>html2canvas 对 <code>color-mix()</code> / 渐变文字的支持——分享卡仍按旧约定只写字面量。</p></div>
+            <div class="rule"><b>4</b><p>iOS 安全区与横屏刘海（场边模式）。</p></div>
+            <div class="rule"><b>5</b><p>长按撤回的 520ms 阈值在新视觉下是否仍有足够反馈（v4 未改交互）。</p></div>
+        </div>
+
+        <div class="ds-panel">
+            <h3>验收清单</h3>
+            <p class="hint">每条都可自动断言，已与现有 <code>tools/audit-ui.js</code> 的能力对齐。</p>
+            <div class="rule"><b>✓</b><p>全部视图无 <code>pageerror</code>；11 个二级页 + 5 个场边视口全通过。</p></div>
+            <div class="rule"><b>✓</b><p>触摸目标 ≥44×44（v4 所有按钮与行均为 44 起）。</p></div>
+            <div class="rule"><b>✓</b><p>正文与三级小字对比度 ≥4.5:1（本设计稿实测最低 5.17:1）。</p></div>
+            <div class="rule"><b>✓</b><p>零 emoji、零图片依赖、零外部字体请求。</p></div>
+            <div class="rule"><b>✓</b><p><code>prefers-reduced-motion</code> 下动效降到 1ms。</p></div>
+            <div class="rule"><b>✓</b><p>比分用 <code>tabular-nums</code> 且<b>不开</b> <code>ss01</code>（否则 0 变成斜杠零）。</p></div>
+        </div>
+
+    </div>
+</section>
+
+</div>
+</body>
+</html>

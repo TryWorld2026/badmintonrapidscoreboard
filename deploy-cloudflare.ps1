@@ -24,7 +24,7 @@ if (-not (Test-Path $sentinel)) {
 
 # ---- 2. 生产资产清单 ------------------------------------------------------
 # 新增 js/css 文件时改这里，别把整个目录倒进去。
-$dirs  = @('css', 'js', 'vendor', 'images')
+$dirs  = @('css', 'js', 'vendor', 'images', 'fonts')
 $files = @('index.html', 'manifest.json', 'sw.js', '_headers', 'robots.txt')
 
 # ---- 3. 暂存 --------------------------------------------------------------
@@ -72,6 +72,7 @@ $expected = [ordered]@{
     'js'     = 23    # 21 个顶层 + core/bus.js + core/migrate.js
     'vendor' = 2     # chart.umd.min.js / html2canvas.min.js
     'images' = 4     # icon-192 / icon-512 / apple-touch-icon / favicon.svg
+    'fonts'  = 4     # Barlow Semi Condensed 400/700/800 + OFL.txt（OFL 要求随附许可）
 }
 $expectedFiles = @('index.html', 'manifest.json', 'sw.js', '_headers', 'robots.txt')
 

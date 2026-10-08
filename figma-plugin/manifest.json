@@ -1,0 +1,11 @@
+{
+  "name": "羽毛球计分板 · v4 夜场 NIGHT COURT",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --void: #0A0D0C; --plate: #101513; --plate-2: #161C1A; --plate-3: #1E2523;
+    --fg: #F4F1EA; --fg-2: #A9B2AD; --fg-3: #8A948E;
+    --a: #FF5A47; --b: #4FA8E8; --ok: #4FC08A; --live: #F2C14E;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Barlow Semi Condensed", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 12px; line-height: 1.5;
+    color: var(--fg); background: var(--void);
+    padding: 16px;
+  }
+  .eyebrow {
+    font-size: 9.5px; font-weight: 700; letter-spacing: .20em;
+    text-transform: uppercase; color: var(--fg-3);
+  }
+  h1 { margin: 6px 0 2px; font-size: 19px; font-weight: 700; letter-spacing: .01em; }
+  .sub { margin: 0 0 14px; font-size: 11px; color: var(--fg-3); }
+  .bar {
+    height: 3px; background: var(--plate-3); border-radius: 999px; overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .bar > i {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--a), var(--b));
+    transition: width .18s ease-out;
+  }
+  .log {
+    max-height: 260px; overflow-y: auto;
+    padding: 10px 12px; background: var(--plate); border-radius: 3px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.55);
+    font-size: 11px; color: var(--fg-2); white-space: pre-wrap;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+  .log .ok { color: var(--ok); }
+  .log .warn { color: var(--live); }
+  .log .err { color: var(--a); }
+  .log b { color: var(--fg); font-weight: 700; }
+  .foot { margin-top: 10px; font-size: 10px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="eyebrow">Redesign · v4</div>
+  <h1>夜场 NIGHT COURT</h1>
+  <p class="sub">正在把设计系统与界面写进 Figma…</p>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="log" id="log"></div>
+  <div class="foot" id="foot">请勿关闭窗口</div>
+
+<script>
+  var logEl = document.getElementById('log');
+  var barEl = document.getElementById('bar');
+  var footEl = document.getElementById('foot');
+
+  function line(kind, text) {
+    var span = document.createElement('span');
+    span.className = kind || '';
+    span.textContent = text + '\n';
+    logEl.appendChild(span);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  onmessage = function (e) {
+    var msg = e.data.pluginMessage;
+    if (!msg) return;
+
+    if (msg.type === 'progress') {
+      if (typeof msg.pct === 'number') barEl.style.width = msg.pct + '%';
+      if (msg.text) line(msg.kind || '', msg.text);
+      return;
+    }
+
+    if (msg.type === 'done') {
+      barEl.style.width = '100%';
+      line('ok', '');
+      line('ok', '✓ 完成：' + msg.summary);
+      if (msg.warnings && msg.warnings.length) {
+        line('warn', '');
+        line('warn', '⚠ ' + msg.warnings.length + ' 条提醒：');
+        msg.warnings.forEach(function (w) { line('warn', '  · ' + w); });
+      }
+      footEl.textContent = '可以关闭了 · 生成内容已放在 5 个页面里';
+      return;
+    }
+
+    if (msg.type === 'error') {
+      line('err', '');
+      line('err', '✗ ' + msg.message);
+      if (msg.stack) line('err', msg.stack);
+      footEl.textContent = '出错了 · 请把上面的信息反馈';
+    }
+  };
+</script>
+</body>
+</html>

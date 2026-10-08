@@ -1,6 +1,6 @@
 {
   "name": "badminton-scoreboard-server",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "description": "羽毛球极速计分板 · 后端（Cloudflare Workers + D1）",
   "type": "module",

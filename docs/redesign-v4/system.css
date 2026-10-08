@@ -1,0 +1,411 @@
+/* ================================================================
+   system.css — 「夜场 NIGHT COURT」设计系统
+   羽毛球极速计分板 v4 重设计 · 令牌与基元
+
+   五条原则（每条都由使用场景推导，不是口味）：
+     1. 光，不是边框。层次来自顶光与投影，不来自 1px 灰边。
+     2. 一个主角。比分是唯一的巨型元素，标签一律 ≤11px 且加宽字距。
+     3. 两条线定义一场球。中线是网、外沿是边线；队色只出现在线、数字、光池里。
+     4. 一场比赛有一条形状。得分流水升级为回合时间轴，一屏读出势头。
+     5. 动效只服务「得分」。其余 ≤120ms 或不做。
+
+   本文件只允许出现裸值；其余样式一律 var(--*)。
+   ================================================================ */
+
+:root {
+    /* ---- 地面：夜场墨绿黑。不用纯黑（死），不用蓝黑（廉价电竞感）---- */
+    --ground:   #0A0D0C;
+    --ground-2: #0D1211;
+    --s1: #101513;   /* 面板 */
+    --s2: #161C1A;   /* 抬起 */
+    --s3: #1E2523;   /* 弹层 / 输入 */
+    --s4: #262E2B;   /* 最高 */
+
+    /* ---- 线：三条，全部是「白线在暗场上的透明度」，不是灰色 ---- */
+    --l1: rgba(244, 241, 234, 0.08);
+    --l2: rgba(244, 241, 234, 0.14);
+    --l3: rgba(244, 241, 234, 0.24);
+    --l4: rgba(244, 241, 234, 0.38);
+
+    /* ---- 墨：象牙白，不是纯白 ----
+       纯白 #FFF 压在深底上会发光发蓝，是「廉价屏幕」的第一信号。
+       三级文本全部对 --s3 实测 ≥4.5:1。 */
+    --ink:   #F4F1EA;
+    --ink-2: #A9B2AD;
+    --ink-3: #7E8983;
+
+    /* ---- 队色：全应用唯二饱和色，且只用于「识别」---- */
+    --a: #FF5A47;   /* 暖 · 球头橙红 */
+    --b: #4FA8E8;   /* 冷 · 球场蓝 */
+    --a-12: rgba(255, 90, 71, 0.12);
+    --a-20: rgba(255, 90, 71, 0.20);
+    --a-45: rgba(255, 90, 71, 0.45);
+    --b-12: rgba(79, 168, 232, 0.12);
+    --b-20: rgba(79, 168, 232, 0.20);
+    --b-45: rgba(79, 168, 232, 0.45);
+
+    /* ---- 状态：面积极小，只给状态点与告警 ---- */
+    --live:   #F2C14E;
+    --ok:     #4FC08A;
+    --danger: #FF5A4F;
+    --live-16: rgba(242, 193, 78, 0.16);
+    --ok-16:   rgba(79, 192, 138, 0.16);
+
+    /* ---- 光：v4 的核心。旧版 --sh-flat:none 是「丑」的第一因 ----
+       --lift 是每一块面从上方接到的光。没有它，暗色 UI 就是一块死灰。 */
+    --lift:   inset 0 1px 0 rgba(255, 255, 255, 0.065);
+    --lift-2: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    --sink:   inset 0 1px 2px rgba(0, 0, 0, 0.55);
+    --sh-1:   0 1px 2px rgba(0, 0, 0, 0.45);
+    --sh-2:   0 14px 34px rgba(0, 0, 0, 0.55);
+    --sh-3:   0 -18px 48px rgba(0, 0, 0, 0.6);
+
+    /* ---- 面：两段渐变 + 顶光，替代旧版「平面 + 1px 边」---- */
+    --face-1: linear-gradient(180deg, #171D1B 0%, #121716 100%);
+    --face-2: linear-gradient(180deg, #1E2523 0%, #171D1B 100%);
+    --face-3: linear-gradient(180deg, #262E2B 0%, #1E2523 100%);
+
+    /* ---- 圆角：面板一律锐角（court line），交互药丸一律全圆，弹层 14 ----
+       旧版 2–6px 铺满全站 = 既不像矩形也不像圆角，是「没决定」的样子。 */
+    --r-flat: 0px;
+    --r-xs: 3px;
+    --r-sheet: 14px;
+    --r-full: 999px;
+
+    /* ---- 间距 ---- */
+    --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+    --sp-5: 20px; --sp-6: 24px; --sp-7: 32px; --sp-8: 40px; --sp-9: 56px;
+
+    /* ---- 字号：一档巨型 + 三档小字，中间全部删除 ----
+       旧版 24px 标题 / 13px 正文 / 76px 比分 —— 三层挤在一起，
+       所以「看起来什么都没强调」。v4 把中号层砍掉。
+
+       比分用「相对面板」而不是 vw 计算：
+       本文件里的手机画框是固定 390px 宽的，用 vw 会在设计稿里算错。
+       落地到产品时用容器查询：
+         .board { container-type: inline-size }
+         .score { font-size: clamp(84px, 36cqi, 140px) }
+       实测：390px 机宽 → 140px（占半屏 78%）；320px 机宽 → 115px。 */
+    --fs-hero: 140px;
+    --fs-hero-cs: 205px;
+    --fs-h1: 26px;
+    --fs-h2: 19px;
+    --fs-h3: 15px;
+    --fs-body: 13.5px;
+    --fs-label: 11px;
+    --fs-micro: 9.5px;
+    --ls-label: 0.16em;
+    --ls-micro: 0.2em;
+
+    /* ---- 字体 ----
+       数字 / 标题：DIN Next LT Pro —— 德国工业标牌体，铁路上那套字形。
+          数字是天然等宽的 tabular，巨型比分逐帧变化不跳动；
+          比 Impact 斜体 LED 高级，比等宽体更像运动器材而不是终端。
+          回落到 Bahnschrift（Windows 自带的 DIN 衍生体）。
+       中文：Noto Sans SC（SIL OFL，可自托管），回落系统黑体。
+
+       ⚠️ DIN Next LT Pro 是商业字体，不可随项目分发。
+          上线前需二选一：购买授权自托管，或换成 OFL 的 Archivo / Barlow。
+          本设计稿用本机已装字体，仅用于设计评审。 */
+    --f-display: "DIN Next LT Pro", "Bahnschrift", "Archivo",
+        "Segoe UI Variable Display", "Segoe UI", sans-serif;
+    --f-ui: "Noto Sans SC", "PingFang SC", "HarmonyOS Sans SC",
+        "Microsoft YaHei", "Segoe UI", sans-serif;
+
+    /* ---- 动效：只服务得分 ---- */
+    --d-1: 90ms;  --d-2: 120ms; --d-3: 220ms; --d-4: 520ms;
+    --e-out: cubic-bezier(0, 0, 0.2, 1);
+    --e-strike: cubic-bezier(0.2, 0, 0, 1);
+
+    /* ---- 触摸 ---- */
+    --tap: 44px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    font-family: var(--f-ui);
+    font-size: var(--fs-body);
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--ground);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ================================================================
+   1. 面 —— 「光，不是边框」
+   任何一块面板 = 两段渐变 + 顶部内高光。删掉它就退回旧版。
+   ================================================================ */
+.face {
+    background: var(--face-1);
+    box-shadow: var(--lift);
+}
+.face-2 { background: var(--face-2); box-shadow: var(--lift); }
+.face-3 { background: var(--face-3); box-shadow: var(--lift-2); }
+
+/* 只在大面积上使用的光池：一盏顶灯打下来 */
+.pool {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(120% 78% at 50% -14%, rgba(255, 255, 255, 0.075), transparent 62%);
+}
+
+/* ================================================================
+   2. 文字基元
+   ================================================================ */
+.num {
+    font-family: var(--f-display);
+    font-variant-numeric: tabular-nums;
+    /* ⚠️ 只开 tnum。DIN Next LT Pro 的 ss01 会把 0 换成带斜杠的 Ø，
+       比分里的 0 必须是不带斜杠的 —— 斜杠零在球场标牌上会被读成字母 O 或 Ø。 */
+    font-feature-settings: "tnum" 1;
+}
+
+.label {
+    font-size: var(--fs-label);
+    font-weight: 600;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+.micro {
+    font-size: var(--fs-micro);
+    font-weight: 600;
+    letter-spacing: var(--ls-micro);
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 700; line-height: 1.25; }
+p { margin: 0; }
+
+/* ================================================================
+   3. 组件
+   ================================================================ */
+
+/* ---- 按钮 ---- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    min-height: var(--tap);
+    padding: 0 var(--sp-4);
+    font: inherit;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--face-2);
+    border: 0;
+    border-radius: var(--r-full);
+    box-shadow: var(--lift), var(--sh-1);
+    cursor: pointer;
+    transition: background var(--d-2) var(--e-out), transform var(--d-1) var(--e-out);
+}
+.btn:active { transform: scale(0.97); }
+
+/* 主行动：唯一一处实心象牙白 —— 全屏最亮的东西只有一个 */
+.btn-primary {
+    color: #0A0D0C;
+    background: linear-gradient(180deg, #FFFFFF 0%, #E8E4DA 100%);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, var(--sh-1);
+}
+
+.btn-ghost {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--l2);
+    color: var(--ink-2);
+}
+
+.btn-icon {
+    width: var(--tap);
+    padding: 0;
+    border-radius: var(--r-full);
+}
+
+/* ---- 药丸 / 分段 ---- */
+.seg {
+    display: flex;
+    gap: var(--sp-1);
+    padding: var(--sp-1);
+    background: var(--s1);
+    border-radius: var(--r-full);
+    box-shadow: var(--sink);
+}
+.seg > * {
+    flex: 1;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fs-body);
+    font-weight: 600;
+    color: var(--ink-3);
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-full);
+    cursor: pointer;
+    transition: color var(--d-2) var(--e-out), background var(--d-2) var(--e-out);
+}
+.seg > .on {
+    color: var(--ink);
+    background: var(--face-3);
+    box-shadow: var(--lift), var(--sh-1);
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 13px;
+    font-size: var(--fs-body);
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--s2);
+    border: 0;
+    border-radius: var(--r-full);
+    box-shadow: inset 0 0 0 1px var(--l1), var(--lift);
+    cursor: pointer;
+}
+.chip.on { color: var(--ink); box-shadow: inset 0 0 0 1px var(--l3), var(--lift); }
+
+/* ---- 卡片 ---- */
+.card {
+    background: var(--face-1);
+    box-shadow: var(--lift);
+}
+.card + .card { box-shadow: var(--lift), inset 0 1px 0 var(--l1); }
+
+.card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-4) var(--sp-4) var(--sp-3);
+}
+.card-title { font-size: var(--fs-h3); font-weight: 700; letter-spacing: 0.01em; }
+.card-note { font-size: var(--fs-label); color: var(--ink-3); }
+
+/* ---- 列表行 ---- */
+.row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    min-height: 56px;
+    padding: 0 var(--sp-4);
+    background: transparent;
+    border: 0;
+    width: 100%;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background var(--d-2) var(--e-out);
+}
+.row + .row { box-shadow: inset 0 1px 0 var(--l1); }
+.row:active { background: rgba(255, 255, 255, 0.03); }
+.row-title { font-size: var(--fs-h3); font-weight: 600; }
+.row-sub { font-size: var(--fs-label); color: var(--ink-3); margin-top: 1px; }
+
+/* ---- 图标 ---- */
+.ic { width: 20px; height: 20px; flex: 0 0 auto; }
+.ic-sm { width: 16px; height: 16px; }
+.ic-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--ink-2);
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-full);
+    cursor: pointer;
+}
+.ic-btn:active { background: rgba(255, 255, 255, 0.05); }
+
+/* ---- 输入 ---- */
+.field {
+    width: 100%;
+    min-height: var(--tap);
+    padding: 12px var(--sp-3);
+    font: inherit;
+    font-size: var(--fs-h3);
+    color: var(--ink);
+    background: var(--s1);
+    border: 0;
+    border-radius: var(--r-xs);
+    box-shadow: var(--sink);
+    outline: none;
+    transition: box-shadow var(--d-2) var(--e-out);
+}
+.field::placeholder { color: var(--ink-3); }
+.field:focus { box-shadow: var(--sink), 0 0 0 2px var(--live); }
+
+/* ---- 开关 ---- */
+.switch {
+    position: relative;
+    width: 46px;
+    height: 28px;
+    flex: 0 0 auto;
+    border-radius: var(--r-full);
+    background: var(--s3);
+    box-shadow: var(--sink);
+}
+.switch::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 22px; height: 22px;
+    border-radius: var(--r-full);
+    background: var(--ink-2);
+    box-shadow: var(--sh-1);
+    transition: transform var(--d-3) var(--e-out), background var(--d-3) var(--e-out);
+}
+.switch.on { background: var(--ok); }
+.switch.on::after { transform: translateX(18px); background: #0A0D0C; }
+
+/* ---- 状态点 ---- */
+.dot {
+    width: 6px; height: 6px;
+    flex: 0 0 auto;
+    border-radius: var(--r-full);
+    background: var(--ink-3);
+}
+.dot.live { background: var(--live); box-shadow: 0 0 0 4px var(--live-16); }
+.dot.ok   { background: var(--ok);   box-shadow: 0 0 0 4px var(--ok-16); }
+
+/* ================================================================
+   4. 得分动效 —— 全站唯一的「大」动效
+   数字不是淡入，是「砸进来」：一帧白闪 + 从 1.06 落到 1。
+   ================================================================ */
+@keyframes strike {
+    0%   { transform: scale(1.07); filter: brightness(2.6); }
+    22%  { transform: scale(0.985); filter: brightness(1.5); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+.strike { animation: strike 320ms var(--e-strike); }
+
+/* 得分时扫过本方半场的光 */
+@keyframes sweep {
+    0%   { transform: translateY(-100%); opacity: 0.9; }
+    100% { transform: translateY(100%); opacity: 0; }
+}
+.sweep {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.10), transparent);
+    animation: sweep 520ms var(--e-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
